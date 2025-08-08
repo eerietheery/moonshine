@@ -1,0 +1,104 @@
+/* ===== SIDEBAR ===== */
+#sidebar {
+  width: 250px;
+  background: #181818;
+  border-right: 1px solid #333;
+  padding: 20px 16px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+#sidebar h2 {
+  text-align: center;
+  color: var(--primary-color);
+  margin: 0 0 20px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+#sidebar h3 {
+  color: #b3b3b3;
+  margin: 20px 0 8px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0 8px;
+}
+
+.sidebar-toggle {
+  cursor: pointer;
+  transition: color 0.15s;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sidebar-toggle:hover {
+  color: var(--primary-color);
+}
+
+.toggle-icon {
+  font-size: 0.8rem;
+  transition: transform 0.2s;
+}
+
+.toggle-icon.collapsed {
+  transform: rotate(-90deg);
+}
+
+.sidebar-section {
+  margin-bottom: 20px;
+}
+
+.filter-list {
+  max-height: calc(100vh - 400px);
+  overflow-y: auto;
+  padding-bottom: 20px;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.filter-list.collapsed {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  padding-bottom: 0;
+}
+
+.filter-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  margin-bottom: 2px;
+  transition: background 0.15s;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-item:hover {
+  background: #282828;
+}
+
+.filter-item.active {
+  background: var(--primary-color);
+  color: #000;
+}
+
+.filter-count {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  background: #333;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 16px;
+  text-align: center;
+}
+
+.filter-item.active .filter-count {
+  background: rgba(0,0,0,0.2);
+  color: #000;
+}
