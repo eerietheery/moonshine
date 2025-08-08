@@ -1,11 +1,11 @@
 import { renderList } from '../../view.js';
-import { showSettingsMenu } from '../ui.js';
+import { showSettingsModal } from '../ui.js';
 import { displayGridView } from '../grid.js';
 import * as dom from '../dom.js';
 import { state } from '../../state.js';
 
 export function setupUiEventListeners() {
-  dom.hamburgerBtn.addEventListener('click', showSettingsMenu);
+  dom.settingsBtn.addEventListener('click', showSettingsModal);
 
   dom.sidebarToggles.forEach(toggle => {
     const targetId = toggle.getAttribute('data-target');

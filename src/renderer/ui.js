@@ -194,65 +194,193 @@ function showColorModal() {
   });
 }
 
-function showSettingsMenu(event) {
-  const menu = document.createElement('div');
-  menu.classList.add('settings-dropdown');
-  menu.style.position = 'absolute';
-  // Position menu below the hamburger button
-  const btnRect = event.target.getBoundingClientRect();
-  menu.style.top = `${btnRect.bottom + window.scrollY}px`;
-  menu.style.left = `${btnRect.left + window.scrollX}px`;
-  menu.style.backgroundColor = '#282828';
-  menu.style.border = '1px solid #444';
-  menu.style.borderRadius = '4px';
-  menu.style.padding = '8px';
-  menu.style.zIndex = '1000';
+import { state } from '../state.js';
 
-  // Change Color button
-  const changeColorBtn = document.createElement('button');
-  changeColorBtn.textContent = 'Change Color';
-  changeColorBtn.style.backgroundColor = 'transparent';
-  changeColorBtn.style.border = 'none';
-  changeColorBtn.style.color = '#fff';
-  changeColorBtn.style.cursor = 'pointer';
-  changeColorBtn.style.padding = '8px';
-  changeColorBtn.style.textAlign = 'left';
-  changeColorBtn.style.width = '100%';
-  changeColorBtn.addEventListener('click', () => {
-    menu.remove();
-    showColorModal();
-  });
-  menu.appendChild(changeColorBtn);
+function showSettingsModal() {
+  // Backdrop
+  const modal = document.createElement('div');
+  modal.style.position = 'fixed';
+  modal.style.inset = '0';
+  modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  modal.style.zIndex = '1002';
 
-  // Add Library button
-  const addLibraryBtn = document.createElement('button');
-  addLibraryBtn.textContent = 'Add Library';
-  addLibraryBtn.style.backgroundColor = 'transparent';
-  addLibraryBtn.style.border = 'none';
-  addLibraryBtn.style.color = '#fff';
-  addLibraryBtn.style.cursor = 'pointer';
-  addLibraryBtn.style.padding = '8px';
-  addLibraryBtn.style.textAlign = 'left';
-  addLibraryBtn.style.width = '100%';
-  addLibraryBtn.addEventListener('click', async () => {
-    menu.remove();
-    // This will be handled by an event listener in the main file
+  // Dialog
+  const dialog = document.createElement('div');
+  dialog.style.background = '#1f1f1f';
+  dialog.style.border = '1px solid #444';
+  dialog.style.borderRadius = '10px';
+  dialog.style.width = 'min(520px, 92vw)';
+  dialog.style.maxHeight = '85vh';
+  dialog.style.overflow = 'auto';
+  dialog.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
+
+  const header = document.createElement('div');
+  header.style.display = 'flex';
+  header.style.alignItems = 'center';
+  header.style.justifyContent = 'space-between';
+  header.style.padding = '14px 16px';
+  header.style.borderBottom = '1px solid #333';
+
+  const title = document.createElement('div');
+  title.textContent = 'Settings';
+  title.style.color = '#fff';
+  title.style.fontSize = '16px';
+  title.style.fontWeight = '600';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '✖';
+  closeBtn.title = 'Close';
+  closeBtn.style.background = 'transparent';
+  closeBtn.style.border = 'none';
+  closeBtn.style.color = '#aaa';
+  closeBtn.style.cursor = 'pointer';
+  closeBtn.style.fontSize = '16px';
+  closeBtn.addEventListener('click', () => modal.remove());
+
+  header.appendChild(title);
+  header.appendChild(closeBtn);
+
+  const body = document.createElement('div');
+  body.style.padding = '16px';
+  body.style.color = '#ddd';
+  body.style.display = 'grid';
+  body.style.gap = '18px';
+
+  // Library section
+  const libSection = document.createElement('div');
+  const libTitle = document.createElement('div');
+  libTitle.textContent = 'Library';
+  libTitle.style.fontWeight = '600';
+  libTitle.style.marginBottom = '8px';
+  libTitle.style.color = '#fff';
+
+  const addFolder = document.createElement('button');
+  addFolder.textContent = 'Add Music Folder…';
+  addFolder.style.background = 'var(--primary-color, #8C40B8)';
+  addFolder.style.border = 'none';
+  addFolder.style.color = '#fff';
+  addFolder.style.padding = '10px 14px';
+  addFolder.style.borderRadius = '6px';
+  addFolder.style.cursor = 'pointer';
+  addFolder.addEventListener('click', async () => {
+    // delegate to existing handler
     document.dispatchEvent(new CustomEvent('add-folder'));
   });
-  menu.appendChild(addLibraryBtn);
 
-  document.body.appendChild(menu);
+  // Existing directories list
+  const dirList = document.createElement('div');
+  dirList.style.marginTop = '12px';
+  dirList.style.display = 'grid';
+  dirList.style.gap = '8px';
 
-  const closeMenu = (e) => {
-    // Only close if clicking outside the menu
-    if (!menu.contains(e.target)) {
-      menu.remove();
-      document.removeEventListener('click', closeMenu);
+  const renderDirs = (dirs) => {
+    dirList.innerHTML = '';
+    if (!dirs || !dirs.length) {
+      const empty = document.createElement('div');
+      empty.textContent = 'No folders added yet.';
+      empty.style.color = '#aaa';
+      dirList.appendChild(empty);
+      return;
     }
+    dirs.forEach((p) => {
+      const row = document.createElement('div');
+      row.style.display = 'flex';
+      row.style.alignItems = 'center';
+      row.style.justifyContent = 'space-between';
+      row.style.background = '#2a2a2a';
+      row.style.border = '1px solid #333';
+      row.style.borderRadius = '6px';
+      row.style.padding = '8px 10px';
+
+      const label = document.createElement('div');
+      label.textContent = p;
+      label.style.color = '#ddd';
+      label.style.overflow = 'hidden';
+      label.style.textOverflow = 'ellipsis';
+      label.style.whiteSpace = 'nowrap';
+      label.style.maxWidth = '75%';
+
+      // Remove button (UI only for now; does not delete tracks)
+      const remove = document.createElement('button');
+      remove.textContent = 'Remove';
+      remove.style.background = '#444';
+      remove.style.border = 'none';
+      remove.style.color = '#fff';
+      remove.style.padding = '6px 10px';
+      remove.style.borderRadius = '4px';
+      remove.style.cursor = 'pointer';
+      remove.addEventListener('click', () => {
+        const idx = state.libraryDirs.indexOf(p);
+        if (idx !== -1) {
+          state.libraryDirs.splice(idx, 1);
+          document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
+        }
+      });
+
+      row.appendChild(label);
+      row.appendChild(remove);
+      dirList.appendChild(row);
+    });
   };
-  setTimeout(() => {
-    document.addEventListener('click', closeMenu);
-  }, 0);
+
+  renderDirs(state.libraryDirs);
+  const onDirs = (e) => renderDirs(e.detail);
+  document.addEventListener('library-dirs-updated', onDirs);
+
+  // Clean up listener when modal closes
+  const teardown = () => {
+    document.removeEventListener('library-dirs-updated', onDirs);
+  };
+
+  libSection.appendChild(libTitle);
+  libSection.appendChild(addFolder);
+  libSection.appendChild(dirList);
+
+  // Theme section
+  const themeSection = document.createElement('div');
+  const themeTitle = document.createElement('div');
+  themeTitle.textContent = 'Theme';
+  themeTitle.style.fontWeight = '600';
+  themeTitle.style.margin = '8px 0';
+  themeTitle.style.color = '#fff';
+
+  const changeColor = document.createElement('button');
+  changeColor.textContent = 'Change Color…';
+  changeColor.style.background = '#444';
+  changeColor.style.border = 'none';
+  changeColor.style.color = '#fff';
+  changeColor.style.padding = '10px 14px';
+  changeColor.style.borderRadius = '6px';
+  changeColor.style.cursor = 'pointer';
+  changeColor.addEventListener('click', () => {
+    // Close settings first, then open color picker under it
+    modal.remove();
+    teardown();
+    showColorModal();
+  });
+
+  themeSection.appendChild(themeTitle);
+  themeSection.appendChild(changeColor);
+
+  body.appendChild(libSection);
+  body.appendChild(themeSection);
+
+  dialog.appendChild(header);
+  dialog.appendChild(body);
+
+  modal.appendChild(dialog);
+  document.body.appendChild(modal);
+
+  // Close on outside click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.remove();
+      teardown();
+    }
+  });
 }
 
-export { getComplementaryColor, showScanModal, showColorModal, showSettingsMenu };
+export { getComplementaryColor, showScanModal, showColorModal, showSettingsModal };

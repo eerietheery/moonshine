@@ -11,6 +11,11 @@ async function addMusic(userPath) {
     const existingPaths = new Set(state.tracks.map(t => t.filePath));
     const newTracks = tracks.filter(t => t && t.filePath && !existingPaths.has(t.filePath));
     state.tracks = state.tracks.concat(newTracks);
+    // Track the folder added
+    if (userPath && !state.libraryDirs.includes(userPath)) {
+      state.libraryDirs.push(userPath);
+      document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
+    }
     updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
     updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
     renderList(dom.list);
@@ -24,6 +29,11 @@ async function loadMusic(dirPath) {
   try {
     const tracks = await window.etune.scanMusic(dirPath);
     state.tracks = tracks.filter(t => t && t.filePath);
+    // When explicitly loading a directory, set it as the only library (for initial scan or reset)
+    if (dirPath && !state.libraryDirs.includes(dirPath)) {
+      state.libraryDirs.push(dirPath);
+      document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
+    }
     updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
     updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
     renderList(dom.list);
@@ -38,6 +48,17 @@ async function initialScan() {
     const res = await window.etune.initialScan();
     if (Array.isArray(res) && res.length) {
       state.tracks = res.filter(t => t && t.filePath);
+      // Best effort to infer root dir from first track
+      try {
+        const first = state.tracks[0];
+        if (first && first.filePath) {
+          const root = first.filePath.split(/[\\/]/).slice(0, 3).join('/');
+          if (root && !state.libraryDirs.includes(root)) {
+            state.libraryDirs.push(root);
+          }
+        }
+      } catch {}
+      document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
       updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
       updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
       renderList(dom.list);
