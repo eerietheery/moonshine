@@ -1,4 +1,3 @@
-# Etune Music Player
 
 A desktop music player built with Electron and Node.js. Features:
 - Scan local folders for MP3 files

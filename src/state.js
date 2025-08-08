@@ -17,6 +17,8 @@ export const state = {
   activeAlbum: null,
   activeYear: null,
   queue: [], // Array of tracks
+  // Top-level music folders the user has scanned/added
+  libraryDirs: [],
 };
 
 // Queue helpers
