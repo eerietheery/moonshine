@@ -1,0 +1,19 @@
+{
+  "name": "etune",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "electron": "^37.2.6",
+    "music-metadata": "^11.7.3",
+    "node-id3": "^0.2.9"
+  }
+}
