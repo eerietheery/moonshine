@@ -23,6 +23,9 @@ export const scanBtn = document.getElementById('scan-btn');
 export const settingsBtn = document.querySelector('.settings-btn');
 export const gridViewBtn = document.getElementById('grid-view');
 export const listViewBtn = document.getElementById('list-view');
+// Legacy sidebar toggles removed in favor of mode buttons
 export const sidebarToggles = document.querySelectorAll('.sidebar-toggle');
 export const tableHeaders = document.querySelectorAll('.table-header > div');
 export const toolbar = document.getElementById('toolbar');
+export const modeArtistsBtn = document.getElementById('mode-artists');
+export const modeAlbumsBtn = document.getElementById('mode-albums');

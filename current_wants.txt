@@ -1,3 +1,5 @@
 
 
 hover over volume, scroll to change volume up or down
+
+Loop feature (album, current playlist, song)

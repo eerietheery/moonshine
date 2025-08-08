@@ -53,6 +53,25 @@
   margin-bottom: 20px;
 }
 
+/* Mode toggle buttons */
+.filter-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 8px 8px 12px 8px;
+}
+.mode-btn {
+  background: #252525;
+  color: #bfbfbf;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.mode-btn:hover { background: #2e2e2e; color: #fff; }
+.mode-btn.active { background: var(--primary-color); color: #000; border-color: transparent; }
+
 .filter-list {
   max-height: calc(100vh - 400px);
   overflow-y: auto;

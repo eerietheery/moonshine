@@ -36,7 +36,7 @@ export function setupPlayer(audio, playBtn, prevBtn, nextBtn, progressBar, progr
   // Scroll to change volume when hovering over slider
   volume.addEventListener('wheel', (e) => {
     e.preventDefault();
-    // Normalize direction: up = increase, down = decrease
+    e.stopPropagation(); // prevent container handler from double firing
     const delta = Math.sign(e.deltaY);
     let newVal = Number(volume.value) - delta * 5;
     newVal = Math.max(0, Math.min(100, newVal));
@@ -44,13 +44,23 @@ export function setupPlayer(audio, playBtn, prevBtn, nextBtn, progressBar, progr
     audio.volume = newVal / 100;
   }, { passive: false });
 
+  // Also allow scrolling anywhere in the volume area (icon + slider)
+  const volumeContainer = document.querySelector('.volume-container');
+  if (volumeContainer) {
+    volumeContainer.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      // If the slider already handled it, ignore (we stop-propagation there)
+      const delta = Math.sign(e.deltaY);
+      let newVal = Number(volume.value) - delta * 5;
+      newVal = Math.max(0, Math.min(100, newVal));
+      volume.value = newVal;
+      audio.volume = newVal / 100;
+    }, { passive: false });
+  }
+
   // Click handlers for now playing title/artist
   const enableSidebarFiltering = () => {
-    const checkbox = document.getElementById('sidebar-filter-toggle');
-    if (checkbox && !checkbox.checked) {
-      checkbox.checked = true;
-      state.sidebarFilteringEnabled = true;
-    }
+    if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true;
   };
   if (currentArtist) {
     const handleArtist = () => {

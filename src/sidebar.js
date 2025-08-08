@@ -50,4 +50,13 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
       albumList.appendChild(item);
     }
   });
+
+  // Respect current mode for visibility; elements are toggled in UI events too
+  if (state.sidebarMode === 'album') {
+    artistList.style.display = 'none';
+    albumList.style.display = '';
+  } else {
+    artistList.style.display = '';
+    albumList.style.display = 'none';
+  }
 }
