@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>моопѕђіпѳ</title>
+  <title>мооnѕჩіne</title>
   <link rel="stylesheet" href="assets/global.css">
   <link rel="stylesheet" href="assets/sidebar.css">
   <link rel="stylesheet" href="assets/main-content.css">
@@ -12,22 +12,18 @@
 <body>
   <div id="app">
     <div id="sidebar">
-      <h2>моопѕђіпѳ</h2>
+      <h2>мооnѕჩіne</h2>
       <input type="text" id="filter" placeholder="Search library...">
   <button id="scan-btn">Scan Music</button>
       
       <div class="sidebar-section">
-        <h3 class="sidebar-toggle" data-target="artist-list">
-          <span class="toggle-icon">▼</span> Artists
-        </h3>
+        <h3>Library</h3>
+        <div id="filter-mode" class="filter-mode">
+          <button id="mode-artists" class="mode-btn active" title="Show Artists">Artists</button>
+          <button id="mode-albums" class="mode-btn" title="Show Albums">Albums</button>
+        </div>
         <div id="artist-list" class="filter-list"></div>
-      </div>
-      
-      <div class="sidebar-section">
-        <h3 class="sidebar-toggle" data-target="album-list">
-          <span class="toggle-icon">▼</span> Albums
-        </h3>
-        <div id="album-list" class="filter-list"></div>
+        <div id="album-list" class="filter-list" style="display:none;"></div>
       </div>
     </div>
     

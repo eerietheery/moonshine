@@ -1,4 +1,21 @@
 // UI helpers for rendering tracks, album art, etc.
+
+// Lightweight toast
+export function showToast(message, timeout = 1800) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  container.appendChild(toast);
+  // trigger transition
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 250);
+  }, timeout);
+}
+
 export function createTrackElement(track, onClick) {
   const div = document.createElement('div');
   div.className = 'track';
@@ -34,22 +51,6 @@ export function createTrackElement(track, onClick) {
   
   div.onclick = () => onClick(track);
   return div;
-}
-
-// Lightweight toast
-export function showToast(message, timeout = 1800) {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = message;
-  container.appendChild(toast);
-  // trigger transition
-  requestAnimationFrame(() => toast.classList.add('show'));
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 250);
-  }, timeout);
 }
 
 export function createFilterItem(name, count, isActive) {

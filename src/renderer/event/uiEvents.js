@@ -1,5 +1,5 @@
 import { renderList } from '../../view.js';
-import { showSettingsModal } from '../ui.js';
+import { showSettingsModal } from '../ui/settingsModal.js';
 import { displayGridView } from '../grid.js';
 import * as dom from '../dom.js';
 import { state } from '../../state.js';
@@ -7,28 +7,27 @@ import { state } from '../../state.js';
 export function setupUiEventListeners() {
   dom.settingsBtn.addEventListener('click', showSettingsModal);
 
-  dom.sidebarToggles.forEach(toggle => {
-    const targetId = toggle.getAttribute('data-target');
-    const targetList = document.getElementById(targetId);
-    const icon = toggle.querySelector('.toggle-icon');
-    
-    targetList.classList.remove('collapsed');
-    icon.classList.remove('collapsed');
-    
-    toggle.addEventListener('click', (e) => {
-      if (e.target === toggle || e.target.classList.contains('toggle-icon') || e.target.closest('.sidebar-toggle') === toggle) {
-        if (targetList.classList.contains('collapsed')) {
-          targetList.classList.remove('collapsed');
-          icon.classList.remove('collapsed');
-        } else {
-          targetList.classList.add('collapsed');
-          icon.classList.add('collapsed');
-        }
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    });
-  });
+  // Mode toggle events for sidebar (Artists/Albums)
+  const applyMode = (mode) => {
+    state.sidebarMode = mode;
+  // Persist mode
+  window.etune.updateConfig({ sidebarMode: mode });
+    if (mode === 'artist') {
+      dom.artistList.style.display = '';
+      dom.albumList.style.display = 'none';
+      dom.modeArtistsBtn?.classList.add('active');
+      dom.modeAlbumsBtn?.classList.remove('active');
+    } else {
+      dom.artistList.style.display = 'none';
+      dom.albumList.style.display = '';
+      dom.modeArtistsBtn?.classList.remove('active');
+      dom.modeAlbumsBtn?.classList.add('active');
+    }
+  };
+  dom.modeArtistsBtn?.addEventListener('click', () => applyMode('artist'));
+  dom.modeAlbumsBtn?.addEventListener('click', () => applyMode('album'));
+  // Initialize
+  applyMode(state.sidebarMode || 'artist');
 
   dom.gridViewBtn.addEventListener('click', () => {
     displayGridView();

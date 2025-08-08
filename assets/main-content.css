@@ -119,9 +119,10 @@
   background: #181818;
   border-bottom: 1px solid #333;
   padding: 12px 16px;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr; /* left, centered, right */
   align-items: center;
+  column-gap: 12px;
 
 .hamburger-btn {
   width: 36px;
@@ -165,11 +166,9 @@
   color: #000;
 }
 
-.sort-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.view-controls { display:flex; align-items:center; gap:8px; justify-self: start; }
+
+.sort-controls { display:flex; align-items:center; gap:8px; justify-self: center; }
 
 #sort-by {
   background: #282828;
@@ -200,10 +199,10 @@
 /* Right-aligned settings and queue controls */
 #settings-menu {
   position: relative;
-  margin-left: auto; /* push to far right */
   display: flex;
   align-items: center;
   gap: 8px;
+  justify-self: end; /* anchor to right edge */
 }
 
 .settings-btn {

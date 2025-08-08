@@ -1,4 +1,4 @@
-import { showScanModal } from '../ui.js';
+import { showScanModal } from '../ui/scanModal.js';
 import { addMusic, loadMusic } from '../library.js';
 import * as dom from '../dom.js';
 

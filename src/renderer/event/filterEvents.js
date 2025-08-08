@@ -21,23 +21,6 @@ export function setupFilterEventListeners() {
     renderList(dom.list);
   });
 
-  const filterToggle = document.createElement('label');
-  filterToggle.style.marginLeft = '24px';
-  filterToggle.style.fontSize = '0.95em';
-  filterToggle.innerHTML = `<input type="checkbox" id="sidebar-filter-toggle"> Enable sidebar filtering`;
-  dom.toolbar.appendChild(filterToggle);
-  const sidebarFilterCheckbox = document.getElementById('sidebar-filter-toggle');
-  sidebarFilterCheckbox.checked = false;
-  sidebarFilterCheckbox.addEventListener('change', (e) => {
-    state.sidebarFilteringEnabled = e.target.checked;
-    if (!state.sidebarFilteringEnabled) {
-      resetSidebarFilters();
-    }
-    updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
-    updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
-    renderList(dom.list);
-  });
-
   const handleFilterClick = (container, type) => {
     container.addEventListener('click', (e) => {
       const item = e.target.closest('.filter-item');
@@ -50,11 +33,8 @@ export function setupFilterEventListeners() {
         state.activeAlbum = value === 'All' ? null : value;
       }
 
-      const checkbox = document.getElementById('sidebar-filter-toggle');
-      if (checkbox && !checkbox.checked) {
-        checkbox.checked = true;
-        state.sidebarFilteringEnabled = true;
-      }
+  // Ensure sidebar filtering is enabled when a filter item is clicked
+  if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true;
 
       updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
       updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);

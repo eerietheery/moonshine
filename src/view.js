@@ -96,11 +96,7 @@ export function renderGrid(list) {
 
   // Helper to apply filters and switch to list view
   const applyAndShowList = (album, artist) => {
-    const checkbox = document.getElementById('sidebar-filter-toggle');
-    if (checkbox && !checkbox.checked) {
-      checkbox.checked = true;
-      state.sidebarFilteringEnabled = true;
-    }
+    if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true;
     state.activeAlbum = album || null;
     state.activeArtist = artist || null;
     const filterInput = document.getElementById('filter');
@@ -159,11 +155,7 @@ export function renderGrid(list) {
     card.setAttribute('tabindex', '0');
     // Click-to-filter within grid, stay in grid
     const applyGridFilter = (opts) => {
-      const checkbox = document.getElementById('sidebar-filter-toggle');
-      if (checkbox && !checkbox.checked) {
-        checkbox.checked = true;
-        state.sidebarFilteringEnabled = true;
-      }
+      if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true;
       if (opts.album !== undefined) state.activeAlbum = opts.album;
       if (opts.artist !== undefined) state.activeArtist = opts.artist;
       if (opts.year !== undefined) state.activeYear = opts.year;

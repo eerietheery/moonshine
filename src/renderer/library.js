@@ -15,6 +15,7 @@ async function addMusic(userPath) {
     if (userPath && !state.libraryDirs.includes(userPath)) {
       state.libraryDirs.push(userPath);
       document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
+  window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
     }
     updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
     updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
@@ -33,6 +34,7 @@ async function loadMusic(dirPath) {
     if (dirPath && !state.libraryDirs.includes(dirPath)) {
       state.libraryDirs.push(dirPath);
       document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
+  window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
     }
     updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
     updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
@@ -59,11 +61,13 @@ async function initialScan() {
         }
       } catch {}
       document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
+  window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
       updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
       updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
       renderList(dom.list);
     } else {
-      dom.list.innerHTML = '';
+      // If initial scan is empty, load default directory
+      loadMusic('C:/Users/Eerie/Music');
     }
   } catch {
     dom.list.innerHTML = '';

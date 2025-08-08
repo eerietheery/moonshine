@@ -19,6 +19,8 @@ export const state = {
   queue: [], // Array of tracks
   // Top-level music folders the user has scanned/added
   libraryDirs: [],
+  // Sidebar mode: 'artist' or 'album'
+  sidebarMode: 'artist',
 };
 
 // Queue helpers
