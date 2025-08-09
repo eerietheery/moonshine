@@ -3,7 +3,31 @@ import { updateSidebarFilters } from '../sidebar.js';
 import { renderList } from '../view.js';
 import * as dom from './dom.js';
 
+function showSpinner(show = true) {
+  let spinner = document.getElementById('toolbar-spinner');
+  if (show) {
+    if (!spinner) {
+      spinner = document.createElement('span');
+      spinner.id = 'toolbar-spinner';
+      spinner.style.display = 'inline-flex';
+      spinner.style.width = '24px';
+      spinner.style.height = '24px';
+      spinner.style.marginLeft = '8px';
+      spinner.style.marginRight = '0';
+      spinner.innerHTML = `<img src="assets/clock.svg" alt="Loading..." style="width:100%;height:100%;filter:invert(1);vertical-align:middle;">`;
+      dom.toolbar.appendChild(spinner);
+    }
+    // Always move spinner to the end of toolbar
+    if (spinner && spinner.parentNode === dom.toolbar) {
+      dom.toolbar.appendChild(spinner);
+    }
+  } else {
+    if (spinner) spinner.remove();
+  }
+}
+
 async function addMusic(userPath) {
+  showSpinner(true);
   dom.list.innerHTML = `<div class='loading-message'>Adding music files...</div>`;
   try {
     const tracks = await window.etune.scanMusic(userPath);
@@ -20,12 +44,15 @@ async function addMusic(userPath) {
     updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
     updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
     renderList(dom.list);
+  showSpinner(false);
   } catch (err) {
     dom.list.innerHTML = `<div style='color:#e74c3c;padding:16px;'>Error adding music: ${err.message}</div>`;
+  showSpinner(false);
   }
 }
 
 async function loadMusic(dirPath) {
+  showSpinner(true);
   dom.list.innerHTML = `<div class='loading-message'>Loading music files...</div>`;
   try {
     const tracks = await window.etune.scanMusic(dirPath);
@@ -39,12 +66,15 @@ async function loadMusic(dirPath) {
     updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
     updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
     renderList(dom.list);
+  showSpinner(false);
   } catch (err) {
     dom.list.innerHTML = `<div style='color:#e74c3c;padding:16px;'>Error loading music: ${err.message}</div>`;
+  showSpinner(false);
   }
 }
 
 async function initialScan() {
+  showSpinner(true);
   dom.list.innerHTML = `<div class='loading-message'>Preparing your library...</div>`;
   try {
     const res = await window.etune.initialScan();
@@ -65,13 +95,16 @@ async function initialScan() {
       updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
       updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
       renderList(dom.list);
+      showSpinner(false);
     } else {
       // If initial scan is empty, load default directory
   const defaultDir = await window.etune.getDefaultMusicPath();
   loadMusic(defaultDir);
+      showSpinner(false);
     }
   } catch {
     dom.list.innerHTML = '';
+    showSpinner(false);
   }
 }
 
