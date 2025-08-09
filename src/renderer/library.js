@@ -67,7 +67,8 @@ async function initialScan() {
       renderList(dom.list);
     } else {
       // If initial scan is empty, load default directory
-      loadMusic('C:/Users/Eerie/Music');
+  const defaultDir = await window.etune.getDefaultMusicPath();
+  loadMusic(defaultDir);
     }
   } catch {
     dom.list.innerHTML = '';

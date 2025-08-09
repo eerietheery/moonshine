@@ -31,8 +31,8 @@ export function createTrackElement(track, onClick) {
       <img class="album-art" src="${art}" alt="Album Art" />
       <span class="track-name" title="${titleText}">${titleText}</span>
     </div>
-    <div class="track-artist" title="${artistText}">${artistText}</div>
-    <div class="track-album" title="${albumText}">${albumText}</div>
+    <div class="track-artist linkish" data-artist title="${artistText}" tabindex="0">${artistText}</div>
+    <div class="track-album linkish" data-album title="${albumText}" tabindex="0">${albumText}</div>
     <div class="track-year" title="${yearText}">${yearText}</div>
     <div class="track-genre track-genre-actions" title="${genreText}">
       <span class="genre-text">${genreText}</span>
@@ -49,6 +49,35 @@ export function createTrackElement(track, onClick) {
     });
   };
   
+  // Click-to-filter for artist/album
+  const applyFilter = (opts) => {
+    import('./state.js').then(({ state, updateFilters }) => {
+      import('./sidebar.js').then(({ updateSidebarFilters }) => {
+        if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true;
+        if (opts.artist !== undefined) state.activeArtist = opts.artist;
+        if (opts.album !== undefined) state.activeAlbum = opts.album;
+        const filterInput = document.getElementById('filter');
+        updateFilters(filterInput, state.sidebarFilteringEnabled);
+        updateSidebarFilters(
+          filterInput,
+          document.getElementById('artist-list'),
+          document.getElementById('album-list'),
+          () => {},
+          state.sidebarFilteringEnabled
+        );
+        // Re-render list to show filtered
+        import('./view.js').then(({ renderList }) => renderList(document.getElementById('music-list')));
+      });
+    });
+  };
+  const artistEl = div.querySelector('[data-artist]');
+  const albumEl = div.querySelector('[data-album]');
+  artistEl?.addEventListener('click', (e) => { e.stopPropagation(); applyFilter({ artist: artistText }); });
+  albumEl?.addEventListener('click', (e) => { e.stopPropagation(); applyFilter({ album: albumText }); });
+  artistEl?.addEventListener('keydown', (e) => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); e.stopPropagation(); applyFilter({ artist: artistText }); }});
+  albumEl?.addEventListener('keydown', (e) => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); e.stopPropagation(); applyFilter({ album: albumText }); }});
+
+  // Row click plays track
   div.onclick = () => onClick(track);
   return div;
 }

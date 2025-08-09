@@ -35,6 +35,11 @@ app.whenReady().then(async () => {
   createWindow();
 });
 
+// Expose default music directory for renderer to consume
+ipcMain.handle('get-default-music-path', () => {
+  return DEFAULT_DIR;
+});
+
 ipcMain.handle('select-folder', async () => {
   const result = await dialog.showOpenDialog({
     properties: ['openDirectory'],

@@ -19,7 +19,7 @@ function showScanModal() {
   box.style.minWidth = '320px';
 
   const msg = document.createElement('div');
-  msg.textContent = 'Scan default music folder? (C:/Users/Eerie/Music)';
+  msg.textContent = 'Scan your system\'s default Music folder?';
   msg.style.color = '#fff';
   msg.style.marginBottom = '18px';
   box.appendChild(msg);

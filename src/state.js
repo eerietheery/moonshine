@@ -11,6 +11,8 @@ export const state = {
   isShuffle: false,
   // Array of indices mapping play order when shuffle is on; otherwise null
   playOrder: null,
+  // Loop mode: 'off' | 'all' | 'one'
+  loopMode: 'off',
   sortBy: 'artist',
   sortOrder: 'asc',
   activeArtist: null,

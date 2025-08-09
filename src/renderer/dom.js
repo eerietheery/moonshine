@@ -7,6 +7,7 @@ export const playBtn = document.getElementById('play-btn');
 export const prevBtn = document.getElementById('prev-btn');
 export const nextBtn = document.getElementById('next-btn');
 export const shuffleBtn = document.getElementById('shuffle-btn');
+export const loopBtn = document.getElementById('loop-btn');
 export const progressBar = document.getElementById('progress-bar');
 export const progressFill = document.getElementById('progress-fill');
 export const progressHandle = document.getElementById('progress-handle');

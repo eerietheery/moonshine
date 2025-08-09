@@ -3,7 +3,7 @@ import { state, rebuildPlayOrder, updateFilters } from './state.js';
 import { updateSidebarFilters } from './sidebar.js';
 import { formatTime } from './ui.js';
 
-export function setupPlayer(audio, playBtn, prevBtn, nextBtn, progressBar, progressFill, progressHandle, currentTime, totalTime, volume, currentArt, currentTitle, currentArtist, renderListFn, shuffleBtn) {
+export function setupPlayer(audio, playBtn, prevBtn, nextBtn, progressBar, progressFill, progressHandle, currentTime, totalTime, volume, currentArt, currentTitle, currentArtist, renderListFn, shuffleBtn, loopBtn) {
   playBtn.addEventListener('click', () => togglePlay(audio, playBtn));
   prevBtn.addEventListener('click', () => playPrevious(audio, renderListFn));
   nextBtn.addEventListener('click', () => playNext(audio, renderListFn));
@@ -11,6 +11,19 @@ export function setupPlayer(audio, playBtn, prevBtn, nextBtn, progressBar, progr
   if (shuffleBtn) {
     shuffleBtn.addEventListener('click', () => toggleShuffle(shuffleBtn));
   }
+
+  if (loopBtn) {
+    loopBtn.addEventListener('click', () => toggleLoop(loopBtn));
+  }
+
+  const setVolumeTrackBg = () => {
+    try {
+      const pct = Math.max(0, Math.min(100, Number(volume.value)));
+      const primary = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#8C40B8';
+      // Two-layer background: colored fill up to pct, then base track
+      volume.style.background = `linear-gradient(${primary} 0 0) 0/ ${pct}% 100% no-repeat, #333`;
+    } catch {}
+  };
 
   audio.addEventListener('loadedmetadata', () => {
     totalTime.textContent = formatTime(audio.duration);
@@ -23,7 +36,16 @@ export function setupPlayer(audio, playBtn, prevBtn, nextBtn, progressBar, progr
       currentTime.textContent = formatTime(audio.currentTime);
     }
   });
-  audio.addEventListener('ended', () => playNext(audio, renderListFn));
+  audio.addEventListener('ended', () => {
+    if (state.loopMode === 'one') {
+      // Restart same track
+      audio.currentTime = 0;
+      audio.play();
+      return;
+    }
+    // loop all handled in playNext when wrapping at end
+    playNext(audio, renderListFn);
+  });
   progressBar.addEventListener('click', (e) => {
     const rect = progressBar.getBoundingClientRect();
     const percent = (e.clientX - rect.left) / rect.width;
@@ -31,6 +53,7 @@ export function setupPlayer(audio, playBtn, prevBtn, nextBtn, progressBar, progr
   });
   volume.addEventListener('input', (e) => {
     audio.volume = e.target.value / 100;
+  setVolumeTrackBg();
   });
 
   // Scroll to change volume when hovering over slider
@@ -42,6 +65,7 @@ export function setupPlayer(audio, playBtn, prevBtn, nextBtn, progressBar, progr
     newVal = Math.max(0, Math.min(100, newVal));
     volume.value = newVal;
     audio.volume = newVal / 100;
+  setVolumeTrackBg();
   }, { passive: false });
 
   // Also allow scrolling anywhere in the volume area (icon + slider)
@@ -55,8 +79,12 @@ export function setupPlayer(audio, playBtn, prevBtn, nextBtn, progressBar, progr
       newVal = Math.max(0, Math.min(100, newVal));
       volume.value = newVal;
       audio.volume = newVal / 100;
+    setVolumeTrackBg();
     }, { passive: false });
   }
+
+  // Initialize volume track background
+  setVolumeTrackBg();
 
   // Click handlers for now playing title/artist
   const enableSidebarFiltering = () => {
@@ -197,12 +225,37 @@ export function playNext(audio, renderList) {
         document.getElementById('current-artist'),
         renderList
       );
+    } else if (state.loopMode === 'all') {
+      // wrap to first
+      const nextIdx = state.playOrder[0];
+      playTrack(
+        state.filteredTracks[nextIdx],
+        nextIdx,
+        audio,
+        document.getElementById('play-btn'),
+        document.getElementById('current-art'),
+        document.getElementById('current-title'),
+        document.getElementById('current-artist'),
+        renderList
+      );
     }
   } else {
     if (state.currentTrackIndex < state.filteredTracks.length - 1) {
       playTrack(
         state.filteredTracks[state.currentTrackIndex + 1],
         state.currentTrackIndex + 1,
+        audio,
+        document.getElementById('play-btn'),
+        document.getElementById('current-art'),
+        document.getElementById('current-title'),
+        document.getElementById('current-artist'),
+        renderList
+      );
+    } else if (state.loopMode === 'all') {
+      // wrap to first
+      playTrack(
+        state.filteredTracks[0],
+        0,
         audio,
         document.getElementById('play-btn'),
         document.getElementById('current-art'),
@@ -224,5 +277,33 @@ export function toggleShuffle(shuffleBtn) {
     state.playOrder = null;
     shuffleBtn.classList.remove('active');
     shuffleBtn.title = 'Shuffle: Off';
+  }
+}
+
+export function toggleLoop(loopBtn) {
+  // Cycle: off -> all -> one -> off
+  const next = state.loopMode === 'off' ? 'all' : state.loopMode === 'all' ? 'one' : 'off';
+  state.loopMode = next;
+  loopBtn.classList.toggle('active', next !== 'off');
+  if (next === 'off') {
+    loopBtn.title = 'Loop: Off';
+    const indicator = loopBtn.querySelector('.loop-indicator');
+    if (indicator) indicator.remove();
+  } else if (next === 'all') {
+    loopBtn.title = 'Loop: All';
+    const indicator = loopBtn.querySelector('.loop-indicator');
+    if (indicator) indicator.remove();
+  } else {
+    loopBtn.title = 'Loop: One';
+    // Add superscript 1 indicator
+    let indicator = loopBtn.querySelector('.loop-indicator');
+    if (!indicator) {
+      indicator = document.createElement('span');
+      indicator.className = 'loop-indicator';
+      indicator.style.cssText = 'position: absolute; top: 2px; right: 2px; font-size: 10px; font-weight: bold; color: currentColor;';
+      loopBtn.style.position = 'relative';
+      loopBtn.appendChild(indicator);
+    }
+    indicator.textContent = '1';
   }
 }
