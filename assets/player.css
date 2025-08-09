@@ -240,3 +240,13 @@
 #audio {
   display: none;
 }
+
+/* ===== QUEUE UPCOMING (ghost) ===== */
+.queue-upcoming-section { margin-top: 8px; padding: 6px 4px 4px; border-top: 1px solid rgba(255,255,255,0.08); }
+.queue-upcoming-header { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.65; margin: 0 2px 4px; }
+.queue-upcoming-list { max-height: 160px; overflow-y: auto; scrollbar-width: thin; }
+.queue-upcoming-item { display: flex; gap: 6px; font-size: 11px; padding: 2px 4px; opacity: 0.55; }
+.queue-upcoming-item:hover { opacity: 0.8; background: rgba(255,255,255,0.05); }
+.queue-upcoming-item .queue-title { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.queue-upcoming-item .queue-artist { flex: 0 0 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; opacity: 0.75; }
+.queue-upcoming-empty { font-size: 11px; opacity: 0.4; padding: 4px; }

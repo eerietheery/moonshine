@@ -54,8 +54,13 @@ export function createTrackElement(track, onClick) {
     import('./state.js').then(({ state, updateFilters }) => {
       import('./sidebar.js').then(({ updateSidebarFilters }) => {
         if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true;
+        // Always reset active track when filtering by album
+        if (opts.album !== undefined) {
+          state.activeAlbum = opts.album;
+          state.currentTrack = null;
+          state.currentTrackIndex = -1;
+        }
         if (opts.artist !== undefined) state.activeArtist = opts.artist;
-        if (opts.album !== undefined) state.activeAlbum = opts.album;
         const filterInput = document.getElementById('filter');
         updateFilters(filterInput, state.sidebarFilteringEnabled);
         updateSidebarFilters(
@@ -72,10 +77,26 @@ export function createTrackElement(track, onClick) {
   };
   const artistEl = div.querySelector('[data-artist]');
   const albumEl = div.querySelector('[data-album]');
-  artistEl?.addEventListener('click', (e) => { e.stopPropagation(); applyFilter({ artist: artistText }); });
-  albumEl?.addEventListener('click', (e) => { e.stopPropagation(); applyFilter({ album: albumText }); });
-  artistEl?.addEventListener('keydown', (e) => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); e.stopPropagation(); applyFilter({ artist: artistText }); }});
-  albumEl?.addEventListener('keydown', (e) => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); e.stopPropagation(); applyFilter({ album: albumText }); }});
+  artistEl?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    applyFilter({ artist: artistText });
+    // Scroll sidebar to artist
+    setTimeout(() => {
+      const sidebarArtist = document.querySelector(`#artist-list .filter-item[data-value="${artistText.replace(/"/g, '\"')}"]`);
+      if (sidebarArtist) sidebarArtist.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  });
+  albumEl?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    applyFilter({ album: albumText });
+    // Scroll sidebar to album
+    setTimeout(() => {
+      const sidebarAlbum = document.querySelector(`#album-list .filter-item[data-value="${albumText.replace(/"/g, '\"')}"]`);
+      if (sidebarAlbum) sidebarAlbum.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  });
+  artistEl?.addEventListener('keydown', (e) => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); e.stopPropagation(); applyFilter({ artist: artistText }); setTimeout(() => { const sidebarArtist = document.querySelector(`#artist-list .filter-item[data-value="${artistText.replace(/"/g, '\"')}"]`); if (sidebarArtist) sidebarArtist.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); }});
+  albumEl?.addEventListener('keydown', (e) => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); e.stopPropagation(); applyFilter({ album: albumText }); setTimeout(() => { const sidebarAlbum = document.querySelector(`#album-list .filter-item[data-value="${albumText.replace(/"/g, '\"')}"]`); if (sidebarAlbum) sidebarAlbum.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100); }});
 
   // Row click plays track
   div.onclick = () => onClick(track);

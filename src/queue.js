@@ -46,6 +46,48 @@ export function renderQueuePanel() {
     });
     list.appendChild(item);
   });
+  // Render upcoming (ghost) tracks after queue ends
+  const upcomingContainer = document.getElementById('queue-upcoming');
+  if (upcomingContainer) {
+    upcomingContainer.innerHTML = '';
+    // Determine where we are: if current track is inside queue, find its position
+    const curQueueIdx = state.queue.findIndex(t => t.filePath === state.currentTrack?.filePath);
+    // Build a list of upcoming from queue (after current) then fallback to library after queue ends
+    let upcoming = [];
+    if (curQueueIdx !== -1) {
+      upcoming = state.queue.slice(curQueueIdx + 1);
+    } else if (state.queue.length) {
+      // Not in queue yet: show entire queue as upcoming preview
+      upcoming = state.queue.slice();
+    }
+    // After queue empties / finishes, show next few library tracks starting at currentTrackIndex+1
+    if (upcoming.length < 5) {
+      const needed = 5 - upcoming.length;
+      const lib = state.filteredTracks;
+      const currentIdx = state.currentTrack ? lib.findIndex(t => t.filePath === state.currentTrack.filePath) : -1;
+      if (currentIdx !== -1) {
+        const after = lib.slice(currentIdx + 1, currentIdx + 1 + needed);
+        upcoming = upcoming.concat(after);
+      } else if (!state.currentTrack && lib.length) {
+        upcoming = upcoming.concat(lib.slice(0, needed));
+      }
+    }
+    upcoming.slice(0, 10).forEach(track => {
+      const ghost = document.createElement('div');
+      ghost.className = 'queue-upcoming-item';
+      ghost.innerHTML = `
+        <span class="queue-title" title="${track.tags?.title || track.file}">${track.tags?.title || track.file}</span>
+        <span class="queue-artist" title="${track.tags?.artist || 'Unknown'}">${track.tags?.artist || 'Unknown'}</span>
+      `;
+      upcomingContainer.appendChild(ghost);
+    });
+    if (!upcoming.length) {
+      const none = document.createElement('div');
+      none.className = 'queue-upcoming-empty';
+      none.textContent = 'No upcoming tracks';
+      upcomingContainer.appendChild(none);
+    }
+  }
 }
 
 export function setupQueuePanel() {

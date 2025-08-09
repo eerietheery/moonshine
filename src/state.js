@@ -25,6 +25,8 @@ export const state = {
   sidebarMode: 'artist',
   // Artist lumping toggle
   explicitArtistNames: false,
+  // Theme style: 'flat' or 'gradient'
+  themeStyle: 'flat',
 };
 
 // Queue helpers

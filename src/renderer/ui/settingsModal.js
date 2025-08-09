@@ -4,6 +4,42 @@ import { renderList } from '../../view.js';
 import { showColorModal } from './colorModal.js';
 
 function showSettingsModal() {
+  // Theme style toggle section
+  const themeStyleSection = document.createElement('div');
+  themeStyleSection.style.marginTop = '18px';
+  themeStyleSection.style.display = 'flex';
+  themeStyleSection.style.alignItems = 'center';
+
+  const themeLabel = document.createElement('label');
+  themeLabel.textContent = 'Theme Style';
+  themeLabel.style.fontWeight = '600';
+  themeLabel.style.marginRight = '12px';
+  themeLabel.style.color = '#fff';
+
+  const themeToggle = document.createElement('select');
+  themeToggle.style.background = '#222';
+  themeToggle.style.color = '#fff';
+  themeToggle.style.border = '1px solid #444';
+  themeToggle.style.borderRadius = '4px';
+  themeToggle.style.padding = '6px 10px';
+  themeToggle.style.fontWeight = '600';
+  themeToggle.style.marginRight = '6px';
+  themeToggle.innerHTML = `<option value="flat">Flat</option><option value="gradient">Gradient</option>`;
+  themeToggle.value = state.themeStyle || 'flat';
+  themeToggle.addEventListener('change', () => {
+    state.themeStyle = themeToggle.value;
+    window.etune.updateConfig({ themeStyle: state.themeStyle });
+    document.dispatchEvent(new CustomEvent('theme-style-updated', { detail: state.themeStyle }));
+    // Apply theme immediately
+    if (state.themeStyle === 'gradient') {
+      document.documentElement.style.setProperty('--primary-gradient', `linear-gradient(90deg, var(--primary-color) 0%, var(--complementary-color) 100%)`);
+    } else {
+      document.documentElement.style.setProperty('--primary-gradient', `var(--primary-color)`);
+    }
+  });
+
+  themeStyleSection.appendChild(themeToggle);
+  themeStyleSection.appendChild(themeLabel);
   // Artist lumping toggle section
   const artistSection = document.createElement('div');
   artistSection.style.marginTop = '18px';
@@ -118,7 +154,7 @@ function showSettingsModal() {
       dirList.appendChild(empty);
       return;
     }
-    dirs.forEach((p) => {
+    dirs.forEach((p, i) => {
       const row = document.createElement('div');
       row.style.display = 'flex';
       row.style.alignItems = 'center';
@@ -144,11 +180,37 @@ function showSettingsModal() {
       remove.style.padding = '6px 10px';
       remove.style.borderRadius = '4px';
       remove.style.cursor = 'pointer';
-      remove.addEventListener('click', () => {
+      remove.addEventListener('click', async () => {
+        // Prevent removing default library unless explicitly requested
+        const defaultDir = await window.etune.getDefaultMusicPath();
+        const isDefault = p === defaultDir;
+        if (isDefault && dirs.length === 1) {
+          alert('Cannot remove the default library.');
+          return;
+        }
         const idx = state.libraryDirs.indexOf(p);
         if (idx !== -1) {
           state.libraryDirs.splice(idx, 1);
           document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
+          window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
+          // Remove tracks from this library only
+          state.tracks = state.tracks.filter(t => !t.filePath.startsWith(p));
+          // If all libraries removed, reload default
+          if (state.libraryDirs.length === 0) {
+            const def = await window.etune.getDefaultMusicPath();
+            document.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Reloading default library...', type: 'info' } }));
+            window.etune.scanMusic(def).then(tracks => {
+              state.tracks = tracks.filter(t => t && t.filePath);
+              state.libraryDirs = [def];
+              document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
+              window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
+              updateSidebarFilters(window.dom.filterInput, window.dom.artistList, window.dom.albumList, () => renderList(window.dom.list), state.sidebarFilteringEnabled);
+              renderList(window.dom.list);
+            });
+          } else {
+            updateSidebarFilters(window.dom.filterInput, window.dom.artistList, window.dom.albumList, () => renderList(window.dom.list), state.sidebarFilteringEnabled);
+            renderList(window.dom.list);
+          }
         }
       });
 
@@ -196,6 +258,7 @@ function showSettingsModal() {
   themeSection.appendChild(changeColor);
 
   body.appendChild(libSection);
+  body.appendChild(themeStyleSection);
   body.appendChild(artistSection);
 
   // Filtering section

@@ -1,0 +1,4 @@
+Now we're going to implement a new theme. This will boil down to a new toggle in settings that is either Flat, what it is now, or Gradient, and where there is primary color now, id' like to enable making it a soft gradient instead of a flat color. 
+
+
+bug in loading or unloading libraries, default library was unloaded. Aim for more graceful library handling
