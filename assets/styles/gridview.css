@@ -1,0 +1,94 @@
+/* ===== GRID VIEW ===== */
+.track-card {
+  background: #222;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 18px 14px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: box-shadow 0.2s, border 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.track-card.playing {
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.track-card .album-art {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  background: #222;
+}
+
+.track-card .track-name {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-bottom: 4px;
+  text-align: center;
+  color: #fff;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-card .track-artist,
+.track-card .track-album {
+  font-size: 0.95em;
+  color: #b3b3b3;
+  margin-bottom: 2px;
+  text-align: center;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-card .track-year,
+.track-card .track-genre {
+  font-size: 0.85em;
+  color: #999;
+  margin-bottom: 2px;
+  text-align: center;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#music-list.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  padding: 16px 24px; /* extra left/right breathing room */
+  overflow-x: hidden;
+  box-sizing: border-box;
+  scrollbar-gutter: stable both-edges;
+  max-width: 100%;
+}
+
+/* Album grid card tweaks */
+.album-card .album-art {
+  width: 120px;
+  height: 120px;
+}
+.album-card:hover {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+/* Clickable inline filters */
+.linkish {
+  cursor: pointer;
+}
+.linkish:hover {
+  text-decoration: underline;
+}
