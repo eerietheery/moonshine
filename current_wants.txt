@@ -1,5 +1,0 @@
-better indication of loop track enabled (superscript a 1)
-
-selecting All from artists or albums resets select filter for both 
-
-artist lumping (if same artist is detected in multiple artist strings, lumps same artists together.)

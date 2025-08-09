@@ -4,6 +4,33 @@ import { renderList } from '../../view.js';
 import { showColorModal } from './colorModal.js';
 
 function showSettingsModal() {
+  // Artist lumping toggle section
+  const artistSection = document.createElement('div');
+  artistSection.style.marginTop = '18px';
+  artistSection.style.display = 'flex';
+  artistSection.style.alignItems = 'center';
+
+  const artistLabel = document.createElement('label');
+  artistLabel.textContent = 'Explicit Artist Names';
+  artistLabel.style.fontWeight = '600';
+  artistLabel.style.marginRight = '12px';
+  artistLabel.style.color = '#fff';
+
+  const artistToggle = document.createElement('input');
+  artistToggle.type = 'checkbox';
+  artistToggle.checked = !!state.explicitArtistNames;
+  artistToggle.style.transform = 'scale(1.2)';
+  artistToggle.style.marginRight = '6px';
+  artistToggle.addEventListener('change', () => {
+    state.explicitArtistNames = artistToggle.checked;
+    window.etune.updateConfig({ explicitArtistNames: state.explicitArtistNames });
+    document.dispatchEvent(new CustomEvent('artist-lumping-updated', { detail: state.explicitArtistNames }));
+    updateSidebarFilters(window.dom.filterInput, window.dom.artistList, window.dom.albumList, () => renderList(window.dom.list), state.sidebarFilteringEnabled);
+    renderList(window.dom.list);
+  });
+
+  artistSection.appendChild(artistToggle);
+  artistSection.appendChild(artistLabel);
   // Backdrop
   const modal = document.createElement('div');
   modal.style.position = 'fixed';
@@ -169,6 +196,7 @@ function showSettingsModal() {
   themeSection.appendChild(changeColor);
 
   body.appendChild(libSection);
+  body.appendChild(artistSection);
 
   // Filtering section
   const filterSection = document.createElement('div');

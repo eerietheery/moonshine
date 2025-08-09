@@ -25,6 +25,8 @@ export function initializeApp() {
       if (cfg.sidebarMode === 'album' || cfg.sidebarMode === 'artist') state.sidebarMode = cfg.sidebarMode;
       // Apply library dirs
       if (Array.isArray(cfg.libraryDirs)) state.libraryDirs = cfg.libraryDirs.slice();
+      // Apply explicit artist names toggle
+      if (typeof cfg.explicitArtistNames === 'boolean') state.explicitArtistNames = cfg.explicitArtistNames;
       // Load all remembered library directories
       if (state.libraryDirs.length > 0) {
         for (const dir of state.libraryDirs) {
