@@ -5,10 +5,14 @@ A desktop music player built with Electron and Node.js. Features:
 - Filter and organize tracks
 - Play music with a modern UI
 
+![Alt text](https://i.imgur.com/ITImpPG.png)
+
+![Alt text](https://i.imgur.com/5cZF49y.png)
+
 ## Getting Started
 
 1. Run `npm install` to install dependencies.
-2. Start the app with `npx electron .`
+2. Start the app with `npm start`
 
 ## Features
 - Browse and filter your music library by artist, album, or title
