@@ -13,7 +13,7 @@ export function initializeApp() {
   document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim()));
 
   // Load persisted config
-  window.etune.getConfig().then((cfg) => {
+  window.etune.getConfig().then(async (cfg) => {
     if (cfg) {
       // Apply theme
       if (cfg.theme && cfg.theme.primaryColor) {
@@ -25,13 +25,19 @@ export function initializeApp() {
       if (cfg.sidebarMode === 'album' || cfg.sidebarMode === 'artist') state.sidebarMode = cfg.sidebarMode;
       // Apply library dirs
       if (Array.isArray(cfg.libraryDirs)) state.libraryDirs = cfg.libraryDirs.slice();
+      // Load all remembered library directories
+      if (state.libraryDirs.length > 0) {
+        for (const dir of state.libraryDirs) {
+          await import('./library.js').then(lib => lib.loadMusic(dir));
+        }
+        preloadGridView();
+        return;
+      }
     }
+    // If no remembered dirs, do initial scan
+    await initialScan();
+    preloadGridView();
   }).finally(() => {
-    // Initial library scan
-    initialScan().then(() => {
-      preloadGridView();
-    });
-
     // Setup all event listeners
     setupEventListeners();
 
@@ -50,9 +56,9 @@ export function initializeApp() {
       dom.currentArt,
       dom.currentTitle,
       dom.currentArtist,
-    () => renderList(dom.list),
-    dom.shuffleBtn,
-    dom.loopBtn
+      () => renderList(dom.list),
+      dom.shuffleBtn,
+      dom.loopBtn
     );
 
     // Setup queue panel
