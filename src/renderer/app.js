@@ -51,7 +51,8 @@ export function initializeApp() {
       dom.currentTitle,
       dom.currentArtist,
     () => renderList(dom.list),
-    dom.shuffleBtn
+    dom.shuffleBtn,
+    dom.loopBtn
     );
 
     // Setup queue panel

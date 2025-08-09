@@ -6,4 +6,5 @@ contextBridge.exposeInMainWorld('etune', {
   selectFolder: () => ipcRenderer.invoke('select-folder'),
   getConfig: () => ipcRenderer.invoke('get-config'),
   updateConfig: (partial) => ipcRenderer.invoke('update-config', partial),
+  getDefaultMusicPath: () => ipcRenderer.invoke('get-default-music-path'),
 });

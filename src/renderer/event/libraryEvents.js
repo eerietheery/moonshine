@@ -12,8 +12,9 @@ export function setupLibraryEventListeners() {
 
   dom.scanBtn.addEventListener('click', showScanModal);
 
-  document.addEventListener('scan-default', () => {
-    loadMusic('C:/Users/Eerie/Music');
+  document.addEventListener('scan-default', async () => {
+    const defaultDir = await window.etune.getDefaultMusicPath();
+    loadMusic(defaultDir);
   });
 
   document.addEventListener('add-folder', async () => {

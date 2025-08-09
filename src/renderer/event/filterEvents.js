@@ -27,10 +27,14 @@ export function setupFilterEventListeners() {
       if (!item || !container.contains(item)) return;
       e.stopPropagation();
       const value = item.dataset.value;
-      if (type === 'artist') {
-        state.activeArtist = value === 'All' ? null : value;
+      if (value === 'All') {
+        // Selecting All in one list clears both artist and album filters
+        state.activeArtist = null;
+        state.activeAlbum = null;
+      } else if (type === 'artist') {
+        state.activeArtist = value;
       } else if (type === 'album') {
-        state.activeAlbum = value === 'All' ? null : value;
+        state.activeAlbum = value;
       }
 
   // Ensure sidebar filtering is enabled when a filter item is clicked
