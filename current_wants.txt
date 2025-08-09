@@ -1,5 +1,3 @@
 background equalizer
 
-grid view: add to queue button move to top right hover over album art and card, don't expand size of card because of queue button
-
 playlist system
