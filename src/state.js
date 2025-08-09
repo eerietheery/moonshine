@@ -23,6 +23,8 @@ export const state = {
   libraryDirs: [],
   // Sidebar mode: 'artist' or 'album'
   sidebarMode: 'artist',
+  // Artist lumping toggle
+  explicitArtistNames: false,
 };
 
 // Queue helpers
