@@ -75,7 +75,7 @@ export function renderGrid(list) {
       albumMap.set(key, {
         album,
         artist,
-        art: track.albumArtDataUrl || 'assets/default-art.png',
+        art: track.albumArtDataUrl || 'assets/images/default-art.png',
         year: tgs.year || null,
         tracks: [],
       });
