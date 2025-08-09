@@ -1,3 +1,30 @@
+.queue-btn-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  pointer-events: none;
+}
+.queue-btn-container .queue-add-btn {
+  opacity: 0;
+  pointer-events: auto;
+  transition: opacity 0.18s;
+  background: #222;
+  border: 1px solid #444;
+  color: #b3b3b3;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 1.1em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.album-card:hover .queue-btn-container .queue-add-btn,
+.album-card .album-art:hover ~ .queue-btn-container .queue-add-btn {
+  opacity: 1;
+}
+.queue-btn-container .queue-add-btn:hover {
+  color: #fff;
+  border-color: var(--primary-color);
+}
 /* ===== QUEUE PANEL ===== */
 #queue-panel {
   position: fixed;

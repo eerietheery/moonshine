@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const { scanMusic } = require('./src/music');
-const { loadConfig, getConfig, updateConfig } = require('./src/config');
+const { scanMusic } = require('./music');
+const { loadConfig, getConfig, updateConfig } = require('./config');
 
 const { dialog } = require('electron');
 

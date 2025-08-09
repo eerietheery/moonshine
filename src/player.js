@@ -234,7 +234,7 @@ export function playPrevious(audio, renderList) {
 }
 
 export function playNext(audio, renderList) {
-  // If queue has items handle advancing through queue or starting it
+  // If queue has items, play next in queue, otherwise fall back to main list
   if (state.queue.length) {
     const curIdx = state.queue.findIndex(t => t.filePath === state.currentTrack?.filePath);
     if (curIdx === -1) {
@@ -263,22 +263,14 @@ export function playNext(audio, renderList) {
         renderList
       );
       return;
-    } else if (curIdx === state.queue.length - 1) {
-      // End of queue reached: fall through to normal library (unless looping queue)
-      if (state.loopMode === 'all') {
-        playTrack(
-          state.queue[0],
-          0,
-          audio,
-          document.getElementById('play-btn'),
-          document.getElementById('current-art'),
-          document.getElementById('current-title'),
-          document.getElementById('current-artist'),
-          renderList
-        );
-        return;
+    } else {
+      // End of queue reached: remove current from queue and continue to main list
+      // Remove current track from queue if present
+      if (curIdx !== -1) {
+        state.queue.splice(curIdx, 1);
+        import('./queue.js').then(m => m.renderQueuePanel && m.renderQueuePanel()).catch(()=>{});
       }
-      // Otherwise continue into normal filtered tracks below
+      // Continue to main list below
     }
   }
   // ...existing code for filteredTracks...

@@ -129,11 +129,13 @@ export function renderGrid(list) {
     card.className = 'track-card album-card';
     const yearText = a.year ? String(a.year) : '';
     card.innerHTML = `
-      <img class=\"album-art\" src=\"${a.art}\" alt=\"Album Art\" />
-      <div class=\"track-name linkish\" data-album title=\"${a.album}\" tabindex=\"0\">${a.album}</div>
-      <div class=\"track-artist linkish\" data-artist title=\"${a.artist}\" tabindex=\"0\">${a.artist}</div>
-      <div class=\"track-year ${yearText ? 'linkish' : ''}\" ${yearText ? 'data-year tabindex=\"0\"' : ''} title=\"${yearText}\">${a.year ? a.year + ' • ' : ''}${a.tracks.length} track${a.tracks.length !== 1 ? 's' : ''}</div>
-      <button class=\"queue-add-btn\" title=\"Add album to Queue\">📝</button>
+      <div class="queue-btn-container">
+        <button class="queue-add-btn" title="Add album to Queue">📝</button>
+      </div>
+      <img class="album-art" src="${a.art}" alt="Album Art" />
+      <div class="track-name linkish" data-album title="${a.album}" tabindex="0">${a.album}</div>
+      <div class="track-artist linkish" data-artist title="${a.artist}" tabindex="0">${a.artist}</div>
+      <div class="track-year ${yearText ? 'linkish' : ''}" ${yearText ? 'data-year tabindex="0"' : ''} title="${yearText}">${a.year ? a.year + ' • ' : ''}${a.tracks.length} track${a.tracks.length !== 1 ? 's' : ''}</div>
     `;
     // Add to queue button for album (adds all tracks in album)
   card.querySelector('.queue-add-btn').onclick = (e) => {

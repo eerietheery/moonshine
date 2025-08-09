@@ -50,20 +50,16 @@ export function renderQueuePanel() {
   const upcomingContainer = document.getElementById('queue-upcoming');
   if (upcomingContainer) {
     upcomingContainer.innerHTML = '';
-    // Determine where we are: if current track is inside queue, find its position
-    const curQueueIdx = state.queue.findIndex(t => t.filePath === state.currentTrack?.filePath);
-    // Build a list of upcoming from queue (after current) then fallback to library after queue ends
     let upcoming = [];
-    if (curQueueIdx !== -1) {
+    const curQueueIdx = state.queue.findIndex(t => t.filePath === state.currentTrack?.filePath);
+    if (state.queue.length && curQueueIdx !== -1) {
+      // Show remainder of queue after current
       upcoming = state.queue.slice(curQueueIdx + 1);
-    } else if (state.queue.length) {
-      // Not in queue yet: show entire queue as upcoming preview
-      upcoming = state.queue.slice();
     }
-    // After queue empties / finishes, show next few library tracks starting at currentTrackIndex+1
-    if (upcoming.length < 5) {
+    // If queue is empty or no more items, show main list (all) after current
+    if (!state.queue.length || upcoming.length < 5) {
       const needed = 5 - upcoming.length;
-      const lib = state.filteredTracks;
+      const lib = state.tracks; // always show from full library
       const currentIdx = state.currentTrack ? lib.findIndex(t => t.filePath === state.currentTrack.filePath) : -1;
       if (currentIdx !== -1) {
         const after = lib.slice(currentIdx + 1, currentIdx + 1 + needed);
