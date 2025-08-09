@@ -4,22 +4,29 @@ import { renderList } from '../view.js';
 import * as dom from './dom.js';
 
 function showSpinner(show = true) {
-  let spinner = document.getElementById('toolbar-spinner');
+  let spinner = document.getElementById('center-spinner');
   if (show) {
     if (!spinner) {
-      spinner = document.createElement('span');
-      spinner.id = 'toolbar-spinner';
-      spinner.style.display = 'inline-flex';
-      spinner.style.width = '24px';
-      spinner.style.height = '24px';
-      spinner.style.marginLeft = '8px';
-      spinner.style.marginRight = '0';
-      spinner.innerHTML = `<img src="assets/clock.svg" alt="Loading..." style="width:100%;height:100%;filter:invert(1);vertical-align:middle;">`;
-      dom.toolbar.appendChild(spinner);
-    }
-    // Always move spinner to the end of toolbar
-    if (spinner && spinner.parentNode === dom.toolbar) {
-      dom.toolbar.appendChild(spinner);
+      spinner = document.createElement('div');
+      spinner.id = 'center-spinner';
+      spinner.style.position = 'absolute';
+      spinner.style.top = '50%';
+      spinner.style.left = '50%';
+      spinner.style.transform = 'translate(-50%, -50%)';
+      spinner.style.display = 'flex';
+      spinner.style.alignItems = 'center';
+      spinner.style.justifyContent = 'center';
+      spinner.style.width = '72px';
+      spinner.style.height = '72px';
+      spinner.style.opacity = '0.85';
+      spinner.style.pointerEvents = 'none';
+      spinner.innerHTML = `<img src="assets/clock.svg" alt="Loading..." style="width:100%;height:100%;filter:invert(1) drop-shadow(0 0 6px rgba(0,0,0,0.6));">`;
+      // Ensure music table parent is positioned
+      const container = document.getElementById('music-table') || dom.list.parentElement;
+      if (container && getComputedStyle(container).position === 'static') {
+        container.style.position = 'relative';
+      }
+      (container || document.body).appendChild(spinner);
     }
   } else {
     if (spinner) spinner.remove();
@@ -28,7 +35,7 @@ function showSpinner(show = true) {
 
 async function addMusic(userPath) {
   showSpinner(true);
-  dom.list.innerHTML = `<div class='loading-message'>Adding music files...</div>`;
+  dom.list.innerHTML = '';
   try {
     const tracks = await window.etune.scanMusic(userPath);
     // Append new tracks, avoiding duplicates by filePath
@@ -53,7 +60,7 @@ async function addMusic(userPath) {
 
 async function loadMusic(dirPath) {
   showSpinner(true);
-  dom.list.innerHTML = `<div class='loading-message'>Loading music files...</div>`;
+  dom.list.innerHTML = '';
   try {
     const tracks = await window.etune.scanMusic(dirPath);
     state.tracks = tracks.filter(t => t && t.filePath);
@@ -75,7 +82,7 @@ async function loadMusic(dirPath) {
 
 async function initialScan() {
   showSpinner(true);
-  dom.list.innerHTML = `<div class='loading-message'>Preparing your library...</div>`;
+  dom.list.innerHTML = '';
   try {
     const res = await window.etune.initialScan();
     if (Array.isArray(res) && res.length) {

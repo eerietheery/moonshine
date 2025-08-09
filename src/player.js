@@ -38,12 +38,20 @@ export function setupPlayer(audio, playBtn, prevBtn, nextBtn, progressBar, progr
   });
   audio.addEventListener('ended', () => {
     if (state.loopMode === 'one') {
-      // Restart same track
+      // Restart same track (do not remove from queue so it can loop)
       audio.currentTime = 0;
       audio.play();
       return;
     }
-    // loop all handled in playNext when wrapping at end
+    // If current track was in queue, remove it (consumed)
+    if (state.currentTrack) {
+      const qIdx = state.queue.findIndex(t => t.filePath === state.currentTrack.filePath);
+      if (qIdx !== -1) {
+        state.queue.splice(qIdx, 1);
+        import('./queue.js').then(m => m.renderQueuePanel && m.renderQueuePanel()).catch(()=>{});
+      }
+    }
+    // Advance
     playNext(audio, renderListFn);
   });
   progressBar.addEventListener('click', (e) => {
@@ -132,7 +140,9 @@ export function setupPlayer(audio, playBtn, prevBtn, nextBtn, progressBar, progr
 
 export function playTrack(track, index, audio, playBtn, currentArt, currentTitle, currentArtist, renderList) {
   state.currentTrack = track;
-  state.currentTrackIndex = index;
+  // Ensure index reflects position in filteredTracks so playNext/playPrevious work after queue exhausted
+  const filteredIdx = state.filteredTracks.findIndex(t => t.filePath === track.filePath);
+  state.currentTrackIndex = filteredIdx !== -1 ? filteredIdx : index;
   const fileUrl = `file:///${track.filePath.replace(/\\/g, '/')}`;
   audio.src = fileUrl;
   audio.play();
@@ -150,6 +160,8 @@ export function playTrack(track, index, audio, playBtn, currentArt, currentTitle
   playBtn.textContent = '⏸';
   state.isPlaying = true;
   renderList();
+  // Update queue panel (for upcoming after-queue preview)
+  import('./queue.js').then(m => m.renderQueuePanel && m.renderQueuePanel()).catch(()=>{});
 }
 
 export function togglePlay(audio, playBtn) {
@@ -166,6 +178,24 @@ export function togglePlay(audio, playBtn) {
 }
 
 export function playPrevious(audio, renderList) {
+  // If queue has items, play previous in queue
+  if (state.queue.length) {
+    const curIdx = state.queue.findIndex(t => t.filePath === state.currentTrack?.filePath);
+    if (curIdx > 0) {
+      playTrack(
+        state.queue[curIdx - 1],
+        curIdx - 1,
+        audio,
+        document.getElementById('play-btn'),
+        document.getElementById('current-art'),
+        document.getElementById('current-title'),
+        document.getElementById('current-artist'),
+        renderList
+      );
+      return;
+    }
+  }
+  // ...existing code for filteredTracks...
   if (!state.filteredTracks.length) return;
   if (state.isShuffle && state.playOrder && state.playOrder.length) {
     const curIdx = state.currentTrackIndex;
@@ -204,6 +234,54 @@ export function playPrevious(audio, renderList) {
 }
 
 export function playNext(audio, renderList) {
+  // If queue has items handle advancing through queue or starting it
+  if (state.queue.length) {
+    const curIdx = state.queue.findIndex(t => t.filePath === state.currentTrack?.filePath);
+    if (curIdx === -1) {
+      // Current track not from queue: start queue
+      playTrack(
+        state.queue[0],
+        0,
+        audio,
+        document.getElementById('play-btn'),
+        document.getElementById('current-art'),
+        document.getElementById('current-title'),
+        document.getElementById('current-artist'),
+        renderList
+      );
+      return;
+    } else if (curIdx < state.queue.length - 1) {
+      // Advance within queue
+      playTrack(
+        state.queue[curIdx + 1],
+        curIdx + 1,
+        audio,
+        document.getElementById('play-btn'),
+        document.getElementById('current-art'),
+        document.getElementById('current-title'),
+        document.getElementById('current-artist'),
+        renderList
+      );
+      return;
+    } else if (curIdx === state.queue.length - 1) {
+      // End of queue reached: fall through to normal library (unless looping queue)
+      if (state.loopMode === 'all') {
+        playTrack(
+          state.queue[0],
+          0,
+          audio,
+          document.getElementById('play-btn'),
+          document.getElementById('current-art'),
+          document.getElementById('current-title'),
+          document.getElementById('current-artist'),
+          renderList
+        );
+        return;
+      }
+      // Otherwise continue into normal filtered tracks below
+    }
+  }
+  // ...existing code for filteredTracks...
   if (!state.filteredTracks.length) return;
   if (state.isShuffle && state.playOrder && state.playOrder.length) {
     const curIdx = state.currentTrackIndex;
