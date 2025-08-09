@@ -1,6 +1,6 @@
-import { state, updateFilters, resetSidebarFilters } from '../state.js';
-import { updateSidebarFilters } from '../sidebar.js';
-import { renderList } from '../view.js';
+import { state, updateFilters, resetSidebarFilters } from './components/state.js';
+import { updateSidebarFilters } from './components/sidebar.js';
+import { renderList } from './components/view.js';
 import * as dom from './dom.js';
 
 function showSpinner(show = true) {
@@ -20,7 +20,7 @@ function showSpinner(show = true) {
       spinner.style.height = '72px';
       spinner.style.opacity = '0.85';
       spinner.style.pointerEvents = 'none';
-      spinner.innerHTML = `<img src="assets/clock.svg" alt="Loading..." style="width:100%;height:100%;filter:invert(1) drop-shadow(0 0 6px rgba(0,0,0,0.6));">`;
+      spinner.innerHTML = `<img src="assets/images/clock.svg" alt="Loading..." style="width:100%;height:100%;filter:invert(1) drop-shadow(0 0 6px rgba(0,0,0,0.6));">`;
       // Ensure music table parent is positioned
       const container = document.getElementById('music-table') || dom.list.parentElement;
       if (container && getComputedStyle(container).position === 'static') {

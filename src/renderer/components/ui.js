@@ -19,7 +19,7 @@ export function showToast(message, timeout = 1800) {
 export function createTrackElement(track, onClick) {
   const div = document.createElement('div');
   div.className = 'track';
-  const art = track.albumArtDataUrl || 'assets/default-art.png';
+  const art = track.albumArtDataUrl || 'assets/images/default-art.png';
   const titleText = (track.tags && track.tags.title) || track.file;
   const artistText = (track.tags && track.tags.artist) || 'Unknown';
   const albumText = (track.tags && track.tags.album) || 'Unknown';

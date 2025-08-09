@@ -1,12 +1,12 @@
-import { setupPlayer } from '../player.js';
+import { setupPlayer } from './components/player.js';
 import { initialScan } from './library.js';
 import { setupEventListeners } from './events.js';
 import { getComplementaryColor } from './ui/colorUtils.js';
 import { preloadGridView } from './grid.js';
 import * as dom from './dom.js';
-import { renderList } from '../view.js';
-import { setupQueuePanel } from '../queue.js';
-import { state } from '../state.js';
+import { renderList } from './components/view.js';
+import { setupQueuePanel } from './components/queue.js';
+import { state } from './components/state.js';
 
 export function initializeApp() {
   // Set initial complementary color

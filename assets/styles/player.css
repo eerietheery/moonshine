@@ -105,12 +105,12 @@
   background-color: currentColor; /* icon color */
 }
 .control-btn .icon-shuffle {
-  mask: url('../assets/shuffle.svg') no-repeat center / contain;
-  -webkit-mask: url('../assets/shuffle.svg') no-repeat center / contain;
+  mask: url('../images/shuffle.svg') no-repeat center / contain;
+  -webkit-mask: url('../images/shuffle.svg') no-repeat center / contain;
 }
 .control-btn .icon-loop {
-  mask: url('../assets/loop.svg') no-repeat center / contain;
-  -webkit-mask: url('../assets/loop.svg') no-repeat center / contain;
+  mask: url('../images/loop.svg') no-repeat center / contain;
+  -webkit-mask: url('../images/loop.svg') no-repeat center / contain;
 }
 
 .control-btn:hover {

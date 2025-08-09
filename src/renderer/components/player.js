@@ -156,7 +156,7 @@ export function playTrack(track, index, audio, playBtn, currentArt, currentTitle
   // Store data for click filters
   currentTitle.dataset.album = albumText;
   currentArtist.dataset.artist = artistText;
-  currentArt.src = track.albumArtDataUrl || 'assets/default-art.png';
+  currentArt.src = track.albumArtDataUrl || 'assets/images/default-art.png';
   playBtn.textContent = '⏸';
   state.isPlaying = true;
   renderList();
