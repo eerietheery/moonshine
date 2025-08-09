@@ -4,42 +4,6 @@ import { renderList } from '../../view.js';
 import { showColorModal } from './colorModal.js';
 
 function showSettingsModal() {
-  // Theme style toggle section
-  const themeStyleSection = document.createElement('div');
-  themeStyleSection.style.marginTop = '18px';
-  themeStyleSection.style.display = 'flex';
-  themeStyleSection.style.alignItems = 'center';
-
-  const themeLabel = document.createElement('label');
-  themeLabel.textContent = 'Theme Style';
-  themeLabel.style.fontWeight = '600';
-  themeLabel.style.marginRight = '12px';
-  themeLabel.style.color = '#fff';
-
-  const themeToggle = document.createElement('select');
-  themeToggle.style.background = '#222';
-  themeToggle.style.color = '#fff';
-  themeToggle.style.border = '1px solid #444';
-  themeToggle.style.borderRadius = '4px';
-  themeToggle.style.padding = '6px 10px';
-  themeToggle.style.fontWeight = '600';
-  themeToggle.style.marginRight = '6px';
-  themeToggle.innerHTML = `<option value="flat">Flat</option><option value="gradient">Gradient</option>`;
-  themeToggle.value = state.themeStyle || 'flat';
-  themeToggle.addEventListener('change', () => {
-    state.themeStyle = themeToggle.value;
-    window.etune.updateConfig({ themeStyle: state.themeStyle });
-    document.dispatchEvent(new CustomEvent('theme-style-updated', { detail: state.themeStyle }));
-    // Apply theme immediately
-    if (state.themeStyle === 'gradient') {
-      document.documentElement.style.setProperty('--primary-gradient', `linear-gradient(90deg, var(--primary-color) 0%, var(--complementary-color) 100%)`);
-    } else {
-      document.documentElement.style.setProperty('--primary-gradient', `var(--primary-color)`);
-    }
-  });
-
-  themeStyleSection.appendChild(themeToggle);
-  themeStyleSection.appendChild(themeLabel);
   // Artist lumping toggle section
   const artistSection = document.createElement('div');
   artistSection.style.marginTop = '18px';
@@ -258,7 +222,6 @@ function showSettingsModal() {
   themeSection.appendChild(changeColor);
 
   body.appendChild(libSection);
-  body.appendChild(themeStyleSection);
   body.appendChild(artistSection);
 
   // Filtering section

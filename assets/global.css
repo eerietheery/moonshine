@@ -14,6 +14,13 @@
 }
 :root {
   --primary-color: #8C40B8;
+  --background-color: #181818;
+  --sidebar-bg: #1f1f1f;
+  --card-bg: #232323;
+  --card-hover-bg: #282828;
+  --border-radius: 10px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+  --transition: 0.15s;
 }
 
 /* ===== GLOBAL STYLES ===== */

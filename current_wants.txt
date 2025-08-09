@@ -1,4 +1,5 @@
-Now we're going to implement a new theme. This will boil down to a new toggle in settings that is either Flat, what it is now, or Gradient, and where there is primary color now, id' like to enable making it a soft gradient instead of a flat color. 
+background equalizer
 
+grid view: add to queue button move to top right hover over album art and card, don't expand size of card because of queue button
 
-bug in loading or unloading libraries, default library was unloaded. Aim for more graceful library handling
+playlist system
