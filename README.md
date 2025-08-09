@@ -12,7 +12,7 @@ A desktop music player built with Electron and Node.js. Features:
 ## Getting Started
 
 1. Run `npm install` to install dependencies.
-2. Start the app with `npx electron .`
+2. Start the app with `npm start`
 
 ## Features
 - Browse and filter your music library by artist, album, or title
