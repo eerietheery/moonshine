@@ -1,8 +1,8 @@
-import { renderList } from '../../view.js';
+import { renderList } from '../components/view.js';
 import { showSettingsModal } from '../ui/settingsModal.js';
 import { displayGridView } from '../grid.js';
 import * as dom from '../dom.js';
-import { state } from '../../state.js';
+import { state } from '../components/state.js';
 
 export function setupUiEventListeners() {
   dom.settingsBtn.addEventListener('click', showSettingsModal);

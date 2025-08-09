@@ -1,7 +1,7 @@
-import { renderGrid } from '../view.js';
+import { renderGrid } from './components/view.js';
 import * as dom from './dom.js';
-import { state, resetSidebarFilters, updateFilters } from '../state.js';
-import { updateSidebarFilters } from '../sidebar.js';
+import { state, resetSidebarFilters, updateFilters } from './components/state.js';
+import { updateSidebarFilters } from './components/sidebar.js';
 
 export function preloadGridView() {
   // No-op with new dynamic grid; keep function for compatibility

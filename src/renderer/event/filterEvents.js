@@ -1,6 +1,6 @@
-import { state, updateFilters, resetSidebarFilters } from '../../state.js';
-import { updateSidebarFilters } from '../../sidebar.js';
-import { renderList } from '../../view.js';
+import { state, updateFilters, resetSidebarFilters } from '../components/state.js';
+import { updateSidebarFilters } from '../components/sidebar.js';
+import { renderList } from '../components/view.js';
 import * as dom from '../dom.js';
 
 export function setupFilterEventListeners() {

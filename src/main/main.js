@@ -1,9 +1,7 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
-const { scanMusic } = require('./src/music');
-const { loadConfig, getConfig, updateConfig } = require('./src/config');
-
-const { dialog } = require('electron');
+const { scanMusic } = require('../music');
+const { loadConfig, getConfig, updateConfig } = require('./config'); // Corrected path
 
 let initialScanCache = null;
 let mainWindow = null;
@@ -14,14 +12,15 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
-    icon: path.join(__dirname, 'etico.png'),
+    icon: path.join(__dirname, '../../etico.png'), // Corrected path
     backgroundColor: cfg.primaryColor || '#8C40B8',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.js'), // This path is correct
       contextIsolation: true,
     },
   });
-  win.loadFile('index.html');
+  // Corrected path for index.html
+  win.loadFile(path.join(__dirname, '../../index.html'));
   mainWindow = win;
 }
 

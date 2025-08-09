@@ -1,0 +1,4 @@
+loop.svg:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+shuffle.svg:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+state.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+view.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND

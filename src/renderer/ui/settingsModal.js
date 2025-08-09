@@ -1,6 +1,6 @@
-import { state } from '../../state.js';
-import { updateSidebarFilters } from '../../sidebar.js';
-import { renderList } from '../../view.js';
+import { state } from '../components/state.js';
+import { updateSidebarFilters } from '../components/sidebar.js';
+import { renderList } from '../components/view.js';
 import { showColorModal } from './colorModal.js';
 
 function showSettingsModal() {
@@ -251,7 +251,7 @@ function showSettingsModal() {
     const artistList = document.getElementById('artist-list');
     const albumList = document.getElementById('album-list');
     const doRenderList = () => renderList(list);
-     import('../../../state.js').then(({ updateFilters }) => {
+     import('../components/state.js').then(({ updateFilters }) => {
       updateFilters(filterInput, state.sidebarFilteringEnabled);
       updateSidebarFilters(filterInput, artistList, albumList, doRenderList, state.sidebarFilteringEnabled);
       doRenderList();
