@@ -24,8 +24,20 @@ export function setupUiEventListeners() {
       dom.modeAlbumsBtn?.classList.add('active');
     }
   };
-  dom.modeArtistsBtn?.addEventListener('click', () => applyMode('artist'));
-  dom.modeAlbumsBtn?.addEventListener('click', () => applyMode('album'));
+  dom.modeArtistsBtn?.addEventListener('click', () => {
+    state.activeArtist = null;
+    state.activeAlbum = null;
+    state.activeYear = null;
+    applyMode('artist');
+    renderList(dom.list);
+  });
+  dom.modeAlbumsBtn?.addEventListener('click', () => {
+    state.activeArtist = null;
+    state.activeAlbum = null;
+    state.activeYear = null;
+    applyMode('album');
+    renderList(dom.list);
+  });
   // Initialize
   applyMode(state.sidebarMode || 'artist');
 
@@ -46,4 +58,20 @@ export function setupUiEventListeners() {
       renderList(dom.list);
     };
   });
+
+  // Favorites view toggle in toolbar
+  const favToggle = document.getElementById('favorite-toggle');
+  if (favToggle) {
+    const applyFavState = () => {
+      favToggle.classList.toggle('active', state.favoriteViewEnabled);
+      favToggle.title = state.favoriteViewEnabled ? 'Show All Tracks' : 'Show Favorites';
+    };
+    applyFavState();
+    favToggle.addEventListener('click', () => {
+      state.favoriteViewEnabled = !state.favoriteViewEnabled;
+      window.etune.updateConfig({ favoriteViewEnabled: state.favoriteViewEnabled });
+      applyFavState();
+      renderList(dom.list);
+    });
+  }
 }

@@ -46,6 +46,37 @@ body {
   gap: 8px;
 }
 
+/* Match toolbar button size/style */
+/* Normalize favorites button to match toolbar buttons */
+.favorite-toggle {
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  min-width: 40px;
+  box-sizing: border-box;
+}
+.favorite-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-color) 30%, transparent);
+}
+.favorite-toggle.active {
+  background: #fff;
+  color: var(--primary-color);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--primary-color) 50%, transparent);
+}
+
 /* ===== TOASTS ===== */
 #toast-container {
   position: fixed;
