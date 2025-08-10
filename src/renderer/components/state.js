@@ -27,7 +27,34 @@ export const state = {
   explicitArtistNames: false,
   // Theme style: 'flat' or 'gradient'
   themeStyle: 'flat',
+  // Favorite system
+  favorites: [], // Array of filePaths for favorite tracks
+  // List view headers configuration
+  listHeaders: ['title', 'artist', 'album', 'year', 'genre'],
+  // Favorites view toggle
+  favoriteViewEnabled: false,
 };
+
+// Favorite helpers
+export function isFavorite(track) {
+  return !!track && state.favorites.includes(track.filePath);
+}
+
+export function toggleFavorite(track) {
+  if (!track || !track.filePath) return;
+  const idx = state.favorites.indexOf(track.filePath);
+  if (idx === -1) {
+    state.favorites.push(track.filePath);
+    track.favorite = true;
+  } else {
+    state.favorites.splice(idx, 1);
+    track.favorite = false;
+  }
+  // Persist favorites list
+  if (window.etune && typeof window.etune.updateConfig === 'function') {
+    window.etune.updateConfig({ favorites: state.favorites.slice() });
+  }
+}
 
 // Queue helpers
 export function addToQueue(track) {

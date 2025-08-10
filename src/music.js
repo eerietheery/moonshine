@@ -33,7 +33,8 @@ function bufferToDataUrl(buf, mime = 'image/jpeg') {
 
 async function readMeta(filePath) {
   try {
-    const { common } = await mm.parseFile(filePath, { duration: false });
+    const meta = await mm.parseFile(filePath, { duration: false });
+    const { common, format } = meta;
     let albumArtDataUrl = null;
     if (common.picture && common.picture.length) {
       const pic = common.picture[0];
@@ -52,10 +53,11 @@ async function readMeta(filePath) {
         genre: (common.genre && common.genre[0]) || null,
       },
       albumArtDataUrl,
+      bitrate: format && format.bitrate ? format.bitrate : null,
       error: null,
     };
   } catch (e) {
-    return { file: path.basename(filePath), filePath, tags: {}, albumArtDataUrl: null, error: e.message };
+    return { file: path.basename(filePath), filePath, tags: {}, albumArtDataUrl: null, bitrate: null, error: e.message };
   }
 }
 

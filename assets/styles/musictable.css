@@ -12,7 +12,7 @@
   border-bottom: 1px solid #333;
   padding: 0;
   display: grid;
-  grid-template-columns: 3fr 2fr 2fr 1fr 1fr;
+  /* grid-template-columns set dynamically in JS */
   gap: 0;
   font-weight: 600;
   font-size: 0.9rem;
@@ -54,7 +54,7 @@
 
 .track {
   display: grid;
-  grid-template-columns: 3fr 2fr 2fr 1fr 1fr;
+  /* grid-template-columns set dynamically in JS to match headers + actions */
   gap: 0;
   align-items: center;
   padding: 0;
@@ -101,7 +101,7 @@
   white-space: nowrap;
 }
 
-.track-artist, .track-album, .track-year, .track-genre {
+.track-artist, .track-album, .track-year, .track-genre, .track-bitrate {
   color: #b3b3b3;
   font-size: 0.9rem;
   padding: 0 16px;
@@ -119,6 +119,36 @@
   white-space: nowrap;
 }
 
-.track-year, .track-genre {
+.track-year, .track-genre, .track-bitrate {
   justify-content: center;
+}
+
+.col-bitrate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Actions column */
+.col-actions, .track-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.track-actions button {
+  background: none;
+  border: none;
+  color: #b3b3b3;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px;
+}
+
+.track-actions button:hover img, .track-actions button:hover {
+  filter: drop-shadow(0 0 4px var(--primary-color)) saturate(2);
+  color: #fff;
 }

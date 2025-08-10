@@ -33,6 +33,8 @@ export function setupFilterEventListeners() {
         state.activeAlbum = null;
       } else if (type === 'artist') {
         state.activeArtist = value;
+        // Clear album filter when a new artist is explicitly chosen to avoid lingering album constraint
+        state.activeAlbum = null;
       } else if (type === 'album') {
         state.activeAlbum = value;
       }
