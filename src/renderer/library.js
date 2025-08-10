@@ -38,9 +38,17 @@ async function addMusic(userPath) {
   dom.list.innerHTML = '';
   try {
     const tracks = await window.etune.scanMusic(userPath);
+    // Filter out tracks with all Unknown fields and/or error
+    const validTracks = tracks.filter(t => {
+      if (!t || !t.filePath) return false;
+      if (t.error) return false;
+      const tags = t.tags || {};
+      const isUnknown = [tags.artist, tags.album, tags.title].every(v => v === 'Unknown');
+      return !isUnknown;
+    });
     // Append new tracks, avoiding duplicates by filePath
     const existingPaths = new Set(state.tracks.map(t => t.filePath));
-    const newTracks = tracks.filter(t => t && t.filePath && !existingPaths.has(t.filePath));
+    const newTracks = validTracks.filter(t => !existingPaths.has(t.filePath));
     state.tracks = state.tracks.concat(newTracks);
     // Track the folder added
     if (userPath && !state.libraryDirs.includes(userPath)) {
@@ -63,7 +71,13 @@ async function loadMusic(dirPath) {
   dom.list.innerHTML = '';
   try {
     const tracks = await window.etune.scanMusic(dirPath);
-    state.tracks = tracks.filter(t => t && t.filePath);
+    state.tracks = tracks.filter(t => {
+      if (!t || !t.filePath) return false;
+      if (t.error) return false;
+      const tags = t.tags || {};
+      const isUnknown = [tags.artist, tags.album, tags.title].every(v => v === 'Unknown');
+      return !isUnknown;
+    });
     // When explicitly loading a directory, set it as the only library (for initial scan or reset)
     if (dirPath && !state.libraryDirs.includes(dirPath)) {
       state.libraryDirs.push(dirPath);
@@ -86,7 +100,13 @@ async function initialScan() {
   try {
     const res = await window.etune.initialScan();
     if (Array.isArray(res) && res.length) {
-      state.tracks = res.filter(t => t && t.filePath);
+      state.tracks = res.filter(t => {
+        if (!t || !t.filePath) return false;
+        if (t.error) return false;
+        const tags = t.tags || {};
+        const isUnknown = [tags.artist, tags.album, tags.title].every(v => v === 'Unknown');
+        return !isUnknown;
+      });
       // Best effort to infer root dir from first track
       try {
         const first = state.tracks[0];
