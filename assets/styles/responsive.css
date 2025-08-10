@@ -19,13 +19,17 @@
     border-bottom: 1px solid #333;
   }
   .table-header {
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 80px;
   }
   .track {
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 80px;
   }
   .col-year, .col-genre, .track-year, .track-genre {
     display: none;
+  }
+  .track-actions {
+    justify-content: flex-end;
+    padding: 0 8px;
   }
   .player-left {
     flex: 0 0 150px;

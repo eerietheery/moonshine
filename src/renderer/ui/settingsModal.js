@@ -50,7 +50,9 @@ function showSettingsModal() {
       } else {
         state.listHeaders = state.listHeaders.filter(k => k !== h.key);
       }
-      window.etune.updateConfig({ listHeaders: state.listHeaders });
+      if (window.etune && typeof window.etune.updateConfig === 'function') {
+        window.etune.updateConfig({ listHeaders: state.listHeaders });
+      }
       // Re-render list view immediately
       import('../components/view.js').then(({ renderList }) => {
         const musicList = document.getElementById('music-list');

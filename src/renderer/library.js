@@ -78,6 +78,12 @@ async function loadMusic(dirPath) {
       const isUnknown = [tags.artist, tags.album, tags.title].every(v => v === 'Unknown');
       return !isUnknown;
     });
+    // Set favorite property on loaded tracks
+    if (Array.isArray(state.favorites) && state.favorites.length) {
+      state.tracks.forEach(t => {
+        t.favorite = state.favorites.includes(t.filePath);
+      });
+    }
     // When explicitly loading a directory, set it as the only library (for initial scan or reset)
     if (dirPath && !state.libraryDirs.includes(dirPath)) {
       state.libraryDirs.push(dirPath);
@@ -107,6 +113,12 @@ async function initialScan() {
         const isUnknown = [tags.artist, tags.album, tags.title].every(v => v === 'Unknown');
         return !isUnknown;
       });
+      // Set favorite property on loaded tracks
+      if (Array.isArray(state.favorites) && state.favorites.length) {
+        state.tracks.forEach(t => {
+          t.favorite = state.favorites.includes(t.filePath);
+        });
+      }
       // Best effort to infer root dir from first track
       try {
         const first = state.tracks[0];

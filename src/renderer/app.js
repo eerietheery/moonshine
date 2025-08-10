@@ -27,6 +27,11 @@ export function initializeApp() {
       if (Array.isArray(cfg.libraryDirs)) state.libraryDirs = cfg.libraryDirs.slice();
       // Apply explicit artist names toggle
       if (typeof cfg.explicitArtistNames === 'boolean') state.explicitArtistNames = cfg.explicitArtistNames;
+      // Load persisted favorites
+      if (Array.isArray(cfg.favorites)) state.favorites = cfg.favorites.slice();
+      if (typeof cfg.favoriteViewEnabled === 'boolean') state.favoriteViewEnabled = cfg.favoriteViewEnabled;
+      // Restore list view headers from config
+      if (Array.isArray(cfg.listHeaders) && cfg.listHeaders.length) state.listHeaders = cfg.listHeaders.slice();
       // Load all remembered library directories
       if (state.libraryDirs.length > 0) {
         for (const dir of state.libraryDirs) {
