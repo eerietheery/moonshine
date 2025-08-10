@@ -1,7 +1,6 @@
 background equalizer
 
 playlist system
-Favorite system
 
 smooth horizontal gradient color option. toggle in settings. works with user color selection. 
 

@@ -1,3 +1,7 @@
+.color-logo-svg {
+  color: var(--primary-color);
+  transition: color 0.2s;
+}
 /* ===== SIDEBAR ===== */
 #sidebar {
   width: 250px;
@@ -9,10 +13,25 @@
   min-height: 0;
 }
 
-#sidebar h2 {
-  text-align: center;
+
+.sidebar-logo {
+  display: flex;
   color: var(--primary-color);
-  margin: 0 0 20px 0;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.sidebar-logo .logo-img {
+  height: 32px;
+  width: auto;
+  display: inline-block;
+}
+
+#sidebar h2 {
+  color: var(--primary-color);
+  margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
 }

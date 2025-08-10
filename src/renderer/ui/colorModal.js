@@ -48,6 +48,8 @@ function showColorModal() {
     colorDot.addEventListener('click', () => {
       document.documentElement.style.setProperty('--primary-color', color);
       document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(color));
+      window.etune.updateConfig({ theme: { primaryColor: color } });
+      refreshDynamicColors();
       modal.remove();
     });
     colorContainer.appendChild(colorDot);
@@ -75,13 +77,39 @@ function showColorModal() {
     document.documentElement.style.setProperty('--primary-color', e.target.value);
     document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(e.target.value));
     window.etune.updateConfig({ theme: { primaryColor: e.target.value } });
+    refreshDynamicColors();
   };
   colorPicker.onchange = (e) => {
     document.documentElement.style.setProperty('--primary-color', e.target.value);
     document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(e.target.value));
     window.etune.updateConfig({ theme: { primaryColor: e.target.value } });
+    refreshDynamicColors();
     modal.remove();
   };
+// Refresh volume bar and favorite icon colors after theme change
+function refreshDynamicColors() {
+  // Volume bar
+  const volume = document.getElementById('volume');
+  if (volume) {
+    const pct = Math.max(0, Math.min(100, Number(volume.value)));
+    const primary = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#8C40B8';
+    volume.style.background = `linear-gradient(${primary} 0 0) 0/ ${pct}% 100% no-repeat, #333`;
+  }
+  // Player favorite icon
+  const playerFavImg = document.querySelector('#player-favorite-btn img');
+  if (playerFavImg) {
+    const trackFavorite = playerFavImg.closest('button')?.classList.contains('active');
+    const color = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#8C40B8';
+    playerFavImg.style.filter = trackFavorite ? `drop-shadow(0 0 4px ${color}) saturate(2)` : 'grayscale(1) opacity(.5)';
+  }
+  // List favorite icons
+  document.querySelectorAll('.favorite-btn img').forEach(favImg => {
+    const btn = favImg.closest('button');
+    const isFav = btn?.classList.contains('active') || favImg.style.filter.includes('drop-shadow');
+    const color = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#8C40B8';
+    favImg.style.filter = isFav ? `drop-shadow(0 0 4px ${color}) saturate(2)` : 'grayscale(1) opacity(.5)';
+  });
+}
   modalContent.appendChild(colorPicker);
   modal.appendChild(modalContent);
   document.body.appendChild(modal);

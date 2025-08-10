@@ -1,3 +1,16 @@
+@media (max-width: 700px) {
+  .track-actions {
+    justify-content: flex-end;
+    gap: 4px;
+  }
+  .track-title {
+    gap: 6px;
+    padding: 0 8px;
+  }
+  .table-header, .track {
+    font-size: 0.85rem;
+  }
+}
 /* ===== MUSIC TABLE ===== */
 #music-table {
   flex: 1;
@@ -82,6 +95,18 @@
   gap: 12px;
   padding: 0 16px;
   box-sizing: border-box;
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+.track-name {
+  font-weight: 500;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1 1 0;
 }
 
 .album-art {
