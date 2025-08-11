@@ -19,7 +19,7 @@ A desktop music player built with Electron and Node.js. Features:
 - Play MP3 files directly from your local folders
 - Responsive, dark-themed UI
 
-## Requirements
+## Build Requirements
 - Node.js
 - Electron
 
