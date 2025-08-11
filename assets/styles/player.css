@@ -1,3 +1,7 @@
+.queue-btn img {
+  filter: invert(1) brightness(2);
+  color: var(--primary-color, #fff);
+}
 /* ===== PLAYER BAR ===== */
 #player-bar {
   position: fixed;
@@ -12,9 +16,19 @@
   justify-content: space-between;
   padding: 0 20px;
   box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
-  z-index: 1000;
+  z-index: 1001; /* above overlays, below queue panel */
   box-sizing: border-box;
+  pointer-events: auto;
 }
+
+/* Guarantee all inner controls accept pointer events */
+#player-bar * { pointer-events: auto; }
+
+/* Defensive: ensure scrolling areas above do not cover player */
+body, #app, #main-content, #music-table, #music-list { position: relative; }
+
+/* If an oscilloscope canvas or other element ever overlaps, force it to ignore events */
+#toolbar-osc { pointer-events: none !important; }
 
 .player-left {
   display: flex;
@@ -198,8 +212,12 @@
 .volume-container {
   display: flex;
   align-items: center;
-  gap: 8px;
-  max-width: 140px;
+  gap: 16px;
+  max-width: 220px;
+}
+
+.volume-container .queue-btn {
+  margin-right: 8px;
 }
 
 .volume-icon {
@@ -241,7 +259,7 @@
   display: none;
 }
 
-/* ===== QUEUE UPCOMING (ghost) ===== */
+/* ===== QUEUE UPCOMING ===== */
 .queue-upcoming-section { margin-top: 8px; padding: 6px 4px 4px; border-top: 1px solid rgba(255,255,255,0.08); }
 .queue-upcoming-header { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.65; margin: 0 2px 4px; }
 .queue-upcoming-list { max-height: 160px; overflow-y: auto; scrollbar-width: thin; }

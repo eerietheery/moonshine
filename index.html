@@ -13,7 +13,7 @@
   <div id="app">
     <div id="sidebar">
       <div class="sidebar-logo">
-  <img src="assets/images/moonshinebottlelogo copy.svg" alt="Moonshine Bottle Logo" class="logo-img color-logo-svg" style="color: var(--primary-color);" />
+  <img src="assets/images/moonshinebottlelogo copy.svg" alt="Moonshine Bottle Logo" class="logo-img color-logo-svg" style="stroke: var(--primary-color);" />
         <h2>мооnѕჩіne</h2>
       </div>
       <input type="text" id="filter" placeholder="Search library...">
@@ -36,24 +36,17 @@
           <button id="list-view" class="view-btn active">List</button>
           <button id="grid-view" class="view-btn">Grid</button>
         </div>
-        <div class="sort-controls">
-          <select id="sort-by">
-            <option value="artist">Artist</option>
-            <option value="album">Album</option>
-            <option value="title">Title</option>
-            <option value="year">Year</option>
-          </select>
-          <button id="sort-order" class="sort-btn">↑</button>
+        <div class="sort-controls"> <!--no longer sort controls lol OSCILLISCOPE SETTINGS-->
+          <canvas id="toolbar-osc" style="height:32px;width:250px;display:block;background:rgb(0, 0, 0);border-radius:8px;pointer-events:none;box-shadow: 0 0px 12px color-mix(in srgb, var(--primary-color) 30%, transparent);"></canvas>
         </div>
         <div id="settings-menu">
           <button id="favorite-toggle" class="favorite-toggle" title="Show Favorites">❤</button>
-          <button id="queue-toggle" class="queue-btn" title="Show Queue">📝</button>
           <button class="settings-btn" title="Settings">⚙️</button>
         </div>
       </div>
       
       <div id="music-table">
-        <div class="table-header">
+        <div class="table-header" id="music-table-header">
           <div class="col-title">Title</div>
           <div class="col-artist">Artist</div>
           <div class="col-album">Album</div>
@@ -107,6 +100,9 @@
     
     <div class="player-right">
       <div class="volume-container">
+        <button id="queue-toggle" class="queue-btn" title="Show Queue">
+            <img src="assets/images/queue.svg" alt="Show Queue" style="width:16px;height:18px;filter:var(--queue-icon-filter, invert(1) brightness(1)); color:var(--primary-color);" />
+        </button>
         <span class="volume-icon">🔊</span>
         <input type="range" id="volume" min="0" max="100" value="100">
       </div>
@@ -116,6 +112,7 @@
   </div>
   
   <script type="module" src="src/renderer.js"></script>
+  <script type="module" src="src/renderer/oscilliscope/oscilliscope.js"></script>
   <div id="toast-container"></div>
 </body>
 </html>

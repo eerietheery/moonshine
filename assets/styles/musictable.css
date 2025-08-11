@@ -85,7 +85,7 @@
 }
 
 .track.playing {
-  background: rgba(140, 64, 184, 0.12); /* fallback for purple, matches default */
+  background: color-mix(in srgb, var(--primary-color) 30%, #000);
   border-left: 4px solid var(--primary-color);
 }
 

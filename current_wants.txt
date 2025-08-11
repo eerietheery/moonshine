@@ -1,7 +1,4 @@
-background equalizer
 
 playlist system
 
 smooth horizontal gradient color option. toggle in settings. works with user color selection. 
-
-Elipsis song titles after row label length reaches end.

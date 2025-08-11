@@ -222,7 +222,7 @@ export function renderGrid(list) {
     const yearText = a.year ? String(a.year) : '';
     card.innerHTML = `
       <div class="queue-btn-container">
-        <button class="queue-add-btn" title="Add album to Queue">📝</button>
+  <button class="queue-add-btn" title="Add album to Queue" style="background:none;border:none;cursor:pointer;padding:0;vertical-align:middle;"><img src="assets/images/addtoqueue.svg" alt="Add to Queue" style="width:22px;height:22px;filter:invert(1) brightness(2);transition:filter .2s;" /></button>
       </div>
       <img class="album-art" src="${a.art}" alt="Album Art" />
       <div class="track-name linkish" data-album title="${a.album}" tabindex="0">${a.album}</div>
