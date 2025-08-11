@@ -5,9 +5,9 @@ A desktop music player built with Electron and Node.js. Features:
 - Filter and organize tracks
 - Play music with a modern UI
 
-![Alt text](https://i.imgur.com/ITImpPG.png)
+![Alt text](https://i.imgur.com/FC2Evau.png)
 
-![Alt text](https://i.imgur.com/5cZF49y.png)
+![Alt text](https://i.imgur.com/jIxx1t4.png)
 
 ## Getting Started
 
