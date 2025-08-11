@@ -1,4 +1,3 @@
-// Clean, corrected UI helpers
 
 // Lightweight toast (with fade styling expectation via CSS .toast)
 export function showToast(message, timeout = 1800) {
@@ -49,7 +48,11 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
         rowHtml += `<div>${track[h] || ''}</div>`;
     }
   });
-  rowHtml += `<div class="track-actions"><button class="favorite-btn" title="Toggle Favorite" style="background:none;border:none;cursor:pointer;padding:0;margin-right:8px;vertical-align:middle;"><img src="assets/images/heart.svg" alt="Favorite" style="width:22px;height:22px;filter:${track.favorite ? `drop-shadow(0 0 4px ${userColor}) saturate(2)`:'grayscale(1) opacity(0.5)'};transition:filter .2s;" /></button><button class="queue-add-btn" title="Add to Queue">📝</button></div>`;
+  rowHtml += `<div class="track-actions"><button class="favorite-btn" title="Toggle Favorite" style="background:none;border:none;cursor:pointer;padding:0;margin-right:8px;vertical-align:middle;">
+  <img src="assets/images/heart.svg" alt="Favorite" style="width:22px;height:22px;filter:${track.favorite ? `drop-shadow(0 0 4px ${userColor}) saturate(2)`:'grayscale(1) opacity(0.5)'};transition:filter .2s;" /></button>
+    <button class="queue-add-btn" title="Add to Queue" style="background:none;border:none;cursor:pointer;padding:0;vertical-align:middle;">
+      <img src="assets/images/addtoqueue.svg" alt="Add to Queue" style="width:22px;height:22px;filter:grayscale(1) opacity(0.7);transition:filter .2s;" /></button>
+      </div>`;
   div.innerHTML = rowHtml;
 
   // Favorite button

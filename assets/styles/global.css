@@ -1,3 +1,27 @@
+.track-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.track-actions .favorite-btn,
+.track-actions .queue-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  height: 32px;
+  width: 32px;
+}
+
+.track-actions .favorite-btn img,
+.track-actions .queue-add-btn img {
+  display: block;
+  margin: auto;
+  width: 22px;
+  height: 22px;
+}
 /* Minimal dark scrollbar for Electron/Chrome */
 ::-webkit-scrollbar {
   width: 8px;
@@ -69,8 +93,12 @@ body {
 }
 .favorite-toggle:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-color) 30%, transparent);
 }
+
+.favorite-btn img:hover {
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--primary-color) 50%, transparent)) saturate(2);
+}
+
 .favorite-toggle.active {
   background: #fff;
   color: var(--primary-color);
@@ -125,7 +153,7 @@ body {
 }
 
 button {
-  background: var(--primary-color);
+  background: none;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -140,11 +168,11 @@ button {
 
 button:hover {
   transform: translateY(-1px);
-  /* Match hover under-glow to current theme color */
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-color) 30%, transparent);
+  
 }
 
 #scan-btn {
+  background: var(--primary-color);
   width: 100%;
   margin-bottom: 20px;
 }
