@@ -12,7 +12,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
-    icon: path.join(__dirname, '../../etico.png'), // Corrected path
+    icon: path.join(__dirname, '../../assets/images/etico.png'), // Corrected path
     backgroundColor: cfg.primaryColor || '#8C40B8',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'), // This path is correct

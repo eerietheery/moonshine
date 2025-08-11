@@ -1,5 +1,6 @@
 {
   "name": "moonshine",
+  "productName": "moonshine",
   "version": "1.0.4",
   "description": "",
   "main": "src/main/main.js",
