@@ -24,9 +24,23 @@
         <div id="filter-mode" class="filter-mode">
           <button id="mode-artists" class="mode-btn active" title="Show Artists">Artists</button>
           <button id="mode-albums" class="mode-btn" title="Show Albums">Albums</button>
+          <button id="mode-playlists" class="mode-btn" title="Show Playlists">Playlists</button>
         </div>
         <div id="artist-list" class="filter-list"></div>
         <div id="album-list" class="filter-list" style="display:none;"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Playlists</h3>
+        <div id="playlist-user" class="filter-list"></div>
+        <div class="playlist-actions">
+          <button id="playlist-create" class="mode-btn" title="Create Playlist">+ New</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Genres</h3>
+        <div id="playlist-smart" class="filter-list"></div>
       </div>
     </div>
     
@@ -46,6 +60,8 @@
           </button>
         </div>
       </div>
+  <!-- Playlist header/view (shown when viewing a playlist) -->
+  <div id="playlist-header" class="playlist-header" style="display:none;"></div>
       
       <div id="music-table">
         <div class="table-header" id="music-table-header">
@@ -86,7 +102,9 @@
       <div class="player-controls">
         <button id="shuffle-btn" class="control-btn" title="Shuffle"><span class="icon icon-shuffle" aria-hidden="true"></span></button>
         <button id="prev-btn" class="control-btn">⏮</button>
-        <button id="play-btn" class="control-btn play">▶</button>
+        <button id="play-btn" class="control-btn play" title="Play">
+          <img src="assets/images/play-centered.svg" alt="Play" style="width:32px;height:32px;vertical-align:middle;" />
+        </button>
         <button id="next-btn" class="control-btn">⏭</button>
         <button id="loop-btn" class="control-btn" title="Loop: Off"><span class="icon icon-loop" aria-hidden="true"></span></button>
       </div>

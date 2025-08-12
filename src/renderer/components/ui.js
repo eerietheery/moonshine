@@ -52,6 +52,9 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
   <img src="assets/images/heart.svg" alt="Favorite" style="width:22px;height:22px;filter:${track.favorite ? `drop-shadow(0 0 4px ${userColor}) saturate(2)`:'grayscale(1) opacity(0.5)'};transition:filter .2s;" /></button>
     <button class="queue-add-btn" title="Add to Queue" style="background:none;border:none;cursor:pointer;padding:0;vertical-align:middle;">
       <img src="assets/images/addtoqueue.svg" alt="Add to Queue" style="width:22px;height:22px;filter:grayscale(1) opacity(0.7);transition:filter .2s;" /></button>
+      <button class="playlist-add-btn" title="Add to Playlist" style="background:none;border:none;cursor:pointer;padding:0;vertical-align:middle;">
+        <img src="assets/images/queue.svg" alt="Add to Playlist" style="width:20px;height:20px;filter:grayscale(1) opacity(0.7);transition:filter .2s;" />
+      </button>
       </div>`;
   div.innerHTML = rowHtml;
 
@@ -78,6 +81,96 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
       addToQueue(track);
       showToast(`Added to queue: ${titleText}`);
     });
+  });
+
+  // Add to Playlist (lazy menu)
+  const playlistBtn = div.querySelector('.playlist-add-btn');
+  playlistBtn?.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const { playlists, addToPlaylist } = await import('./playlists.js');
+    const { showNewPlaylistModal } = await import('../ui/playlistModal.js');
+    // Build upgraded popup panel
+    const panel = document.createElement('div');
+    panel.className = 'playlist-popup';
+    Object.assign(panel.style, {
+      position: 'fixed', zIndex: 10000, background: 'var(--sidebar-bg, #1f1f1f)',
+      border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', boxShadow: '0 12px 28px rgba(0,0,0,0.45)',
+      width: '260px', padding: '10px', boxSizing: 'border-box'
+    });
+    // Primary action: New playlist
+    const newBtn = document.createElement('button');
+    newBtn.textContent = 'New playlist…';
+    Object.assign(newBtn.style, {
+      width: '100%', background: 'var(--primary-color)', color: '#000', border: 'none',
+      borderRadius: '8px', padding: '10px 12px', cursor: 'pointer', textAlign: 'center',
+      fontWeight: 700, textTransform: 'none', marginBottom: '10px'
+    });
+    newBtn.onclick = () => {
+      showNewPlaylistModal({ defaultName: track.tags?.album || 'New Playlist', track, onCreate: (pl) => {
+        document.dispatchEvent(new CustomEvent('playlists:changed'));
+        showToast(`Added to new playlist: ${pl.name}`);
+      }});
+      close();
+    };
+    panel.appendChild(newBtn);
+
+    // Subheader
+    const sub = document.createElement('div');
+    sub.textContent = 'Add to:';
+    Object.assign(sub.style, { color: '#bfbfbf', fontSize: '0.8rem', letterSpacing: '0.5px', margin: '2px 4px 6px 4px' });
+    panel.appendChild(sub);
+
+    // Scrollable list of playlists
+    const listWrap = document.createElement('div');
+    Object.assign(listWrap.style, { maxHeight: '220px', overflowY: 'auto', paddingRight: '2px' });
+    if (playlists.user.length) {
+      playlists.user.forEach(pl => {
+        const item = document.createElement('div');
+        item.textContent = pl.name;
+        item.setAttribute('title', pl.name);
+        item.tabIndex = 0;
+        Object.assign(item.style, {
+          padding: '8px 10px', borderRadius: '6px', cursor: 'pointer',
+          margin: '2px 0', outline: 'none'
+        });
+        item.onmouseenter = () => item.style.background = 'rgba(255,255,255,0.06)';
+        item.onmouseleave = () => item.style.background = 'transparent';
+        item.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); item.click(); } };
+        item.onclick = () => {
+          addToPlaylist(pl.id, track);
+          showToast(`Added to playlist: ${pl.name}`);
+          document.dispatchEvent(new CustomEvent('playlists:changed'));
+          close();
+        };
+        listWrap.appendChild(item);
+      });
+    } else {
+      const empty = document.createElement('div');
+      empty.textContent = 'No playlists yet';
+      Object.assign(empty.style, { color: '#9a9a9a', fontSize: '0.85rem', padding: '8px 10px' });
+      listWrap.appendChild(empty);
+    }
+    panel.appendChild(listWrap);
+
+    // Position near button
+    const rect = btn.getBoundingClientRect();
+    panel.style.left = `${Math.min(rect.left, window.innerWidth - 280)}px`;
+    panel.style.top = `${Math.min(rect.bottom + 6, window.innerHeight - 280)}px`;
+    document.body.appendChild(panel);
+
+    const close = () => {
+      document.removeEventListener('click', onDocClick, true);
+      document.removeEventListener('keydown', onKey, true);
+      panel.remove();
+    };
+    const onDocClick = (ev) => { if (!panel.contains(ev.target)) close(); };
+    const onKey = (ev) => { if (ev.key === 'Escape') close(); };
+    setTimeout(() => {
+      document.addEventListener('click', onDocClick, true);
+      document.addEventListener('keydown', onKey, true);
+      (listWrap.querySelector('[tabindex="0"]') || newBtn).focus();
+    }, 0);
   });
 
   // Filtering helpers

@@ -7,6 +7,14 @@ import * as dom from './dom.js';
 import { renderList } from './components/view.js';
 import { setupQueuePanel } from './components/queue.js';
 import { state } from './components/state.js';
+import { loadPlaylists, buildSmartPlaylists, renderPlaylistsSidebar, createPlaylist, getPlaylistTracks } from './components/playlists.js';
+import { playlists } from './components/playlists.js';
+
+function playlistsName(source) {
+  if (source?.type !== 'user') return null;
+  const pl = playlists.user.find(p => p.id === source.id);
+  return pl?.name || null;
+}
 
 export function initializeApp() {
   // Set initial complementary color
@@ -32,6 +40,8 @@ export function initializeApp() {
       if (typeof cfg.favoriteViewEnabled === 'boolean') state.favoriteViewEnabled = cfg.favoriteViewEnabled;
       // Restore list view headers from config
       if (Array.isArray(cfg.listHeaders) && cfg.listHeaders.length) state.listHeaders = cfg.listHeaders.slice();
+  // Load playlists
+  await loadPlaylists();
       // Load all remembered library directories
       if (state.libraryDirs.length > 0) {
         for (const dir of state.libraryDirs) {
@@ -43,6 +53,7 @@ export function initializeApp() {
     }
     // If no remembered dirs, do initial scan
     await initialScan();
+  await loadPlaylists();
     preloadGridView();
   }).finally(() => {
     // Setup all event listeners
@@ -70,6 +81,33 @@ export function initializeApp() {
 
     // Setup queue panel
     setupQueuePanel();
+
+    // Build smart playlists after tracks load changes
+    const renderPlaylists = () => {
+      buildSmartPlaylists();
+      const userEl = document.getElementById('playlist-user');
+      const smartEl = document.getElementById('playlist-smart');
+      if (!userEl || !smartEl) return;
+      renderPlaylistsSidebar(userEl, smartEl, (source) => {
+        const tracks = getPlaylistTracks(source);
+        state.viewMode = 'playlist';
+        state.activePlaylist = { ...source, name: source.type === 'user' ? (playlistsName(source) || 'Playlist') : source.genre };
+        state.filteredTracks = tracks.slice();
+        state.sortBy = 'artist';
+        state.sortOrder = 'asc';
+        renderList(dom.list);
+      });
+    };
+    renderPlaylists();
+  document.addEventListener('playlists:changed', renderPlaylists);
+    // Hook create button
+    const createBtn = document.getElementById('playlist-create');
+    if (createBtn) {
+      createBtn.onclick = async () => {
+        const { showNewPlaylistModal } = await import('./ui/playlistModal.js');
+        showNewPlaylistModal({ onCreate: () => renderPlaylists() });
+      };
+    }
   });
 }
 

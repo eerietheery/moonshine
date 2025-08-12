@@ -92,3 +92,24 @@
 .linkish:hover {
   text-decoration: underline;
 }
+
+/* Playlist grid cards */
+.playlist-card .playlist-card-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+}
+.playlist-card .pl-action {
+  background: rgba(0,0,0,0.4);
+  color: #eee;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+}
+.playlist-card .pl-action:hover {
+  background: var(--primary-color);
+  color: #000;
+}

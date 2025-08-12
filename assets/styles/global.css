@@ -5,7 +5,8 @@
 }
 
 .track-actions .favorite-btn,
-.track-actions .queue-add-btn {
+.track-actions .queue-add-btn,
+.track-actions .playlist-add-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,7 +17,8 @@
 }
 
 .track-actions .favorite-btn img,
-.track-actions .queue-add-btn img {
+.track-actions .queue-add-btn img,
+.track-actions .playlist-add-btn img {
   display: block;
   margin: auto;
   width: 22px;

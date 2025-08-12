@@ -25,6 +25,7 @@ function defaultConfig() {
     sidebarFilteringEnabled: false,
     sidebarMode: 'artist',
     theme: { primaryColor: '#8C40B8' },
+  playlists: [],
   };
 }
 

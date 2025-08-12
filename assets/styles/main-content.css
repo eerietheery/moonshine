@@ -13,6 +13,16 @@
   padding-bottom: 90px;
 }
 
+/* Prevent layout nudge when switching to Playlists mode by reserving scrollbar space */
+#playlist-header,
+#music-list,
+.grid,
+.playlist-card,
+.table-header {
+  scrollbar-gutter: stable both-edges;
+  overflow-y: scroll !important;
+}
+
 #toolbar {
   background: #181818;
   border-bottom: 1px solid #333;
@@ -35,6 +45,80 @@
   gap: 7px;
   padding: 0;
   box-sizing: border-box;
+}
+/* ===== PLAYLIST HEADER ===== */
+.playlist-header {
+  display: none;
+  background: #141414;
+  border-bottom: 1px solid #2a2a2a;
+  padding: 14px 16px;
+}
+.playlist-header.visible { display: grid; }
+.playlist-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+.playlist-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+.playlist-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  justify-content: center;
+}
+.playlist-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* clamp to two lines */
+  line-clamp: 2; /* standard */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: calc(1.25em * 2);
+}
+.playlist-badge {
+  background: #2a2a2a;
+  color: #bfbfbf;
+  border: 1px solid #3a3a3a;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.playlist-subtitle {
+  font-size: 0.9rem;
+  color: #b3b3b3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.playlist-actions-bar {
+  display: flex;
+  gap: 8px;
+}
+.playlist-actions-bar button {
+  background: #282828;
+  color: #eee;
+  border: 1px solid #444;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-transform: none;
+}
+.playlist-actions-bar button.primary {
+  background: var(--primary-color);
+  color: #000;
+  border-color: transparent;
 }
 .hamburger-btn span {
   display: block;

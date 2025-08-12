@@ -109,13 +109,14 @@ body, #app, #main-content, #music-table, #music-list { position: relative; }
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 0; /* center glyphs consistently with masked icons */
 }
 
 /* Mask-based icons to render SVGs crisply and inherit currentColor */
 .control-btn .icon {
   display: inline-block;
-  width: 16px;
-  height: 16px;
+  width: 20px; /* match visual size with glyph buttons */
+  height: 20px;
   background-color: currentColor; /* icon color */
 }
 .control-btn .icon-shuffle {

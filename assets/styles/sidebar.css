@@ -90,6 +90,11 @@
   font-size: 0.85rem;
   cursor: pointer;
 }
+
+#mode-playlists {
+  grid-column: 1 / -1; /* span both columns */
+}
+
 .mode-btn:hover { background: #2e2e2e; color: #fff; }
 .mode-btn.active { background: var(--primary-color); color: #000; border-color: transparent; }
 

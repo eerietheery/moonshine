@@ -23,6 +23,9 @@ export const state = {
   libraryDirs: [],
   // Sidebar mode: 'artist' or 'album'
   sidebarMode: 'artist',
+  // Playlist view state
+  viewMode: 'library', // 'library' | 'playlist'
+  activePlaylist: null, // { type:'user'|'smart', id?:string, genre?:string, name?:string }
   // Artist lumping toggle
   explicitArtistNames: false,
   // Theme style: 'flat' or 'gradient'

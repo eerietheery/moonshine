@@ -14,25 +14,6 @@ export function setupFilterEventListeners() {
     console.warn('filterInput not found in DOM');
   }
 
-  if (dom.sortBySelect) {
-    dom.sortBySelect.addEventListener('change', (e) => {
-      state.sortBy = e.target.value;
-      renderList(dom.list);
-    });
-  } else {
-    console.warn('sortBySelect not found in DOM');
-  }
-
-  if (dom.sortOrderBtn) {
-    dom.sortOrderBtn.addEventListener('click', () => {
-      state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
-      dom.sortOrderBtn.textContent = state.sortOrder === 'asc' ? '↑' : '↓';
-      renderList(dom.list);
-    });
-  } else {
-    console.warn('sortOrderBtn not found in DOM');
-  }
-
   const handleFilterClick = (container, type) => {
     container.addEventListener('click', (e) => {
       const item = e.target.closest('.filter-item');
