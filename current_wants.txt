@@ -1,12 +1,7 @@
-Add a right-click context menu for songs in list view (favorite, add to playlist, reveal in explorer, etc.) to improve usability and maintain a professional, clean UI. Perform a deep analysis before making any changes.
-Playlist system.
 
 better scrollbar. thousands of songs make a small scrollbar. would love to make it easy to grab no matter library size, but don't want to interpolate the list scrolling all weird. 
 
 changing colors slowly kills performance, implement gpu based handling for 🌈rainbowmode🌈 (scrolling colors)
 
-absolutely silly: make the oscillator ignore the volume, just let that frequency fly lol
-
 absolutely ensure that when the user clicks the linked aritst name from the list view it also resets the sidebar filter 
 
-favorite's list logic toggle shouldn't filter from current sidebar, should toggle entire fav list

@@ -8,6 +8,20 @@
   }
 }
 
+/* Custom virtual-list scrollbar (overlay) */
+.vscroll-track {
+  pointer-events: none; /* track only accepts clicks on thumb */
+}
+.vscroll-track .vscroll-thumb {
+  background: rgba(255,255,255,0.06);
+  transition: background 120ms ease, transform 120ms ease;
+}
+.vscroll-track .vscroll-thumb:hover {
+  background: rgba(255,255,255,0.12);
+  transform: scaleX(1.02);
+}
+
+
 @media (max-width: 768px) {
   #app {
     flex-direction: column;

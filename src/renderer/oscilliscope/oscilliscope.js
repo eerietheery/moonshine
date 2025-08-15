@@ -60,8 +60,8 @@ if (oscCanvas) {
     // Scale to map halfRange -> 128 (original unscaled midpoint span)
     let scale = 128 / halfRange;
     // Keep scale within reasonable bounds to avoid crazy spikes when data is nearly flat
-    const MAX_SCALE = 6;
-    const MIN_SCALE = 0.5;
+    const MAX_SCALE = 4;
+    const MIN_SCALE = 1;
     if (scale > MAX_SCALE) scale = MAX_SCALE;
     if (scale < MIN_SCALE) scale = MIN_SCALE;
 

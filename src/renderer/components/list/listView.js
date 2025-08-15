@@ -38,10 +38,12 @@ export function renderList(list) {
     renderPlaylistBrowse(list);
     return;
   }
-  let filtered = [...state.filteredTracks];
-  // If favorite view is enabled, filter to favorites only
+  // If favorite view is enabled, show all favorites from the entire library (ignore current sidebar filters)
+  let filtered;
   if (state.favoriteViewEnabled) {
-    filtered = filtered.filter(t => t.favorite);
+    filtered = (state.tracks || []).filter(t => t.favorite);
+  } else {
+    filtered = [...state.filteredTracks];
   }
   // If user is viewing a specific album, prefer sorting by track number (when available)
   const isAlbumFocused = !!state.activeAlbum && filtered.length > 1 && filtered.every(t => (t.tags.album || 'Unknown') === state.activeAlbum);
