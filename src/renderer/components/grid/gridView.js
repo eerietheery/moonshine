@@ -95,6 +95,11 @@ export function renderGrid(list) {
     renderGrid(list);
   };
 
+  // Determine source title when in playlist view
+  const sourceTitle = (state.viewMode === 'playlist' && state.activePlaylist)
+    ? (state.activePlaylist.name || state.activePlaylist.genre || '')
+    : '';
+
   // Render album cards
   for (const a of albums) {
     const card = document.createElement('div');
@@ -107,6 +112,7 @@ export function renderGrid(list) {
       <img class="album-art" src="${a.art}" alt="Album Art" />
       <div class="track-name linkish" data-album title="${a.album}" tabindex="0">${a.album}</div>
       <div class="track-artist linkish" data-artist title="${a.artist}" tabindex="0">${a.artist}</div>
+      ${sourceTitle ? `<div class="grid-source" title="${sourceTitle}">${sourceTitle}</div>` : ''}
       <div class="track-year ${yearText ? 'linkish' : ''}" ${yearText ? 'data-year tabindex="0"' : ''} title="${yearText}">${a.year ? a.year + ' • ' : ''}${a.tracks.length} track${a.tracks.length !== 1 ? 's' : ''}</div>
     `;
     // Add to queue button for album (adds all tracks in album)

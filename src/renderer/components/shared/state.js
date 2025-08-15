@@ -27,6 +27,9 @@ export const state = {
   favoriteViewEnabled: false,
 };
 
+// Expose to window for legacy modules that expect window.state immediately
+try { if (typeof window !== 'undefined') window.state = state; } catch(e) {}
+
 export function isFavorite(track) { return !!track && state.favorites.includes(track.filePath); }
 
 export function toggleFavorite(track) {

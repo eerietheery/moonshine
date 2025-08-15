@@ -17,7 +17,6 @@
 #playlist-header,
 #music-list,
 .grid,
-.playlist-card,
 .table-header {
   scrollbar-gutter: stable both-edges;
   overflow-y: scroll !important;

@@ -37,7 +37,7 @@ export function setupPlayerEvents(audio, playBtn, prevBtn, nextBtn, shuffleBtn, 
 
   // Global events (window focus, blur, etc.)
   window.addEventListener('focus', () => {
-    if (audio.paused && window.state.autoResumeOnFocus) {
+  if (audio.paused && window.state?.autoResumeOnFocus) {
       togglePlay(audio, playBtn);
     }
   });

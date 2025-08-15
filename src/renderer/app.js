@@ -2,7 +2,7 @@ import { setupPlayer } from './components/player/index.js';
 import { initialScan } from './library.js';
 import { setupEventListeners } from './events.js';
 import { getComplementaryColor } from './ui/colorUtils.js';
-import { preloadGridView } from './grid.js';
+import { preloadGridView } from './components/grid/gridEvents.js';
 import * as dom from './dom.js';
 import { renderList } from './components/shared/view.js';
 import { setupQueuePanel } from './components/queue/queue.js';
@@ -17,6 +17,11 @@ function playlistsName(source) {
 }
 
 export function initializeApp() {
+  // Expose canonical state as window.state for legacy modules that still reference it
+  // Provide safe defaults for legacy settings
+  window.state = state;
+  if (typeof window.state.autoResumeOnFocus === 'undefined') window.state.autoResumeOnFocus = false;
+
   // Set initial complementary color
   document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim()));
 

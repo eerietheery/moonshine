@@ -87,8 +87,8 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
   playlistBtn?.addEventListener('click', async (e) => {
     e.stopPropagation();
     const btn = e.currentTarget;
-    const { playlists, addToPlaylist } = await import('./playlists.js');
-    const { showNewPlaylistModal } = await import('../ui/playlistModal.js');
+  const { playlists, addToPlaylist } = await import('../playlist/playlists.js');
+  const { showNewPlaylistModal } = await import('../../ui/playlistModal.js');
     // Build upgraded popup panel
     const panel = document.createElement('div');
     panel.className = 'playlist-popup';

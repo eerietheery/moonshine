@@ -113,3 +113,13 @@
   background: var(--primary-color);
   color: #000;
 }
+
+.track-card .grid-source {
+  font-size: 0.8em;
+  color: #a8a8a8;
+  margin-top: 4px;
+  background: rgba(255,255,255,0.02);
+  padding: 4px 8px;
+  border-radius: 999px;
+  display: inline-block;
+}

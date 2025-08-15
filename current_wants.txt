@@ -1,5 +1,7 @@
 Add a right-click context menu for songs (favorite, add to playlist, reveal in explorer, etc.) to improve usability and maintain a professional, clean UI. Perform a deep analysis before making any changes.
-Playlist system 
+Playlist system.
+
+Right-click on playlsit view to delete playlist (do not offer for genre) 
 
 better scrollbar. thousands of songs make a small scrollbar. would love to make it easy to grab no matter library size, but don't want to interpolate the list scrolling all weird. 
 

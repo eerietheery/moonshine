@@ -1,6 +1,6 @@
 import { renderList } from '../components/shared/view.js';
 import { showSettingsModal } from '../ui/settingsModal.js';
-import { displayGridView } from '../grid.js';
+import { displayGridView } from '../components/grid/gridEvents.js';
 import * as dom from '../dom.js';
 import { state } from '../components/shared/state.js';
 
