@@ -69,8 +69,14 @@ export function renderGrid(list) {
     entry.tracks.push(track);
   }
 
-  const albums = Array.from(albumMap.values())
-    .sort((a, b) => a.artist.localeCompare(b.artist) || a.album.localeCompare(b.album));
+  let albums = Array.from(albumMap.values());
+  // Determine sort preference: use explicit gridSortByAlbum flag if present, otherwise fall back to sidebar mode
+  const preferAlbumSort = !!state.gridSortByAlbum || state.sidebarMode === 'album';
+  if (preferAlbumSort) {
+    albums.sort((a, b) => a.album.localeCompare(b.album) || a.artist.localeCompare(b.artist));
+  } else {
+    albums.sort((a, b) => a.artist.localeCompare(b.artist) || a.album.localeCompare(b.album));
+  }
 
   if (albums.length === 0) {
     list.innerHTML = '<div style="color:#666;padding:20px;text-align:center;grid-column:1/-1;">No albums found</div>';

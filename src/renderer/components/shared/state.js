@@ -25,6 +25,8 @@ export const state = {
   favorites: [],
   listHeaders: ['title','artist','album','year','genre'],
   favoriteViewEnabled: false,
+  // Grid sorting preference: when true, grid prefers album-first sorting
+  gridSortByAlbum: false,
 };
 
 // Expose to window for legacy modules that expect window.state immediately

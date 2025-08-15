@@ -204,7 +204,15 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
   const artistSpan = div.querySelector('.track-artist .linkish[data-artist]');
   artistSpan?.addEventListener('click', (e) => {
     e.stopPropagation();
-    applyFilter({ artist: artistText });
+    // Reset the main text filter so sidebar shows the full artist list context
+    const filterInput = document.getElementById('filter');
+    if (filterInput) {
+      filterInput.value = '';
+    }
+    // Ensure sidebar filtering mode is enabled so artist selection takes effect
+    import('../shared/state.js').then(({ state }) => { if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true; }).finally(() => {
+      applyFilter({ artist: artistText });
+    });
     setTimeout(() => {
       const esc = artistText.replace(/"/g, '\"');
       const target = document.querySelector(`#artist-list .filter-item[data-value="${esc}"]`);
@@ -220,7 +228,13 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
   const albumSpan = div.querySelector('.track-album .linkish[data-album]');
   albumSpan?.addEventListener('click', (e) => {
     e.stopPropagation();
-    applyFilter({ album: albumText });
+    // Reset the main text filter so sidebar shows the full album list context
+    const filterInput = document.getElementById('filter');
+    if (filterInput) filterInput.value = '';
+    // Ensure sidebar filtering is enabled before applying album selection
+    import('../shared/state.js').then(({ state }) => { if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true; }).finally(() => {
+      applyFilter({ album: albumText });
+    });
     setTimeout(() => {
       const esc = albumText.replace(/"/g, '\"');
       const target = document.querySelector(`#album-list .filter-item[data-value="${esc}"]`);
@@ -234,6 +248,85 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
   });
 
   div.addEventListener('click', () => onClick(track));
+
+  // Right-click context menu for track rows
+  div.addEventListener('contextmenu', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    // Close any existing context menus
+    document.querySelectorAll('.context-menu').forEach(m => m.remove());
+    // Also close playlist popups to avoid overlap
+    document.querySelectorAll('.playlist-popup').forEach(p => p.remove());
+
+    const menu = document.createElement('div');
+    menu.className = 'context-menu';
+    Object.assign(menu.style, {
+      position: 'fixed', zIndex: 10000, background: 'var(--sidebar-bg, #1f1f1f)',
+      border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.35)', minWidth: '200px', padding: '6px 0'
+    });
+    const addItem = (label, handler) => {
+      const item = document.createElement('div');
+      item.textContent = label; item.tabIndex = 0; item.style.padding = '8px 12px'; item.style.cursor = 'pointer';
+      item.onmouseenter = () => item.style.background = 'rgba(255,255,255,0.06)';
+      item.onmouseleave = () => item.style.background = 'transparent';
+      item.onclick = () => { handler(); close(); };
+      item.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); item.click(); } };
+      menu.appendChild(item);
+    };
+
+    // Favorite toggle
+    addItem(track.favorite ? 'Unfavorite' : 'Favorite', () => {
+      import('../shared/state.js').then(({ toggleFavorite }) => toggleFavorite(track));
+    });
+    // Add to playlist (reuse existing playlist button behaviour if available)
+    addItem('Add to playlist…', () => {
+      // try to trigger existing playlist popup button if present
+      const btn = div.querySelector('.playlist-add-btn');
+      if (btn) btn.click();
+      else {
+        // fallback: open simple playlist panel
+        import('../playlist/playlists.js').then(({ playlists, addToPlaylist }) => {
+          const panel = document.createElement('div');
+          panel.className = 'playlist-popup';
+          Object.assign(panel.style, { position: 'fixed', zIndex: 10000, background: 'var(--sidebar-bg, #1f1f1f)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', boxShadow: '0 12px 28px rgba(0,0,0,0.45)', width: '260px', padding: '10px' });
+          const newBtn = document.createElement('button'); newBtn.textContent = 'New playlist…'; Object.assign(newBtn.style, { width: '100%', background: 'var(--primary-color)', color: '#000', border: 'none', borderRadius: '8px', padding: '10px 12px', cursor: 'pointer', fontWeight: 700, marginBottom: '10px' });
+          newBtn.onclick = () => { document.dispatchEvent(new CustomEvent('playlists:changed')); panel.remove(); };
+          panel.appendChild(newBtn);
+          const listWrap = document.createElement('div'); Object.assign(listWrap.style, { maxHeight: '220px', overflowY: 'auto', paddingRight: '2px' });
+          if (playlists.user.length) playlists.user.forEach(pl => { const item = document.createElement('div'); item.textContent = pl.name; item.tabIndex = 0; item.style.padding = '8px 10px'; item.onclick = () => { addToPlaylist(pl.id, track); document.dispatchEvent(new CustomEvent('playlists:changed')); panel.remove(); }; listWrap.appendChild(item); });
+          else { const empty = document.createElement('div'); empty.textContent = 'No playlists yet'; Object.assign(empty.style, { color: '#9a9a9a', fontSize: '0.85rem', padding: '8px 10px' }); listWrap.appendChild(empty); }
+          panel.appendChild(listWrap);
+          const rect = div.getBoundingClientRect(); panel.style.left = `${Math.min(e.clientX || rect.left, window.innerWidth - 280)}px`; panel.style.top = `${Math.min(e.clientY || rect.bottom + 6, window.innerHeight - 280)}px`; document.body.appendChild(panel);
+          setTimeout(() => { const closeDoc = (ev) => { if (!panel.contains(ev.target)) panel.remove(); }; document.addEventListener('click', closeDoc, { capture: true, once: true }); }, 0);
+        });
+      }
+    });
+    // Queue
+    addItem('Queue', () => { import('../shared/state.js').then(({ addToQueue }) => { addToQueue(track); }); });
+    // Reveal in Explorer / File Manager
+    addItem('Reveal in Explorer', () => {
+      const path = track.filePath || track.file || null;
+      if (!path) { import('./ui.js').then(({ showToast }) => showToast('No file path available')); return; }
+      // Try multiple host APIs
+      if (window.etune && typeof window.etune.revealFile === 'function') {
+        window.etune.revealFile(path);
+      } else if (window.etune && typeof window.etune.revealInFolder === 'function') {
+        window.etune.revealInFolder(path);
+      } else if (window.require) {
+        try { const { shell } = window.require('electron'); shell.showItemInFolder(path); } catch (err) { import('./ui.js').then(({ showToast }) => showToast('Reveal not available')); }
+      } else {
+        import('./ui.js').then(({ showToast }) => showToast('Reveal not supported'));
+      }
+    });
+    // Copy path
+    addItem('Copy file path', () => { navigator.clipboard?.writeText(track.filePath || track.file || '') .catch(() => {}); });
+
+    const rect = div.getBoundingClientRect();
+    menu.style.left = `${Math.min(e.clientX || rect.left, window.innerWidth - 240)}px`;
+    menu.style.top = `${Math.min(e.clientY || rect.bottom + 4, window.innerHeight - 260)}px`;
+    document.body.appendChild(menu);
+    const close = () => { menu.remove(); };
+    setTimeout(() => { const onDoc = (ev) => { if (!menu.contains(ev.target)) close(); }; const onKey = (ev) => { if (ev.key === 'Escape') close(); }; document.addEventListener('click', onDoc, true); document.addEventListener('keydown', onKey, true); }, 0);
+  });
   return div;
 }
 

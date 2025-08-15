@@ -36,6 +36,8 @@ export function initializeApp() {
       // Apply filtering prefs
       if (typeof cfg.sidebarFilteringEnabled === 'boolean') state.sidebarFilteringEnabled = cfg.sidebarFilteringEnabled;
       if (cfg.sidebarMode === 'album' || cfg.sidebarMode === 'artist') state.sidebarMode = cfg.sidebarMode;
+  // Apply grid sorting preference if present
+  if (typeof cfg.gridSortByAlbum === 'boolean') state.gridSortByAlbum = cfg.gridSortByAlbum;
       // Apply library dirs
       if (Array.isArray(cfg.libraryDirs)) state.libraryDirs = cfg.libraryDirs.slice();
       // Apply explicit artist names toggle

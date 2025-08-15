@@ -98,6 +98,11 @@ export function renderPlaylistBrowseGrid(container) {
       if (t && t.classList && t.classList.contains('pl-action')) return; // button handled separately
       openPlaylist(it);
     });
+    // Right-click context menu (use shared helper)
+    card.addEventListener('contextmenu', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      import('./playlists.js').then(({ showPlaylistContextMenu }) => showPlaylistContextMenu(e, card, it, it.title));
+    });
     card.querySelector('.pl-action.play').onclick = (e) => { e.stopPropagation(); playNow(it); };
     card.querySelector('.pl-action.queue').onclick = (e) => { e.stopPropagation(); queueAll(it); };
     container.appendChild(card);
@@ -133,6 +138,11 @@ export function renderPlaylistBrowseList(container) {
       </div>
     `;
     row.addEventListener('click', () => openPlaylist(it));
+    // Right-click context menu
+    row.addEventListener('contextmenu', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      import('./playlists.js').then(({ showPlaylistContextMenu }) => showPlaylistContextMenu(e, row, it, it.title));
+    });
     row.querySelector('.queue-add-btn').onclick = (e) => { e.stopPropagation(); queueAll(it); };
     row.querySelector('.playlist-add-btn').onclick = (e) => { e.stopPropagation(); playNow(it); };
     container.appendChild(row);

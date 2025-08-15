@@ -57,6 +57,17 @@ ipcMain.handle('scan-music', async (event, dirPath) => {
   return scanMusic(dirPath || DEFAULT_DIR);
 });
 
+// Reveal file in OS file manager
+ipcMain.handle('reveal-file', (event, filePath) => {
+  try {
+    const { shell } = require('electron');
+    if (filePath) shell.showItemInFolder(filePath);
+    return true;
+  } catch (err) {
+    return false;
+  }
+});
+
 // Config IPC
 ipcMain.handle('get-config', async () => {
   return getConfig();

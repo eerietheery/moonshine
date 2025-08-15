@@ -60,6 +60,98 @@ export function deletePlaylist(id) {
   }
 }
 
+// Track open menu so only one exists at a time
+let _openPlaylistMenu = null;
+
+// Reusable context menu for playlist entries (used by sidebar, grid, and list views)
+export async function showPlaylistContextMenu(e, anchorEl, data, label) {
+  e.preventDefault(); e.stopPropagation();
+  // If a menu is open, close it. If the same anchor triggered and menu is open, this acts like a toggle (close only).
+  if (_openPlaylistMenu) {
+    const prev = _openPlaylistMenu;
+    _openPlaylistMenu = null;
+    prev.remove();
+    // If the previous menu was opened for the same anchor, don't reopen
+    if (prev.__anchor === anchorEl) return;
+  }
+  // Close any ephemeral add-to-playlist panels to avoid overlap
+  document.querySelectorAll('.playlist-popup').forEach(p => p.remove());
+
+  const menu = document.createElement('div');
+  menu.className = 'context-menu';
+  // mark anchor for toggle detection
+  menu.__anchor = anchorEl;
+  Object.assign(menu.style, {
+    position: 'fixed', zIndex: '10000', background: 'var(--sidebar-bg, #1f1f1f)',
+    border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.35)', minWidth: '180px', padding: '6px 0'
+  });
+  const addItem = (labelText, handler) => {
+    const item = document.createElement('div');
+    item.textContent = labelText; item.tabIndex = 0; item.style.padding = '8px 12px'; item.style.cursor = 'pointer';
+    item.onmouseenter = () => item.style.background = 'rgba(255,255,255,0.06)';
+    item.onmouseleave = () => item.style.background = 'transparent';
+    item.onclick = () => { handler(); close(); };
+    item.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); item.click(); } };
+    menu.appendChild(item);
+  };
+
+  // Play now
+  addItem('Play now', async () => {
+    const tracks = getPlaylistTracks(data);
+    const listEl = document.getElementById('music-list');
+    import('../shared/state.js').then(({ state }) => { state.filteredTracks = tracks.slice(); });
+    const { renderList } = await import('../shared/view.js');
+    renderList(listEl);
+    if (tracks.length) {
+      const { playTrack } = await import('./player/playerCore.js');
+      playTrack(
+        tracks[0],
+        0,
+        document.getElementById('audio'),
+        document.getElementById('play-btn'),
+        document.getElementById('current-art'),
+        document.getElementById('current-title'),
+        document.getElementById('current-artist'),
+        () => renderList(listEl)
+      );
+    } else {
+      const { showToast } = await import('../ui/ui.js');
+      showToast('Playlist is empty');
+    }
+  });
+
+  // Queue all
+  addItem('Queue all', async () => {
+    const tracks = getPlaylistTracks(data);
+    const { addToQueue } = await import('../shared/state.js');
+    tracks.forEach(t => addToQueue(t));
+    const { showToast } = await import('../ui/ui.js');
+    showToast(`Queued ${tracks.length} track${tracks.length===1?'':'s'}`);
+  });
+
+  // User-only actions
+  if (data.type === 'user') {
+    addItem('Rename…', () => {
+      const next = prompt('Rename playlist', label);
+      if (next) renamePlaylist(data.id, next);
+    });
+    addItem('Delete…', () => {
+      if (confirm('Delete this playlist?')) deletePlaylist(data.id);
+    });
+  }
+
+  // Position and attach
+  const rect = anchorEl.getBoundingClientRect();
+  menu.style.left = `${Math.min(e.clientX || rect.left, window.innerWidth - 220)}px`;
+  menu.style.top = `${Math.min(e.clientY || rect.bottom + 4, window.innerHeight - 260)}px`;
+  document.body.appendChild(menu);
+  _openPlaylistMenu = menu;
+  const close = () => { if (!_openPlaylistMenu) return; _openPlaylistMenu.remove(); _openPlaylistMenu = null; document.removeEventListener('click', onDoc, true); document.removeEventListener('keydown', onKey, true); };
+  const onDoc = (ev) => { if (!_openPlaylistMenu) return; if (!menu.contains(ev.target)) close(); };
+  const onKey = (ev) => { if (ev.key === 'Escape') close(); };
+  setTimeout(() => { document.addEventListener('click', onDoc, true); document.addEventListener('keydown', onKey, true); }, 0);
+}
+
 export function addToPlaylist(id, track) {
   const pl = playlists.user.find(p => p.id === id);
   if (!pl || !track) return;
@@ -112,74 +204,8 @@ export function renderPlaylistsSidebar(sectionUser, sectionSmart, onSelect) {
     li.textContent = label;
     li.onclick = () => onSelect(data);
     li.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); li.click(); } };
-    // Context menu actions
-    li.oncontextmenu = async (e) => {
-      e.preventDefault(); e.stopPropagation();
-      const menu = document.createElement('div');
-      menu.className = 'context-menu';
-      Object.assign(menu.style, {
-        position: 'fixed', zIndex: '10000', background: 'var(--sidebar-bg, #1f1f1f)',
-        border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', boxShadow: '0 8px 24px rgba(0,0,0,0.35)', minWidth: '180px', padding: '6px 0'
-      });
-      const addItem = (label, handler) => {
-        const item = document.createElement('div');
-        item.textContent = label; item.tabIndex = 0; item.style.padding = '8px 12px'; item.style.cursor = 'pointer';
-        item.onmouseenter = () => item.style.background = 'rgba(255,255,255,0.06)';
-        item.onmouseleave = () => item.style.background = 'transparent';
-        item.onclick = () => { handler(); close(); };
-        item.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); item.click(); } };
-        menu.appendChild(item);
-      };
-      // Actions
-      addItem('Play now', async () => {
-        const tracks = getPlaylistTracks(data);
-        const listEl = document.getElementById('music-list');
-        state.filteredTracks = tracks.slice();
-        const { renderList } = await import('../shared/view.js');
-        renderList(listEl);
-        if (tracks.length) {
-          const { playTrack } = await import('./player/playerCore.js');
-          playTrack(
-            tracks[0],
-            0,
-            document.getElementById('audio'),
-            document.getElementById('play-btn'),
-            document.getElementById('current-art'),
-            document.getElementById('current-title'),
-            document.getElementById('current-artist'),
-            () => renderList(listEl)
-          );
-        } else {
-          const { showToast } = await import('../ui/ui.js');
-          showToast('Playlist is empty');
-        }
-      });
-      addItem('Queue all', async () => {
-        const tracks = getPlaylistTracks(data);
-  const { addToQueue } = await import('../shared/state.js');
-        tracks.forEach(t => addToQueue(t));
-        const { showToast } = await import('../ui/ui.js');
-        showToast(`Queued ${tracks.length} track${tracks.length===1?'':'s'}`);
-      });
-      if (data.type === 'user') {
-        addItem('Rename…', () => {
-          const next = prompt('Rename playlist', label);
-          if (next) renamePlaylist(data.id, next);
-        });
-        addItem('Delete…', () => {
-          if (confirm('Delete this playlist?')) deletePlaylist(data.id);
-        });
-      }
-      // Position and attach
-      const rect = li.getBoundingClientRect();
-      menu.style.left = `${Math.min(e.clientX || rect.left, window.innerWidth - 220)}px`;
-      menu.style.top = `${Math.min(e.clientY || rect.bottom + 4, window.innerHeight - 260)}px`;
-      document.body.appendChild(menu);
-      const close = () => { document.removeEventListener('click', onDoc, true); document.removeEventListener('keydown', onKey, true); menu.remove(); };
-      const onDoc = (ev) => { if (!menu.contains(ev.target)) close(); };
-      const onKey = (ev) => { if (ev.key === 'Escape') close(); };
-      setTimeout(() => { document.addEventListener('click', onDoc, true); document.addEventListener('keydown', onKey, true); }, 0);
-    };
+  // Context menu actions (use shared helper so single-menu behavior is consistent)
+  li.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); showPlaylistContextMenu(e, li, data, label); };
     return li;
   };
   playlists.user.forEach(pl => {

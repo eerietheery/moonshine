@@ -72,7 +72,15 @@ export function setupUiEventListeners() {
   applyMode(state.sidebarMode || 'artist');
 
   dom.gridViewBtn.addEventListener('click', () => {
-    displayGridView();
+    // If already in grid view, toggle album-first sorting preference
+    if (dom.gridViewBtn.classList.contains('active')) {
+      state.gridSortByAlbum = !state.gridSortByAlbum;
+      if (window.etune?.updateConfig) window.etune.updateConfig({ gridSortByAlbum: state.gridSortByAlbum });
+      // Re-render grid to apply new sort preference
+      displayGridView();
+    } else {
+      displayGridView();
+    }
   });
 
   dom.listViewBtn.addEventListener('click', () => {

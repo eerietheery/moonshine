@@ -39,15 +39,39 @@ if (oscCanvas) {
     requestAnimationFrame(drawOscilloscope);
     if (!analyser) return;
     analyser.getByteTimeDomainData(dataArray);
+    // Draw normalized waveform so visual does not follow playback volume
+    // (normalize each frame to ignore amplitude changes caused by volume)
     oscCtx.clearRect(0, 0, oscCanvas.width, oscCanvas.height);
-  oscCtx.lineWidth = 2;
-  oscCtx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || 'lime';
+    oscCtx.lineWidth = 2;
+    oscCtx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || 'lime';
     oscCtx.beginPath();
     let sliceWidth = oscCanvas.width / dataArray.length;
     let x = 0;
+
+    // Compute per-frame min/max to normalize amplitude
+    let min = 255, max = 0;
     for (let i = 0; i < dataArray.length; i++) {
-      let v = dataArray[i] / 128.0;
-      let y = (v * oscCanvas.height) / 2;
+      const v = dataArray[i];
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+    // Half-range around center (128). Avoid divide-by-zero by ensuring at least 1.
+    const halfRange = Math.max((max - min) / 2, 1);
+    // Scale to map halfRange -> 128 (original unscaled midpoint span)
+    let scale = 128 / halfRange;
+    // Keep scale within reasonable bounds to avoid crazy spikes when data is nearly flat
+    const MAX_SCALE = 6;
+    const MIN_SCALE = 0.5;
+    if (scale > MAX_SCALE) scale = MAX_SCALE;
+    if (scale < MIN_SCALE) scale = MIN_SCALE;
+
+    // Draw using normalized samples (centered at 128 but scaled by computed factor)
+    for (let i = 0; i < dataArray.length; i++) {
+      const vRaw = dataArray[i];
+      // center around 0 then scale
+      const v = (vRaw - 128) * scale;
+      // compute y inside canvas
+      const y = (oscCanvas.height / 2) + (v * (oscCanvas.height / 2) / 128);
       if (i === 0) {
         oscCtx.moveTo(x, y);
       } else {
