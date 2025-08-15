@@ -242,8 +242,17 @@ export function createFilterItem(name, count, isActive) {
   div.className = `filter-item ${isActive ? 'active' : ''}`;
   div.setAttribute('role', 'button');
   div.setAttribute('tabindex', '0');
+  // store raw value for event handlers; callers may rely on exact string equality
   div.dataset.value = name;
-  div.innerHTML = `<span>${name}</span><span class="filter-count">${count}</span>`;
+
+  const nameSpan = document.createElement('span');
+  nameSpan.textContent = name;
+  const countSpan = document.createElement('span');
+  countSpan.className = 'filter-count';
+  countSpan.textContent = String(count);
+
+  div.appendChild(nameSpan);
+  div.appendChild(countSpan);
   return div;
 }
 

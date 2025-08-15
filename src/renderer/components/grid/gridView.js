@@ -1,6 +1,7 @@
 // Grid view rendering logic
 import { state, updateFilters } from '../shared/state.js';
 import { updateSidebarFilters } from '../sidebar/sidebar.js';
+import { renderList } from '../shared/view.js';
 import * as dom from '../../dom.js';
 import { showToast } from '../ui/ui.js';
 import { getPlaylistTracks } from '../playlist/playlists.js';
@@ -78,10 +79,13 @@ export function renderGrid(list) {
 
   // Helper to apply filters and stay in grid view
   const applyGridFilter = (opts) => {
+    // When clicking an album card, switch to list view showing the album's tracks.
     if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true;
     if (opts.album !== undefined) state.activeAlbum = opts.album;
     if (opts.artist !== undefined) state.activeArtist = opts.artist;
     if (opts.year !== undefined) state.activeYear = opts.year;
+    // Ensure view switches to list and UI buttons reflect it
+    state.viewMode = 'library';
     const filterInput = document.getElementById('filter');
     updateFilters(filterInput, state.sidebarFilteringEnabled);
     updateSidebarFilters(
@@ -91,8 +95,11 @@ export function renderGrid(list) {
       () => renderList(list),
       state.sidebarFilteringEnabled
     );
-    // Re-render grid to reflect filtered set
-    renderGrid(list);
+    // Render list view (tracks for selected album)
+    renderList(list);
+    // Update view button UI
+    dom.gridViewBtn.classList.remove('active');
+    dom.listViewBtn.classList.add('active');
   };
 
   // Determine source title when in playlist view
