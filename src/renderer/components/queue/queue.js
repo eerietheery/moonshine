@@ -1,5 +1,5 @@
 // Queue panel rendering and drag-and-drop logic
-import { state, removeFromQueue, moveQueueItem } from './state.js';
+import { state, removeFromQueue, moveQueueItem } from '../shared/state.js';
 
 export function renderQueuePanel() {
   const list = document.getElementById('queue-list');

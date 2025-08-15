@@ -1,6 +1,6 @@
-import { state } from '../components/state.js';
-import { updateSidebarFilters } from '../components/sidebar.js';
-import { renderList } from '../components/view.js';
+import { state } from '../components/shared/state.js';
+import { updateSidebarFilters } from '../components/sidebar/sidebar.js';
+import { renderList } from '../components/shared/view.js';
 import { showColorModal } from './colorModal.js';
 
 function showSettingsModal() {
@@ -54,7 +54,7 @@ function showSettingsModal() {
         window.etune.updateConfig({ listHeaders: state.listHeaders });
       }
       // Re-render list view immediately
-      import('../components/view.js').then(({ renderList }) => {
+      import('../components/shared/view.js').then(({ renderList }) => {
         const musicList = document.getElementById('music-list');
         if (musicList) renderList(musicList);
       });
@@ -294,7 +294,7 @@ function showSettingsModal() {
     const artistList = document.getElementById('artist-list');
     const albumList = document.getElementById('album-list');
     const doRenderList = () => renderList(list);
-    import('../components/state.js').then(({ updateFilters }) => {
+  import('../components/shared/state.js').then(({ updateFilters }) => {
       updateFilters(filterInput, state.sidebarFilteringEnabled);
       updateSidebarFilters(filterInput, artistList, albumList, doRenderList, state.sidebarFilteringEnabled);
       doRenderList();

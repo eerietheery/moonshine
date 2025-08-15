@@ -1,5 +1,5 @@
 // Playlist system: user playlists and smart (genre) playlists
-import { state } from './state.js';
+import { state } from '../shared/state.js';
 
 // Data model (renderer-side cache). Persisted in main config under `playlists`.
 // User playlist shape: { id, name, trackPaths: string[], createdAt, updatedAt }
@@ -135,10 +135,10 @@ export function renderPlaylistsSidebar(sectionUser, sectionSmart, onSelect) {
         const tracks = getPlaylistTracks(data);
         const listEl = document.getElementById('music-list');
         state.filteredTracks = tracks.slice();
-        const { renderList } = await import('./view.js');
+        const { renderList } = await import('../shared/view.js');
         renderList(listEl);
         if (tracks.length) {
-          const { playTrack } = await import('./playerCore.js');
+          const { playTrack } = await import('./player/playerCore.js');
           playTrack(
             tracks[0],
             0,
@@ -150,15 +150,15 @@ export function renderPlaylistsSidebar(sectionUser, sectionSmart, onSelect) {
             () => renderList(listEl)
           );
         } else {
-          const { showToast } = await import('./ui.js');
+          const { showToast } = await import('../ui/ui.js');
           showToast('Playlist is empty');
         }
       });
       addItem('Queue all', async () => {
         const tracks = getPlaylistTracks(data);
-        const { addToQueue } = await import('./state.js');
+  const { addToQueue } = await import('../shared/state.js');
         tracks.forEach(t => addToQueue(t));
-        const { showToast } = await import('./ui.js');
+        const { showToast } = await import('../ui/ui.js');
         showToast(`Queued ${tracks.length} track${tracks.length===1?'':'s'}`);
       });
       if (data.type === 'user') {

@@ -1,8 +1,8 @@
 import { playlists, getPlaylistTracks } from './playlists.js';
-import { state } from './state.js';
-import * as dom from '../dom.js';
-import { renderList } from './view.js';
-import { showToast } from './ui.js';
+import { state } from '../shared/state.js';
+import * as dom from '../../dom.js';
+import { renderList } from '../shared/view.js';
+import { showToast } from '../ui/ui.js';
 
 // Public API: render playlist browse using current toolbar mode (list/grid)
 export function renderPlaylistBrowse(container) {
@@ -44,7 +44,7 @@ function openPlaylist(item) {
 async function queueAll(item) {
   const tracks = resolveTracks(item);
   if (!tracks.length) return showToast('Playlist is empty');
-  const { addToQueue } = await import('./state.js');
+  const { addToQueue } = await import('../shared/state.js');
   tracks.forEach(t => addToQueue(t));
   showToast(`Queued ${tracks.length} track${tracks.length===1?'':'s'}`);
 }
@@ -58,7 +58,7 @@ async function playNow(item) {
     : { type: 'smart', genre: item.genre };
   state.filteredTracks = tracks.slice();
   renderList(dom.list);
-  const { playTrack } = await import('./playerCore.js');
+  const { playTrack } = await import('../player/playerCore.js');
   playTrack(
     tracks[0],
     0,

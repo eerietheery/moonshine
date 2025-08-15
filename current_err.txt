@@ -1,0 +1,13 @@
+playerEvents.js:40 Uncaught TypeError: Cannot read properties of undefined (reading 'autoResumeOnFocus')
+    at playerEvents.js:40:38
+playerUI.js:39 Uncaught TypeError: Cannot read properties of undefined (reading 'loopMode')
+    at HTMLAudioElement.<anonymous> (playerUI.js:39:22)
+2playerEvents.js:40 Uncaught TypeError: Cannot read properties of undefined (reading 'autoResumeOnFocus')
+    at playerEvents.js:40:38
+playerUI.js:39 Uncaught TypeError: Cannot read properties of undefined (reading 'loopMode')
+    at HTMLAudioElement.<anonymous> (playerUI.js:39:22)
+2playerEvents.js:40 Uncaught TypeError: Cannot read properties of undefined (reading 'autoResumeOnFocus')
+    at playerEvents.js:40:38
+playerUI.js:88 Uncaught TypeError: Cannot read properties of undefined (reading 'sidebarFilteringEnabled')
+    at enableSidebarFiltering (playerUI.js:88:23)
+    at HTMLDivElement.handleAlbum (playerUI.js:112:7)

@@ -1,5 +1,5 @@
-// Core playback logic for player
-import { state, rebuildPlayOrder } from './state.js';
+// Core playback logic for player (migrated to player/ folder)
+import { state, rebuildPlayOrder } from '../shared/state.js';
 
 export function playTrack(track, index, audio, playBtn, currentArt, currentTitle, currentArtist, renderList) {
   state.currentTrack = track;
@@ -21,7 +21,7 @@ export function playTrack(track, index, audio, playBtn, currentArt, currentTitle
   playBtn.innerHTML = '<img src="assets/images/pause.svg" alt="Pause" style="width:18px;height:18px;vertical-align:middle;" />';
   state.isPlaying = true;
   renderList();
-  import('./queue.js').then(m => m.renderQueuePanel && m.renderQueuePanel()).catch(()=>{});
+  import('../queue/queue.js').then(m => m.renderQueuePanel && m.renderQueuePanel()).catch(()=>{});
 }
 
 export function togglePlay(audio, playBtn) {

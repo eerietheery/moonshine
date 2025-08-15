@@ -1,4 +1,4 @@
-import { createPlaylist, addToPlaylist } from '../components/playlists.js';
+import { createPlaylist, addToPlaylist } from '../components/playlist/playlists.js';
 
 export function showNewPlaylistModal(options = {}) {
   const { defaultName = '', track = null, onCreate } = options;

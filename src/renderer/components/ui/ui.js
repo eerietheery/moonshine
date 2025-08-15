@@ -1,4 +1,3 @@
-
 // Lightweight toast (with fade styling expectation via CSS .toast)
 export function showToast(message, timeout = 1800) {
   const container = document.getElementById('toast-container');
@@ -64,7 +63,7 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
   if (favBtn && favImg) {
     favBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      import('./state.js').then(({ toggleFavorite }) => {
+        import('../shared/state.js').then(({ toggleFavorite }) => {
         toggleFavorite(track);
         const color = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#8C40B8';
         favImg.style.filter = track.favorite ? `drop-shadow(0 0 4px ${color}) saturate(2)` : 'grayscale(1) opacity(0.5)';
@@ -77,7 +76,7 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
   const queueBtn = div.querySelector('.queue-add-btn');
   queueBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
-    import('./state.js').then(({ addToQueue }) => {
+        import('../shared/state.js').then(({ addToQueue }) => {
       addToQueue(track);
       showToast(`Added to queue: ${titleText}`);
     });
@@ -175,8 +174,8 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
 
   // Filtering helpers
   const applyFilter = (opts) => {
-    import('./state.js').then(({ state, updateFilters }) => {
-      import('./sidebar.js').then(({ updateSidebarFilters }) => {
+      import('../shared/state.js').then(({ state, updateFilters }) => {
+      import('../sidebar/sidebar.js').then(({ updateSidebarFilters }) => {
         if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true;
         if (opts.album !== undefined) {
           state.activeAlbum = opts.album;
@@ -197,7 +196,7 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
           () => {},
           state.sidebarFilteringEnabled
         );
-        import('./view.js').then(({ renderList }) => renderList(document.getElementById('music-list')));
+  import('../shared/view.js').then(({ renderList }) => renderList(document.getElementById('music-list')));
       });
     });
   };
@@ -271,7 +270,7 @@ export function renderPlayerFavoriteIcon() {
     info.appendChild(favBtn);
   }
   const favImg = favBtn.querySelector('img');
-  import('./state.js').then(({ state, toggleFavorite }) => {
+  import('../shared/state.js').then(({ state, toggleFavorite }) => {
     const track = state.currentTrack;
     const color = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#8C40B8';
     favImg.style.filter = track && track.favorite ? `drop-shadow(0 0 4px ${color}) saturate(2)` : 'grayscale(1) opacity(.5)';

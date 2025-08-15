@@ -1,14 +1,14 @@
-import { setupPlayer } from './components/player.js';
+import { setupPlayer } from './components/player/index.js';
 import { initialScan } from './library.js';
 import { setupEventListeners } from './events.js';
 import { getComplementaryColor } from './ui/colorUtils.js';
 import { preloadGridView } from './grid.js';
 import * as dom from './dom.js';
-import { renderList } from './components/view.js';
-import { setupQueuePanel } from './components/queue.js';
-import { state } from './components/state.js';
-import { loadPlaylists, buildSmartPlaylists, renderPlaylistsSidebar, createPlaylist, getPlaylistTracks } from './components/playlists.js';
-import { playlists } from './components/playlists.js';
+import { renderList } from './components/shared/view.js';
+import { setupQueuePanel } from './components/queue/queue.js';
+import { state } from './components/shared/state.js';
+import { loadPlaylists, buildSmartPlaylists, renderPlaylistsSidebar, createPlaylist, getPlaylistTracks } from './components/playlist/playlists.js';
+import { playlists } from './components/playlist/playlists.js';
 
 function playlistsName(source) {
   if (source?.type !== 'user') return null;

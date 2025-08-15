@@ -1,8 +1,8 @@
-import { renderGrid } from './components/view.js';
-import { renderPlaylistBrowseGrid } from './components/playlistBrowse.js';
+import { renderGrid } from './components/shared/view.js';
+import { renderPlaylistBrowseGrid } from './components/playlist/playlistBrowse.js';
 import * as dom from './dom.js';
-import { state, resetSidebarFilters, updateFilters } from './components/state.js';
-import { updateSidebarFilters } from './components/sidebar.js';
+import { state, resetSidebarFilters, updateFilters } from './components/shared/state.js';
+import { updateSidebarFilters } from './components/sidebar/sidebar.js';
 
 export function preloadGridView() {
   // No-op with new dynamic grid; keep function for compatibility

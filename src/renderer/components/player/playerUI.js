@@ -1,8 +1,8 @@
 // Player UI logic: progress bar, volume, and UI event listeners
-import { formatTime } from './ui.js';
+import { formatTime } from '../ui/ui.js';
 import { togglePlay, playPrevious, playNext, toggleShuffle, toggleLoop } from './playerCore.js';
-import { updateFilters } from './state.js';
-import { updateSidebarFilters } from './sidebar.js';
+import { updateFilters } from '../shared/state.js';
+import { updateSidebarFilters } from '../sidebar/sidebar.js';
 
 export function setupPlayerUI(audio, playBtn, prevBtn, nextBtn, progressBar, progressFill, progressHandle, currentTime, totalTime, volume, currentArt, currentTitle, currentArtist, renderListFn, shuffleBtn, loopBtn) {
   playBtn.addEventListener('click', () => togglePlay(audio, playBtn));
@@ -45,7 +45,7 @@ export function setupPlayerUI(audio, playBtn, prevBtn, nextBtn, progressBar, pro
       const qIdx = window.state.queue.findIndex(t => t.filePath === window.state.currentTrack.filePath);
       if (qIdx !== -1) {
         window.state.queue.splice(qIdx, 1);
-        import('./queue.js').then(m => m.renderQueuePanel && m.renderQueuePanel()).catch(()=>{});
+        import('../queue/queue.js').then(m => m.renderQueuePanel && m.renderQueuePanel()).catch(()=>{});
       }
     }
     playNext(audio, renderListFn);
