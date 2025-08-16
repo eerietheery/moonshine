@@ -7,7 +7,7 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postbuild": "signtool sign /f dist\\moonshine-dev.pfx /p ***REMOVED*** /tr http://timestamp.digicert.com /td sha256 /fd sha256 \"dist\\Moonshine 1.1.0.exe\""
   },
   "keywords": [],
   "author": "",
