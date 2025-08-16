@@ -4,6 +4,44 @@ import { renderList } from '../components/shared/view.js';
 import { showColorModal } from './colorModal.js';
 
 function showSettingsModal() {
+  // --- Import Playlist Section ---
+  const importSection = document.createElement('div');
+  importSection.style.marginTop = '18px';
+  importSection.style.display = 'flex';
+  importSection.style.alignItems = 'center';
+  importSection.style.gap = '10px';
+
+  const importBtn = document.createElement('button');
+  importBtn.textContent = 'Import Playlist(s)…';
+  importBtn.style.background = 'var(--primary-color, #8C40B8)';
+  importBtn.style.border = 'none';
+  importBtn.style.color = '#fff';
+  importBtn.style.padding = '10px 14px';
+  importBtn.style.borderRadius = '6px';
+  importBtn.style.cursor = 'pointer';
+
+  // Hidden file input for M3U files
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.m3u,.m3u8';
+  fileInput.multiple = true;
+  fileInput.style.display = 'none';
+
+  importBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    const { importM3U } = await import('../utils/importM3U.js');
+    for (const file of files) {
+      await importM3U(file, state, window.renderPlaylistsSidebar || (() => {}));
+    }
+    fileInput.value = '';
+    modal.remove();
+    teardown();
+  });
+
+  importSection.appendChild(importBtn);
+  importSection.appendChild(fileInput);
   // --- List View Headers Section ---
   const headersSection = document.createElement('div');
   headersSection.style.marginTop = '18px';
@@ -342,6 +380,7 @@ function showSettingsModal() {
 
   // --- Assemble Modal Body ---
   body.appendChild(libSection);
+  body.appendChild(importSection);
   body.appendChild(headersSection);
   body.appendChild(filterSection);
   body.appendChild(artistSection);

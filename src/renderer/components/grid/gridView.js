@@ -7,12 +7,13 @@ import { showToast } from '../ui/ui.js';
 import { getPlaylistTracks } from '../playlist/playlists.js';
 
 export function renderGrid(list) {
+  try { document.body.classList.toggle('playlists-active', state.viewMode === 'playlist' && !state.activePlaylist); } catch(e) {}
   // Declare headerEl and gridHeaders once at the top
   const headerEl = document.querySelector('#music-table .table-header');
   const gridHeaders = state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre'];
 
-  // Show header in grid view
-  if (headerEl) headerEl.classList.remove('hidden');
+  // Show header in grid view, but hide it while browsing playlists (no selection)
+  if (!(state.viewMode === 'playlist' && !state.activePlaylist) && headerEl) headerEl.classList.remove('hidden');
 
   // Add click/keyboard handlers for sorting in grid view
   if (headerEl && state.tracks && state.tracks.length) {
@@ -47,17 +48,20 @@ export function renderGrid(list) {
   list.style.gap = '12px';
   list.classList.add('grid');
 
-  // Build album-centric view: group by album + artist
+  // Build album-centric view: group by album + condensed artist name
   const albumMap = new Map();
   for (const track of state.filteredTracks) {
     const tgs = track.tags || {};
     const album = tgs.album || 'Unknown';
-    const artist = tgs.artist || 'Unknown';
+    const artistRaw = tgs.artist || 'Unknown';
+    // Condense artist: take first before comma or semicolon
+    const artist = artistRaw.split(/[,;]/)[0].trim();
     const key = `${album}|||${artist}`;
     if (!albumMap.has(key)) {
       albumMap.set(key, {
         album,
         artist,
+        artistRaw,
         art: track.albumArtDataUrl || 'assets/images/default-art.png',
         year: tgs.year || null,
         tracks: [],
@@ -120,11 +124,11 @@ export function renderGrid(list) {
     const yearText = a.year ? String(a.year) : '';
     card.innerHTML = `
       <div class="queue-btn-container">
-  <button class="queue-add-btn" title="Add album to Queue" style="background:none;border:none;cursor:pointer;padding:0;vertical-align:middle;"><img src="assets/images/addtoqueue.svg" alt="Add to Queue" style="width:22px;height:22px;filter:invert(1) brightness(2);transition:filter .2s;" /></button>
+        <button class="queue-add-btn" title="Add album to Queue" style="background:none;border:none;cursor:pointer;padding:0;vertical-align:middle;"><img src="assets/images/addtoqueue.svg" alt="Add to Queue" style="width:22px;height:22px;filter:invert(1) brightness(2);transition:filter .2s;" /></button>
       </div>
       <img class="album-art" src="${a.art}" alt="Album Art" />
       <div class="track-name linkish" data-album title="${a.album}" tabindex="0">${a.album}</div>
-      <div class="track-artist linkish" data-artist title="${a.artist}" tabindex="0">${a.artist}</div>
+      <div class="track-artist linkish" data-artist title="${a.artistRaw}" tabindex="0">${a.artist}</div>
       ${sourceTitle ? `<div class="grid-source" title="${sourceTitle}">${sourceTitle}</div>` : ''}
       <div class="track-year ${yearText ? 'linkish' : ''}" ${yearText ? 'data-year tabindex="0"' : ''} title="${yearText}">${a.year ? a.year + ' • ' : ''}${a.tracks.length} track${a.tracks.length !== 1 ? 's' : ''}</div>
     `;

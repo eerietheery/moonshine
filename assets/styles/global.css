@@ -26,7 +26,7 @@
 }
 /* Minimal dark scrollbar for Electron/Chrome */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 18px;
   background: #181818;
 }
 
@@ -176,10 +176,12 @@ button:hover {
 #scan-btn {
   background: var(--primary-color);
   width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
 }
 
 .loading-message {
   color: var(--primary-color);
   padding: 16px;
 }
+
+

@@ -36,6 +36,16 @@
   box-sizing: border-box;
 }
 
+/* When code adds the `hidden` class we want the header fully removed from layout
+   (playlist browse/selected mode uses this class). Use !important to guard
+   against inline styles set elsewhere. */
+#music-table .table-header.hidden {
+  display: none !important;
+}
+
+/* Prefer body class toggle for stronger intent-based hiding */
+body.playlists-active #music-table-header { display: none !important; }
+
 .col-title, .col-artist, .col-album, .col-year, .col-genre {
   cursor: pointer;
   transition: color 0.15s;

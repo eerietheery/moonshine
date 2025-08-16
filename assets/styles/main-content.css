@@ -61,6 +61,14 @@
   gap: 12px;
   width: 100%;
 }
+.playlist-header {
+  position: sticky;
+  top: 0;
+  z-index: 800;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
 .playlist-meta {
   display: flex;
   flex-direction: column;

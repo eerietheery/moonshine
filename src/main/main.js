@@ -14,6 +14,7 @@ function createWindow() {
     height: 800,
     icon: path.join(__dirname, '../../assets/images/etico.png'), // Corrected path
     backgroundColor: cfg.primaryColor || '#8C40B8',
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'), // This path is correct
       contextIsolation: true,

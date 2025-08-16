@@ -1,5 +1,6 @@
 // Playlist system: user playlists and smart (genre) playlists
 import { state } from '../shared/state.js';
+import { createFilterItem } from '../ui/ui.js';
 
 // Data model (renderer-side cache). Persisted in main config under `playlists`.
 // User playlist shape: { id, name, trackPaths: string[], createdAt, updatedAt }
@@ -138,6 +139,20 @@ export async function showPlaylistContextMenu(e, anchorEl, data, label) {
     addItem('Delete…', () => {
       if (confirm('Delete this playlist?')) deletePlaylist(data.id);
     });
+    addItem('Export as M3U…', async () => {
+      const { exportM3U } = await import('../../utils/exportM3U.js');
+      const pl = playlists.user.find(p => p.id === data.id);
+      if (!pl) return;
+      const m3u = exportM3U(pl, state.tracks);
+      const blob = new Blob([m3u], { type: 'audio/x-mpegurl' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (pl.name || 'playlist') + '.m3u';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+    });
   }
 
   // Position and attach
@@ -195,26 +210,32 @@ export function getPlaylistTracks(source) {
 
 // Sidebar wiring helpers (non-invasive)
 export function renderPlaylistsSidebar(sectionUser, sectionSmart, onSelect) {
-  // User playlists
   sectionUser.innerHTML = '';
-  const makeItem = (label, data) => {
-    const li = document.createElement('div');
-    li.className = 'filter-item';
-    li.tabIndex = 0;
-    li.textContent = label;
-    li.onclick = () => onSelect(data);
-    li.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); li.click(); } };
-  // Context menu actions (use shared helper so single-menu behavior is consistent)
-  li.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); showPlaylistContextMenu(e, li, data, label); };
-    return li;
-  };
+  // User playlists: build with createFilterItem so structure matches artist/album lists
+  const userFrag = document.createDocumentFragment();
   playlists.user.forEach(pl => {
-    sectionUser.appendChild(makeItem(pl.name, { type: 'user', id: pl.id }));
+    const count = Array.isArray(pl.trackPaths) ? pl.trackPaths.length : 0;
+    const isActive = state.activePlaylist && state.activePlaylist.type === 'user' && state.activePlaylist.id === pl.id;
+    const item = createFilterItem(pl.name, count, !!isActive);
+    // attach handlers similar to other filter-items
+    item.onclick = (e) => { e.stopPropagation(); onSelect({ type: 'user', id: pl.id }); };
+    item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); } };
+    item.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); showPlaylistContextMenu(e, item, { type: 'user', id: pl.id }, pl.name); };
+    userFrag.appendChild(item);
   });
+  sectionUser.appendChild(userFrag);
 
   // Smart playlists by genre
   sectionSmart.innerHTML = '';
+  const smartFrag = document.createDocumentFragment();
   Object.keys(playlists.smart).sort((a,b) => a.localeCompare(b)).forEach(genre => {
-    sectionSmart.appendChild(makeItem(genre, { type: 'smart', genre }));
+    const cnt = Array.isArray(playlists.smart[genre]) ? playlists.smart[genre].length : 0;
+    const isActive = state.activePlaylist && state.activePlaylist.type === 'smart' && state.activePlaylist.genre === genre;
+    const item = createFilterItem(genre, cnt, !!isActive);
+    item.onclick = (e) => { e.stopPropagation(); onSelect({ type: 'smart', genre }); };
+    item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); } };
+    item.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); showPlaylistContextMenu(e, item, { type: 'smart', genre }, genre); };
+    smartFrag.appendChild(item);
   });
+  sectionSmart.appendChild(smartFrag);
 }

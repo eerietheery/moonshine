@@ -10,28 +10,47 @@ import { showToast } from '../ui/ui.js';
 import { renderPlaylistBrowse } from '../playlist/playlistBrowse.js';
 
 export function renderList(list) {
+  // Ensure body has a class indicating playlist *browse* mode so CSS can react
+  try { document.body.classList.toggle('playlists-active', state.viewMode === 'playlist' && !state.activePlaylist); } catch(e) {}
   // If in playlist mode and we have an active playlist, show header
   const headerHost = dom.playlistHeader;
-  if (state.viewMode === 'playlist' && state.activePlaylist && headerHost) {
-    renderPlaylistHeader(headerHost, state.activePlaylist);
-    // Replace main table headers with playlist-specific headers
-    const headerEl = document.querySelector('#music-table .table-header');
-    if (headerEl) {
-      headerEl.innerHTML = [
-        '<div class="col-title">Title</div>',
-        '<div class="col-artist">Artist</div>',
-        '<div class="col-album">Album</div>',
-        '<div class="col-year">Year</div>',
-        '<div class="col-genre">Genre</div>',
-        '<div class="col-actions"></div>'
-      ].join('');
-      headerEl.style.gridTemplateColumns = '3fr 2fr 2fr 1fr 1fr 140px';
-      headerEl.classList.remove('hidden');
+  // Centralize header element lookup so we can reliably hide/show it below
+  const headerEl = document.querySelector('#music-table .table-header');
+  if (state.viewMode === 'playlist' && headerHost) {
+    // Playlist mode: if a specific playlist is active show the playlist meta header,
+    // otherwise keep the playlist header area empty/hidden for browse mode.
+    if (state.activePlaylist) {
+      renderPlaylistHeader(headerHost, state.activePlaylist);
+      // When a specific playlist is selected we want the main music-table header visible
+      if (headerEl) {
+        headerEl.classList.remove('hidden');
+        headerEl.style.display = '';
+      }
+      const staticHeader = document.getElementById('music-table-header');
+      if (staticHeader) staticHeader.style.display = '';
+    } else {
+      headerHost.classList.remove('visible');
+      headerHost.style.display = 'none';
+      headerHost.innerHTML = '';
+      // Hide the main music table header while browsing playlists (no selection)
+      if (headerEl) {
+        headerEl.classList.add('hidden');
+        headerEl.style.display = 'none';
+      }
+      const staticHeader = document.getElementById('music-table-header');
+      if (staticHeader) staticHeader.style.display = 'none';
     }
   } else if (headerHost) {
     headerHost.classList.remove('visible');
     headerHost.style.display = 'none';
     headerHost.innerHTML = '';
+    // Ensure main header is available when not in playlist mode
+    if (headerEl) {
+      headerEl.style.display = '';
+      headerEl.classList.remove('hidden');
+    }
+    const staticHeader = document.getElementById('music-table-header');
+    if (staticHeader) staticHeader.style.display = '';
   }
   // If browsing playlists (no specific selection), render browser and exit
   if (state.viewMode === 'playlist' && !state.activePlaylist) {
@@ -75,7 +94,6 @@ export function renderList(list) {
   if (list.vlist) list.vlist.destroy();
 
   // Hide header if loading spinner is present
-  const headerEl = document.querySelector('#music-table .table-header');
   if (headerEl && (!state.tracks || !state.tracks.length)) {
     headerEl.classList.add('hidden');
   }
@@ -187,9 +205,9 @@ export function renderList(list) {
   if (legacyHeader) legacyHeader.remove();
 
   // Use existing static header container from index.html and populate dynamically
-  const headerContainer = document.querySelector('#music-table .table-header');
   const headers = state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre'];
-  if (headerEl && state.tracks && state.tracks.length) {
+  // Only populate/show main headers when NOT browsing playlists
+  if (!(state.viewMode === 'playlist' && !state.activePlaylist) && headerEl && state.tracks && state.tracks.length) {
     headerEl.classList.remove('hidden');
     const headerLabels = {
       title: 'Title',

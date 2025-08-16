@@ -1,6 +1,3 @@
-
-better scrollbar. thousands of songs make a small scrollbar. would love to make it easy to grab no matter library size, but don't want to interpolate the list scrolling all weird. 
-
 changing colors slowly kills performance, implement gpu based handling for 🌈rainbowmode🌈 (scrolling colors)
 
 absolutely ensure that when the user clicks the linked aritst name from the list view it also resets the sidebar filter 

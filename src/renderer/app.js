@@ -17,6 +17,36 @@ function playlistsName(source) {
 }
 
 export function initializeApp() {
+  // Sidebar resizer logic
+  const sidebar = document.getElementById('sidebar');
+  const resizer = document.getElementById('sidebar-resizer');
+  let isResizing = false;
+  let startX = 0;
+  let startWidth = 0;
+  if (resizer && sidebar) {
+    resizer.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      startX = e.clientX;
+      startWidth = sidebar.offsetWidth;
+  document.body.style.cursor = 'ew-resize';
+  document.body.style.userSelect = 'none';
+      document.addEventListener('mousemove', resizeSidebar);
+      document.addEventListener('mouseup', stopResizing);
+    });
+    function resizeSidebar(e) {
+      if (!isResizing) return;
+      let dx = e.clientX - startX;
+      let newWidth = Math.max(225, Math.min(window.innerWidth * 0.2, startWidth + dx));
+      sidebar.style.width = newWidth + 'px';
+    }
+    function stopResizing() {
+      isResizing = false;
+  document.body.style.cursor = '';
+  document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', resizeSidebar);
+      document.removeEventListener('mouseup', stopResizing);
+    }
+  }
   // Expose canonical state as window.state for legacy modules that still reference it
   // Provide safe defaults for legacy settings
   window.state = state;
