@@ -1,4 +1,4 @@
-Howdy! This here is moonshine! An offline local music library player & viewer. 
+An offline local music library player & viewer. 
 ![Alt Text](https://i.imgur.com/02ysdlp.png)
 Built with Electron and Node.js. 
 Features:
