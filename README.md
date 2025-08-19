@@ -1,5 +1,5 @@
 An offline local music library player & viewer. 
-![Alt Text](https://i.imgur.com/02ysdlp.png)
+![Alt Text](https://github.com/eerietheery/moonshine/blob/main/assets/images/moonshinebanner.png)
 Built with Electron and Node.js. 
 Features:
 - Familiar interface ( ͡° ͜ʖ ͡°)
@@ -10,9 +10,9 @@ Features:
 - Import & Export your own m3u playlists
 
 
-![Alt text](https://i.imgur.com/nWWlRNS.png)
+![Alt text](https://github.com/eerietheery/moonshine/blob/main/assets/images/sample3.png)
 
-![Alt text](https://i.imgur.com/HyNLfBO.png)
+![Alt text](https://github.com/eerietheery/moonshine/blob/main/assets/images/sample1.png)
 
 # 🌙 Moonshine v1.1.0 Release
 🚀 Grab the latest version of **Moonshine** from GitHub:
