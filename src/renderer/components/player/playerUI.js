@@ -3,6 +3,8 @@ import { formatTime } from '../ui/ui.js';
 import { togglePlay, playPrevious, playNext, toggleShuffle, toggleLoop } from './playerCore.js';
 import { updateFilters } from '../shared/state.js';
 import { updateSidebarFilters } from '../sidebar/sidebar.js';
+import * as dom from '../../dom.js';
+import { renderList, renderGrid } from '../shared/view.js';
 
 export function setupPlayerUI(audio, playBtn, prevBtn, nextBtn, progressBar, progressFill, progressHandle, currentTime, totalTime, volume, currentArt, currentTitle, currentArtist, renderListFn, shuffleBtn, loopBtn) {
   playBtn.addEventListener('click', () => togglePlay(audio, playBtn));
@@ -99,8 +101,10 @@ export function setupPlayerUI(audio, playBtn, prevBtn, nextBtn, progressBar, pro
       }
       const filterInput = document.getElementById('filter');
       updateFilters(filterInput, window.state.sidebarFilteringEnabled);
-      updateSidebarFilters(filterInput, document.getElementById('artist-list'), document.getElementById('album-list'), () => renderListFn(), window.state.sidebarFilteringEnabled);
-      renderListFn();
+      // Choose renderer dynamically so we don't force-list when grid is active
+      const renderer = (dom.gridViewBtn && dom.gridViewBtn.classList.contains('active')) ? renderGrid : renderList;
+      updateSidebarFilters(filterInput, document.getElementById('artist-list'), document.getElementById('album-list'), () => renderer(dom.list), window.state.sidebarFilteringEnabled);
+      renderer(dom.list);
     };
     currentArtist.addEventListener('click', handleArtist);
     currentArtist.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleArtist(); } });
@@ -117,8 +121,10 @@ export function setupPlayerUI(audio, playBtn, prevBtn, nextBtn, progressBar, pro
       }
       const filterInput = document.getElementById('filter');
       updateFilters(filterInput, window.state.sidebarFilteringEnabled);
-      updateSidebarFilters(filterInput, document.getElementById('artist-list'), document.getElementById('album-list'), () => renderListFn(), window.state.sidebarFilteringEnabled);
-      renderListFn();
+      // Choose renderer dynamically so we don't force-list when grid is active
+      const renderer2 = (dom.gridViewBtn && dom.gridViewBtn.classList.contains('active')) ? renderGrid : renderList;
+      updateSidebarFilters(filterInput, document.getElementById('artist-list'), document.getElementById('album-list'), () => renderer2(dom.list), window.state.sidebarFilteringEnabled);
+      renderer2(dom.list);
     };
     currentTitle.addEventListener('click', handleAlbum);
     currentTitle.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAlbum(); } });

@@ -1,14 +1,16 @@
 import { state, updateFilters, resetSidebarFilters } from '../components/shared/state.js';
 import { updateSidebarFilters } from '../components/sidebar/sidebar.js';
-import { renderList } from '../components/shared/view.js';
+import { renderList, renderGrid } from '../components/shared/view.js';
 import * as dom from '../dom.js';
 
 export function setupFilterEventListeners() {
   if (dom.filterInput) {
     dom.filterInput.addEventListener('input', () => {
-      updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
-      updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
-      renderList(dom.list);
+  updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
+  // Choose renderer based on current view toggle
+  const renderer = dom.gridViewBtn && dom.gridViewBtn.classList.contains('active') ? renderGrid : renderList;
+  updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer(dom.list), state.sidebarFilteringEnabled);
+  renderer(dom.list);
     });
   } else {
     console.warn('filterInput not found in DOM');
@@ -35,9 +37,10 @@ export function setupFilterEventListeners() {
   // Ensure sidebar filtering is enabled when a filter item is clicked
   if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true;
 
-      updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
-      updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
-      renderList(dom.list);
+  updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
+  const renderer = dom.gridViewBtn && dom.gridViewBtn.classList.contains('active') ? renderGrid : renderList;
+  updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer(dom.list), state.sidebarFilteringEnabled);
+  renderer(dom.list);
     });
 
     container.addEventListener('keydown', (e) => {

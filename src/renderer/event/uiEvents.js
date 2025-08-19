@@ -1,6 +1,7 @@
-import { renderList } from '../components/shared/view.js';
+import { renderList, renderGrid } from '../components/shared/view.js';
 import { showSettingsModal } from '../ui/settingsModal.js';
 import { displayGridView } from '../components/grid/gridEvents.js';
+import { updateSidebarFilters } from '../components/sidebar/sidebar.js';
 import * as dom from '../dom.js';
 import { state } from '../components/shared/state.js';
 
@@ -51,14 +52,19 @@ export function setupUiEventListeners() {
     state.activeAlbum = null;
     state.activeYear = null;
     applyMode('artist');
-    renderList(dom.list);
+  // Respect current toolbar view: update sidebar filters and render grid when grid is active
+  const renderer = dom.gridViewBtn && dom.gridViewBtn.classList.contains('active') ? renderGrid : renderList;
+  updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer(dom.list), state.sidebarFilteringEnabled);
+  renderer(dom.list);
   });
   dom.modeAlbumsBtn?.addEventListener('click', () => {
     state.activeArtist = null;
     state.activeAlbum = null;
     state.activeYear = null;
     applyMode('album');
-    renderList(dom.list);
+  const renderer = dom.gridViewBtn && dom.gridViewBtn.classList.contains('active') ? renderGrid : renderList;
+  updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer(dom.list), state.sidebarFilteringEnabled);
+  renderer(dom.list);
   });
   dom.modePlaylistsBtn?.addEventListener('click', async () => {
     state.activeArtist = null;
@@ -66,7 +72,8 @@ export function setupUiEventListeners() {
     state.activeYear = null;
     state.activePlaylist = null; // no specific playlist yet - browse mode
     applyMode('playlist');
-    renderList(dom.list);
+  // Playlist browse remains list-based
+  renderList(dom.list);
   });
   // Initialize (ensure sidebar sections visibility reflects mode)
   applyMode(state.sidebarMode || 'artist');
