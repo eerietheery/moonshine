@@ -1,6 +1,6 @@
 import { state, updateFilters, resetSidebarFilters } from './components/shared/state.js';
 import { updateSidebarFilters } from './components/sidebar/sidebar.js';
-import { renderList } from './components/shared/view.js';
+import { renderList, renderGrid } from './components/shared/view.js';
 import * as dom from './dom.js';
 
 function showSpinner(show = true) {
@@ -56,9 +56,10 @@ async function addMusic(userPath) {
       document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
   window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
     }
-    updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
-    updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
-    renderList(dom.list);
+  updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
+  const renderer = (dom.gridViewBtn && dom.gridViewBtn.classList.contains('active')) ? renderGrid : renderList;
+  updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer(dom.list), state.sidebarFilteringEnabled);
+  renderer(dom.list);
   showSpinner(false);
   } catch (err) {
     dom.list.innerHTML = `<div style='color:#e74c3c;padding:16px;'>Error adding music: ${err.message}</div>`;
@@ -90,9 +91,10 @@ async function loadMusic(dirPath) {
       document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
   window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
     }
-    updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
-    updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
-    renderList(dom.list);
+  updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
+  const renderer2 = (dom.gridViewBtn && dom.gridViewBtn.classList.contains('active')) ? renderGrid : renderList;
+  updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer2(dom.list), state.sidebarFilteringEnabled);
+  renderer2(dom.list);
   showSpinner(false);
   } catch (err) {
     dom.list.innerHTML = `<div style='color:#e74c3c;padding:16px;'>Error loading music: ${err.message}</div>`;
@@ -131,9 +133,10 @@ async function initialScan() {
       } catch {}
       document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
   window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
-      updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
-      updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderList(dom.list), state.sidebarFilteringEnabled);
-      renderList(dom.list);
+  updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
+  const renderer3 = (dom.gridViewBtn && dom.gridViewBtn.classList.contains('active')) ? renderGrid : renderList;
+  updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer3(dom.list), state.sidebarFilteringEnabled);
+  renderer3(dom.list);
       showSpinner(false);
     } else {
       // If initial scan is empty, load default directory
