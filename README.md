@@ -1,5 +1,5 @@
 An offline local music library player & viewer. 
-![Alt Text](https://i.imgur.com/02ysdlp.png)
+![Alt Text](https://github.com/eerietheery/moonshine/blob/main/assets/images/moonshinebanner.png)
 Built with Electron and Node.js. 
 Features:
 - Familiar interface ( ͡° ͜ʖ ͡°)
