@@ -17,6 +17,15 @@ export function renderGrid(list) {
 
   // Add click/keyboard handlers for sorting in grid view
   if (headerEl && state.tracks && state.tracks.length) {
+    // Ensure header labels and active-sort arrow reflect current state (similar to list view)
+    const headerLabels = { title: 'Title', artist: 'Artist', album: 'Album', year: 'Year', genre: 'Genre', bitrate: 'Bit Rate' };
+    headerEl.innerHTML = gridHeaders.map(h => {
+      const isActive = state.sortBy === h;
+      const arrow = isActive ? (state.sortOrder === 'asc' ? '↑' : '↓') : '';
+      return `<div class="col-${h} sort-header${isActive ? ' active-sort' : ''}" tabindex="0" role="button" data-sort="${h}" title="Sort by ${headerLabels[h] || h}">${headerLabels[h] || h} <span class="sort-arrow">${arrow}</span></div>`;
+    }).join('') + '<div class="col-actions"></div>';
+    headerEl.style.gridTemplateColumns = (state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre']).map(h => ({ title: '3fr', artist: '2fr', album: '2fr', year: '1fr', genre: '1fr', bitrate: '1fr' }[h] || '1fr')).concat('140px').join(' ');
+
     gridHeaders.forEach(h => {
       const cell = headerEl.querySelector(`[data-sort="${h}"]`);
       if (!cell) return;
@@ -27,6 +36,7 @@ export function renderGrid(list) {
           state.sortBy = h;
           state.sortOrder = 'asc';
         }
+        console.log('grid header clicked ->', h, state.sortBy, state.sortOrder);
         renderGrid(list);
       };
       cell.onkeydown = (e) => {
@@ -64,6 +74,7 @@ export function renderGrid(list) {
         artistRaw,
         art: track.albumArtDataUrl || 'assets/images/default-art.png',
         year: tgs.year || null,
+        genre: tgs.genre || '',
         tracks: [],
       });
     }
@@ -74,13 +85,41 @@ export function renderGrid(list) {
   }
 
   let albums = Array.from(albumMap.values());
-  // Determine sort preference: use explicit gridSortByAlbum flag if present, otherwise fall back to sidebar mode
+  // Determine sort: primary key is always state.sortBy (header-driven).
+  // If gridSortByAlbum or sidebarMode==='album' is set, use album/artist as secondary tie-breakers.
   const preferAlbumSort = !!state.gridSortByAlbum || state.sidebarMode === 'album';
-  if (preferAlbumSort) {
-    albums.sort((a, b) => a.album.localeCompare(b.album) || a.artist.localeCompare(b.artist));
-  } else {
-    albums.sort((a, b) => a.artist.localeCompare(b.artist) || a.album.localeCompare(b.album));
-  }
+  const dir = state.sortOrder === 'asc' ? 1 : -1;
+  const keyFor = (a) => {
+    switch (state.sortBy) {
+      case 'title':
+      case 'album':
+        return (a.album || '').toString().toLowerCase();
+      case 'artist':
+        return (a.artist || '').toString().toLowerCase();
+      case 'year':
+        return Number(a.year) || 0;
+      case 'genre':
+        return (a.genre || '').toString().toLowerCase();
+      default:
+        return (a.artist || '').toString().toLowerCase();
+    }
+  };
+  albums.sort((A, B) => {
+    const aKey = keyFor(A);
+    const bKey = keyFor(B);
+    // numeric vs string
+    if (typeof aKey === 'number' || typeof bKey === 'number') {
+      const ncmp = (aKey - bKey) * dir;
+      if (ncmp !== 0) return ncmp;
+    } else {
+      const cmp = aKey < bKey ? -1 : aKey > bKey ? 1 : 0;
+      if (cmp !== 0) return cmp * dir;
+    }
+    // tie-breakers: if preferAlbumSort, try album then artist; otherwise fall back to album then artist for stability
+    const albumCmp = A.album.localeCompare(B.album);
+    if (albumCmp !== 0) return albumCmp * dir;
+    return A.artist.localeCompare(B.artist) * dir;
+  });
 
   if (albums.length === 0) {
     list.innerHTML = '<div style="color:#666;padding:20px;text-align:center;grid-column:1/-1;">No albums found</div>';
@@ -145,6 +184,19 @@ export function renderGrid(list) {
       // If inner element clicked has specific filter, let dedicated handlers run
       if (e.target && (e.target.dataset.album || e.target.dataset.artist || e.target.dataset.year)) return;
       applyGridFilter({ album: a.album, artist: a.artist });
+    });
+    // Right-click context menu for album cards (use shared helper)
+    card.addEventListener('contextmenu', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const items = [];
+      items.push({ label: 'Open album', onClick: () => applyGridFilter({ album: a.album, artist: a.artist }) });
+      items.push({ label: 'Play album', onClick: async () => { if (!a.tracks || !a.tracks.length) return; state.viewMode = 'library'; state.activeAlbum = a.album; state.filteredTracks = a.tracks.slice(); renderList(list); const { playTrack } = await import('../player/playerCore.js'); playTrack(a.tracks[0], 0, document.getElementById('audio'), document.getElementById('play-btn'), document.getElementById('current-art'), document.getElementById('current-title'), document.getElementById('current-artist'), () => renderList(list)); } });
+      items.push({ label: 'Queue album', onClick: () => import('../shared/state.js').then(({ addToQueue }) => { a.tracks.forEach(track => addToQueue(track)); import('../ui/ui.js').then(({ showToast }) => showToast(`Added ${a.tracks.length} track${a.tracks.length!==1?'s':''} from "${a.album}" to queue`)); }) });
+      items.push({ label: 'Add to playlist…', onClick: () => import('../playlist/playlists.js').then(({ playlists, addToPlaylist }) => { const panel = document.createElement('div'); panel.className = 'playlist-popup'; Object.assign(panel.style, { position: 'fixed', zIndex: 10000, background: 'var(--sidebar-bg, #1f1f1f)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', boxShadow: '0 12px 28px rgba(0,0,0,0.45)', width: '260px', padding: '10px' }); const newBtn = document.createElement('button'); newBtn.textContent = 'New playlist…'; Object.assign(newBtn.style, { width: '100%', background: 'var(--primary-color)', color: '#000', border: 'none', borderRadius: '8px', padding: '10px 12px', cursor: 'pointer', fontWeight: 700, marginBottom: '10px' }); newBtn.onclick = () => { document.dispatchEvent(new CustomEvent('playlists:changed')); panel.remove(); }; panel.appendChild(newBtn); const listWrap = document.createElement('div'); Object.assign(listWrap.style, { maxHeight: '220px', overflowY: 'auto', paddingRight: '2px' }); if (playlists.user.length) playlists.user.forEach(pl => { const item = document.createElement('div'); item.textContent = pl.name; item.tabIndex = 0; item.style.padding = '8px 10px'; item.onclick = () => { a.tracks.forEach(t => addToPlaylist(pl.id, t)); document.dispatchEvent(new CustomEvent('playlists:changed')); panel.remove(); }; listWrap.appendChild(item); }); else { const empty = document.createElement('div'); empty.textContent = 'No playlists yet'; Object.assign(empty.style, { color: '#9a9a9a', fontSize: '0.85rem', padding: '8px 10px' }); listWrap.appendChild(empty); } panel.appendChild(listWrap); panel.style.left = `${Math.min(e.clientX || 0, window.innerWidth - 280)}px`; panel.style.top = `${Math.min(e.clientY || 0, window.innerHeight - 280)}px`; document.body.appendChild(panel); setTimeout(() => { const closeDoc = (ev) => { if (!panel.contains(ev.target)) panel.remove(); }; document.addEventListener('click', closeDoc, { capture: true, once: true }); }, 0); }) });
+      items.push({ label: 'Reveal in Explorer', onClick: () => { const path = a.tracks[0]?.filePath || a.tracks[0]?.file || null; if (!path) { import('../ui/ui.js').then(({ showToast }) => showToast('No file path available')); return; } if (window.etune && typeof window.etune.revealFile === 'function') window.etune.revealFile(path); else if (window.etune && typeof window.etune.revealInFolder === 'function') window.etune.revealInFolder(path); else if (window.require) { try { const { shell } = window.require('electron'); shell.showItemInFolder(path); } catch (err) { import('../ui/ui.js').then(({ showToast }) => showToast('Reveal not available')); } } else import('../ui/ui.js').then(({ showToast }) => showToast('Reveal not supported')); } });
+      items.push({ label: 'Copy file path', onClick: () => { const path = a.tracks[0]?.filePath || a.tracks[0]?.file || ''; navigator.clipboard?.writeText(path).catch(() => {}); } });
+
+      import('../shared/contextMenu.js').then(({ showContextMenu }) => showContextMenu(e, items));
     });
     card.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); applyGridFilter({ album: a.album, artist: a.artist }); }
