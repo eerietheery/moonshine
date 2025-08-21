@@ -13,7 +13,7 @@ function createWindow() {
     width: 1200,
     height: 800,
     icon: path.join(__dirname, '../../assets/images/etico.png'), // Corrected path
-    backgroundColor: cfg.primaryColor || '#8C40B8',
+    backgroundColor: '#121212',
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'), // This path is correct
@@ -27,8 +27,26 @@ function createWindow() {
 
 app.whenReady().then(async () => {
   // Load config
-  const cfg = loadConfig();
-  // Kick off an initial scan in background
+  let cfg = loadConfig();
+
+  // If this is a first run (no library directories), prompt the user to select a music folder
+  try {
+    if (!Array.isArray(cfg.libraryDirs) || cfg.libraryDirs.length === 0) {
+      const result = await dialog.showOpenDialog({
+        properties: ['openDirectory'],
+        title: 'Select Music Folder',
+      });
+      if (!result.canceled && result.filePaths && result.filePaths.length) {
+        const selected = result.filePaths[0];
+        // Persist selection to config and use the returned config object
+        cfg = updateConfig({ libraryDirs: [selected] });
+      }
+    }
+  } catch (err) {
+    // ignore errors and continue with defaults
+  }
+
+  // Kick off an initial scan in background using either the user-selected dir or defaults
   try {
     const dirs = (cfg.libraryDirs && cfg.libraryDirs.length) ? cfg.libraryDirs : [DEFAULT_DIR];
     // Scan first dir for initial list
@@ -36,6 +54,7 @@ app.whenReady().then(async () => {
   } catch {
     initialScanCache = null;
   }
+
   createWindow();
 });
 
