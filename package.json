@@ -1,13 +1,13 @@
 {
   "name": "moonshine",
   "productName": "moonshine",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "",
   "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
-    "postbuild": "signtool sign /f dist\\moonshine-dev.pfx /p Pish0eetsahn! /tr http://timestamp.digicert.com /td sha256 /fd sha256 \"dist\\Moonshine 1.1.0.exe\""
+    "postbuild": "signtool sign /f dist\\moonshine-dev.pfx /p iforgot1 /tr http://timestamp.digicert.com /td sha256 /fd sha256 \"dist\\Moonshine 1.1.2.exe\""
   },
   "keywords": [],
   "author": "",

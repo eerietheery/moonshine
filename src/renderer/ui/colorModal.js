@@ -26,17 +26,25 @@ function showColorModal() {
   title.style.marginBottom = '20px';
   modalContent.appendChild(title);
 
+  // Expanded palette: 3 rows of 8 columns = 24 swatches
   const colors = [
-    '#8C40B8', '#ff0000', '#ffa500', '#ffff00', '#008000', '#0000ff', '#4b0082', '#ee82ee'
+    '#8C40B8', '#ff0000', '#ffa500', '#ffff00', '#008000', '#0000ff', '#4b0082', '#ee82ee',
+    '#00CED1', '#20B2AA', '#FF1493', '#FF7F50', '#B22222', '#228B22', '#FFD700', '#00FA9A',
+    '#1E90FF', '#6A5ACD', '#D2691E', '#2F4F4F', '#C71585', '#7FFF00', '#F4A460', '#4682B4'
   ];
+
   const colorContainer = document.createElement('div');
-  colorContainer.style.display = 'flex';
+  // grid layout to create rows/columns of swatches
+  colorContainer.style.display = 'grid';
+  colorContainer.style.gridTemplateColumns = 'repeat(8, 40px)';
+  colorContainer.style.gridAutoRows = '40px';
   colorContainer.style.gap = '10px';
+  colorContainer.style.justifyContent = 'center';
 
   colors.forEach((color, idx) => {
     const colorDot = document.createElement('div');
-    colorDot.style.width = '30px';
-    colorDot.style.height = '30px';
+    colorDot.style.width = '34px';
+    colorDot.style.height = '34px';
     colorDot.style.borderRadius = '50%';
     colorDot.style.backgroundColor = color;
     colorDot.style.cursor = 'pointer';
@@ -46,11 +54,11 @@ function showColorModal() {
       document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(color));
     }
     colorDot.addEventListener('click', () => {
+      // update theme but keep modal open
       document.documentElement.style.setProperty('--primary-color', color);
       document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(color));
       window.etune.updateConfig({ theme: { primaryColor: color } });
       refreshDynamicColors();
-      modal.remove();
     });
     colorContainer.appendChild(colorDot);
   });
@@ -84,7 +92,6 @@ function showColorModal() {
     document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(e.target.value));
     window.etune.updateConfig({ theme: { primaryColor: e.target.value } });
     refreshDynamicColors();
-    modal.remove();
   };
 // Refresh volume bar and favorite icon colors after theme change
 function refreshDynamicColors() {
