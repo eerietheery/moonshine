@@ -4,10 +4,10 @@
   "version": "1.1.2",
   "description": "",
   "main": "src/main/main.js",
-  "scripts": {
+    "scripts": {
     "start": "electron .",
     "build": "electron-builder",
-    "postbuild": "signtool sign /f dist\\moonshine-dev.pfx /p iforgot1 /tr http://timestamp.digicert.com /td sha256 /fd sha256 \"dist\\Moonshine 1.1.2.exe\""
+    "postbuild": "signtool sign /f dist\\moonshine-dev.pfx /p \"password\" /tr http://timestamp.digicert.com /td sha256 /fd sha256 \"C:\\Users\\Eerie\\Desktop\\_code\\moonshine\\dist\\Moonshine 1.1.2.exe\""
   },
   "keywords": [],
   "author": "",
@@ -25,7 +25,7 @@
     "appId": "com.moonshine.player",
     "productName": "Moonshine",
     "win": {
-      "icon": "assets/images/etico_opt.png",
+  "icon": "assets/images/favicon.ico",
       "target": [
         {
           "target": "nsis",
@@ -50,7 +50,7 @@
       "deleteAppDataOnUninstall": true
     },
     "directories": {
-      "output": "dist"
+      "output": "C:\\Users\\Eerie\\Desktop\\_code\\moonshine\\dist"
     },
     "files": [
       "!docs/**"
