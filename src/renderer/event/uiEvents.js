@@ -91,9 +91,10 @@ export function setupUiEventListeners() {
   });
 
   dom.listViewBtn.addEventListener('click', () => {
-    renderList(dom.list);
-    dom.gridViewBtn.classList.remove('active');
-    dom.listViewBtn.classList.add('active');
+  // Ensure toolbar reflects the requested view before rendering.
+  dom.gridViewBtn.classList.remove('active');
+  dom.listViewBtn.classList.add('active');
+  renderList(dom.list);
   });
 
   dom.tableHeaders.forEach((header, idx) => {
