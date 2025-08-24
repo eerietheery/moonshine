@@ -137,7 +137,10 @@ export async function showPlaylistContextMenu(e, anchorEl, data, label) {
       if (next) renamePlaylist(data.id, next);
     });
     addItem('Delete…', () => {
-      if (confirm('Delete this playlist?')) deletePlaylist(data.id);
+      import('../../ui/confirmModal.js').then(({ showConfirmModal }) => {
+        showConfirmModal({ title: 'Delete playlist', message: `Delete playlist "${label}"? This cannot be undone.`, okText: 'Delete', cancelText: 'Cancel' })
+          .then((ok) => { if (ok) deletePlaylist(data.id); });
+      });
     });
     addItem('Export as M3U…', async () => {
       const { exportM3U } = await import('../../utils/exportM3U.js');
