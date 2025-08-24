@@ -87,9 +87,21 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
   playlistBtn?.addEventListener('click', async (e) => {
     e.stopPropagation();
     const btn = e.currentTarget;
-    const { playlists } = await import('../playlist/playlists.js');
-    const { showPlaylistPopup } = await import('../shared/playlistPopup.js');
-    showPlaylistPopup(btn.getBoundingClientRect(), [track], { playlists });
+    try {
+      // Clean up any existing ephemeral panels before opening a new one
+      document.querySelectorAll('.playlist-popup').forEach(p => p.remove());
+
+  const { playlists } = await import('../playlist/playlists.js');
+  // Use URL-based specifier for robust path resolution
+  const { showPlaylistPopup } = await import(new URL('../shared/playlistPopup.js', import.meta.url).href);
+      showPlaylistPopup(btn.getBoundingClientRect(), [track], { playlists });
+    } catch (err) {
+      console.error('Failed to open playlist popup', err);
+      try {
+        const { showToast } = await import('../ui/ui.js');
+        showToast('Could not open playlist menu');
+      } catch (_) {}
+    }
   });
 
   // Filtering helpers
@@ -181,8 +193,16 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
       items.push({ label: track.favorite ? 'Unfavorite' : 'Favorite', onClick: () => import('../shared/state.js').then(({ toggleFavorite }) => toggleFavorite(track)) });
       items.push({ label: 'Add to playlist…', onClick: () => {
         const btn = div.querySelector('.playlist-add-btn');
-        if (btn) btn.click();
-        else import('../playlist/playlists.js').then(({ playlists }) => import('../shared/playlistPopup.js').then(({ showPlaylistPopup }) => showPlaylistPopup(e, [track], { playlists })));
+        if (btn) {
+          btn.click();
+        } else {
+          import('../playlist/playlists.js')
+            .then(({ playlists }) => import(new URL('../shared/playlistPopup.js', import.meta.url).href).then(({ showPlaylistPopup }) => showPlaylistPopup(e, [track], { playlists })))
+            .catch(async (err) => {
+              console.error('Failed to open playlist popup from context menu', err);
+              try { const { showToast } = await import('../ui/ui.js'); showToast('Could not open playlist menu'); } catch (_) {}
+            });
+        }
       }});
       items.push({ label: 'Queue', onClick: () => import('../shared/state.js').then(({ addToQueue }) => addToQueue(track)) });
       items.push({ label: 'Reveal in Explorer', onClick: () => {
