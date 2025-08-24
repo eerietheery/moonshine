@@ -14,14 +14,14 @@ Features:
 
 ![Alt text](https://github.com/eerietheery/moonshine/blob/main/assets/images/sample1.png)
 
-# 🌙 Moonshine v1.1.0 Release
+# 🌙 Moonshine v1.1.2 Release
 🚀 Grab the latest version of **Moonshine** from GitHub:
 
-[![View on GitHub](https://img.shields.io/badge/GitHub-Release-blue?logo=github)](https://github.com/eerietheery/moonshine/releases/tag/1.10)
+[![View on GitHub](https://img.shields.io/badge/GitHub-Release-blue?logo=github)](https://github.com/eerietheery/moonshine/releases/tag/1.12)
 
 ### ⬇️ Direct Downloads
-- [💻 Moonshine Portable (Moonshine.1.1.0.exe)](https://github.com/eerietheery/moonshine/releases/download/1.10/Moonshine.1.1.0.exe)  
-- [📦 Moonshine Installer (Moonshine.Setup.1.1.0.exe)](https://github.com/eerietheery/moonshine/releases/download/1.10/Moonshine.Setup.1.1.0.exe)
+- [💻 Moonshine Portable (Moonshine.1.1.2.exe)](https://github.com/eerietheery/moonshine/releases/download/1.12/Moonshine.1.1.2.exe)  
+- [📦 Moonshine Installer (Moonshine.Setup.1.1.2.exe)](https://github.com/eerietheery/moonshine/releases/download/1.12/Moonshine.Setup.1.1.2.exe)
 
 ## Building 
 1. Run `npm install` to install dependencies.
