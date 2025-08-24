@@ -7,7 +7,7 @@
     "scripts": {
     "start": "electron .",
     "build": "electron-builder",
-    "postbuild": "signtool sign /f dist\\moonshine-dev.pfx /p \"***REMOVED***\" /tr http://timestamp.digicert.com /td sha256 /fd sha256 \"C:\\Users\\Eerie\\Desktop\\_code\\moonshine\\dist\\Moonshine 1.1.3.exe\""
+    "postbuild": "signtool sign /f dist\\moonshine-dev.pfx /p \"password\" /tr http://timestamp.digicert.com /td sha256 /fd sha256 \"C:\\Users\\Eerie\\Desktop\\_code\\moonshine\\dist\\Moonshine 1.1.3.exe\""
   },
   "keywords": [],
   "author": "",
