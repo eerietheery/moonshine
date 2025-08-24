@@ -8,4 +8,6 @@ contextBridge.exposeInMainWorld('etune', {
   updateConfig: (partial) => ipcRenderer.invoke('update-config', partial),
   getDefaultMusicPath: () => ipcRenderer.invoke('get-default-music-path'),
   revealFile: (filePath) => ipcRenderer.invoke('reveal-file', filePath),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
 });

@@ -74,6 +74,9 @@
   box-sizing: border-box;
   scrollbar-gutter: stable both-edges;
   max-width: 100%;
+  /* keep items aligned to the top so variable content doesn't stretch rows */
+  align-items: start;
+  justify-items: stretch;
 }
 
 /* Album grid card tweaks */
@@ -93,7 +96,50 @@
   text-decoration: underline;
 }
 
-/* Playlist grid cards */
+.playlist-card {
+  /* Use the same stacking as regular track cards: thumbnail on top, text below */
+  background: #222;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 18px 14px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: box-shadow 0.2s, border 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+.playlist-card .album-art {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  background: #222;
+}
+.playlist-card .track-name {
+  font-size: 1.05em;
+  font-weight: 700;
+  margin-bottom: 4px;
+  text-align: center;
+  color: #fff;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.playlist-card .track-artist {
+  font-size: 0.9em;
+  color: #b3b3b3;
+  margin-bottom: 6px;
+  text-align: center;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .playlist-card .playlist-card-actions {
   position: absolute;
   top: 8px;

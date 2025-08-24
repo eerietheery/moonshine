@@ -102,6 +102,27 @@ ipcMain.handle('update-config', async (event, partial) => {
   return next;
 });
 
+// App version for renderer
+ipcMain.handle('get-app-version', async () => {
+  try {
+    return app.getVersion();
+  } catch {
+    return null;
+  }
+});
+
+// Open external URLs (e.g., GitHub release page)
+ipcMain.handle('open-external', async (event, url) => {
+  try {
+    if (!url || typeof url !== 'string') return false;
+    const { shell } = require('electron');
+    await shell.openExternal(url);
+    return true;
+  } catch (e) {
+    return false;
+  }
+});
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });

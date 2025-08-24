@@ -134,34 +134,38 @@ export function renderList(list) {
     const count = tracks.length;
     container.innerHTML = '';
     const artUrl = tracks[0]?.albumArtDataUrl || 'assets/images/default-art.png';
-    const meta = document.createElement('div');
-    meta.className = 'playlist-meta';
-    const row = document.createElement('div');
-    row.className = 'playlist-title-row';
-    // Optional cover image (small) for quick visual cue
+    
+    // Main container with horizontal layout
+    const mainContent = document.createElement('div');
+    mainContent.className = 'playlist-main-content';
+    
+    // Left side - large thumbnail
+    const thumbnailContainer = document.createElement('div');
+    thumbnailContainer.className = 'playlist-thumbnail';
     const img = document.createElement('img');
-    img.className = 'album-art';
+    img.className = 'playlist-cover';
     img.src = artUrl;
     img.alt = 'Playlist cover';
-    img.style.width = '44px';
-    img.style.height = '44px';
-    img.style.objectFit = 'cover';
-    img.style.borderRadius = '6px';
-    const titleEl = document.createElement('div');
-    titleEl.className = 'playlist-title';
-    titleEl.textContent = title;
-    titleEl.title = title;
+    thumbnailContainer.appendChild(img);
+    
+    // Right side - text content
+    const textContent = document.createElement('div');
+    textContent.className = 'playlist-text-content';
+    
     const badge = document.createElement('div');
     badge.className = 'playlist-badge';
     badge.textContent = source.type === 'user' ? 'Playlist' : 'Genre';
-    row.appendChild(img);
-    row.appendChild(titleEl);
-    row.appendChild(badge);
+    
+    const titleEl = document.createElement('h1');
+    titleEl.className = 'playlist-title';
+    titleEl.textContent = title;
+    titleEl.title = title;
+    
     const subtitle = document.createElement('div');
     subtitle.className = 'playlist-subtitle';
     subtitle.textContent = `${count} track${count===1?'':'s'}`;
-    meta.appendChild(row);
-    meta.appendChild(subtitle);
+    
+    // Actions row
     const actions = document.createElement('div');
     actions.className = 'playlist-actions-bar';
     const playBtn = document.createElement('button');
@@ -173,9 +177,19 @@ export function renderList(list) {
     queueBtn.textContent = 'Queue All';
     actions.appendChild(playBtn);
     actions.appendChild(queueBtn);
-    container.appendChild(meta);
-    container.appendChild(actions);
-    container.style.display = 'grid';
+    
+    // Assemble text content
+    textContent.appendChild(badge);
+    textContent.appendChild(titleEl);
+    textContent.appendChild(subtitle);
+    textContent.appendChild(actions);
+    
+    // Assemble main content
+    mainContent.appendChild(thumbnailContainer);
+    mainContent.appendChild(textContent);
+    
+    container.appendChild(mainContent);
+    container.style.display = 'block';
     container.classList.add('visible');
     playBtn.onclick = async () => {
       if (!tracks.length) return showToast('Playlist is empty');
