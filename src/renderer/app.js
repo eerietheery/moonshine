@@ -2,6 +2,7 @@ import { setupPlayer } from './components/player/index.js';
 import { initialScan } from './library.js';
 import { setupEventListeners } from './events.js';
 import { getComplementaryColor } from './ui/colorUtils.js';
+import { initTheme } from '../theme.js';
 import { preloadGridView } from './components/grid/gridEvents.js';
 import * as dom from './dom.js';
 import { renderList } from './components/shared/view.js';
@@ -52,16 +53,36 @@ export function initializeApp() {
   window.state = state;
   if (typeof window.state.autoResumeOnFocus === 'undefined') window.state.autoResumeOnFocus = false;
 
-  // Set initial complementary color
+  // Sidebar clear-search button logic
+  const filterInput = document.getElementById('filter');
+  const clearSearchBtn = document.getElementById('clear-search-btn');
+  if (filterInput && clearSearchBtn) {
+    const updateClearBtn = () => {
+      clearSearchBtn.style.display = (filterInput.value && filterInput.value !== filterInput.placeholder) ? '' : 'none';
+    };
+    filterInput.addEventListener('input', updateClearBtn);
+    filterInput.addEventListener('focus', updateClearBtn);
+    filterInput.addEventListener('blur', updateClearBtn);
+    clearSearchBtn.addEventListener('click', () => {
+      filterInput.value = '';
+      filterInput.dispatchEvent(new Event('input', { bubbles: true }));
+      filterInput.focus();
+      updateClearBtn();
+    });
+    updateClearBtn();
+  }
+
+  // Set initial complementary color (after tokens load; accent may be overridden later by config)
   document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim()));
 
   // Load persisted config
   window.etune.getConfig().then(async (cfg) => {
     if (cfg) {
-      // Apply theme
-      if (cfg.theme && cfg.theme.primaryColor) {
-        document.documentElement.style.setProperty('--primary-color', cfg.theme.primaryColor);
-        document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(cfg.theme.primaryColor));
+      // Apply theme (id + accent)
+      if (cfg.theme) {
+        initTheme(cfg.theme);
+        const accent = cfg.theme.primaryColor || getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+        if (accent) document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(accent));
       }
       // Apply filtering prefs
       if (typeof cfg.sidebarFilteringEnabled === 'boolean') state.sidebarFilteringEnabled = cfg.sidebarFilteringEnabled;

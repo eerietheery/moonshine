@@ -1,3 +1,37 @@
+@import "theme/tokens.css";
+@import "theme/neumorphic.css";
+@import "theme/neumorphic_dark.css";
+@import "theme/win98.css";
+
+/* Sidebar clear-search button */
+#clear-search-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: none;
+  z-index: 2;
+}
+#clear-search-btn img {
+  width: 18px;
+  height: 18px;
+  display: block;
+  filter: invert(1) brightness(2);
+}
+
+[data-theme="neumorphic"] #clear-search-btn img {
+  filter: none;
+}
+[data-theme="win98"] #clear-search-btn img {
+  filter: none;
+  color: #000;
+}
 /* ===== GLOBAL STYLES ===== */
 .track-actions {
   display: flex;
@@ -40,20 +74,21 @@
   background: var(--primary-color);
 }
 :root {
-  --primary-color: #8C40B8;
-  --background-color: #181818;
-  --sidebar-bg: #1f1f1f;
-  --card-bg: #232323;
-  --card-hover-bg: #282828;
-  --border-radius: 10px;
-  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+  /* Keep legacy vars for now, mapped to tokens */
+  --primary-color: var(--accent);
+  --background-color: var(--surface-0);
+  --sidebar-bg: var(--surface-1);
+  --card-bg: var(--surface-2);
+  --card-hover-bg: var(--surface-hover);
+  --border-radius: var(--radius);
+  --shadow: var(--elev-1);
   --transition: 0.15s;
 }
 
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
-  background: #121212;
-  color: #eee;
+  background: var(--surface-0);
+  color: var(--text);
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -103,7 +138,7 @@ body {
 
 .favorite-toggle.active {
   background: #fff;
-  color: var(--primary-color);
+  color: var(--accent);
   box-shadow: 0 0 8px color-mix(in srgb, var(--primary-color) 50%, transparent);
 }
 

@@ -1,0 +1,34 @@
+/* Semantic theme tokens baseline (defaults match current visuals) */
+
+:root {
+  /* Accent */
+  --accent: #8C40B8;
+  --accent-contrast: #000;
+
+  /* Back-compat alias so existing CSS using --primary-color still works */
+  --primary-color: var(--accent);
+
+  /* Text */
+  --text-strong: #ffffff;
+  --text: #eeeeee;
+  --text-muted: #b3b3b3;
+
+  /* Surfaces */
+  --surface-0: #121212; /* app background */
+  --surface-1: #181818; /* toolbar/sidebar */
+  --surface-2: #232323; /* cards/rows */
+  --surface-hover: #282828;
+  --border: #333333;
+  /* Specific surfaces (to keep parity where needed) */
+  --surface-header: #141414; /* sticky headers */
+  --border-strong: #2a2a2a; /* stronger divider for headers */
+
+  /* States */
+  --state-hover: color-mix(in srgb, var(--accent) 15%, #333);
+  --state-active: color-mix(in srgb, var(--accent) 30%, #000);
+
+  /* Elevation and shape */
+  --elev-1: 0 2px 8px rgba(0,0,0,0.3);
+  --elev-2: 0 6px 18px rgba(0,0,0,0.35);
+  --radius: 10px;
+}

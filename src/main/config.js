@@ -24,7 +24,7 @@ function defaultConfig() {
     libraryDirs: [],
     sidebarFilteringEnabled: false,
     sidebarMode: 'artist',
-    theme: { primaryColor: '#8C40B8' },
+  theme: { id: 'dark', primaryColor: '#8C40B8' },
   playlists: [],
   };
 }
@@ -35,7 +35,9 @@ function loadConfig() {
   cachedConfig = { ...defaultConfig(), ...(read || {}) };
   // Ensure keys exist
   if (!Array.isArray(cachedConfig.libraryDirs)) cachedConfig.libraryDirs = [];
-  if (!cachedConfig.theme) cachedConfig.theme = { primaryColor: '#8C40B8' };
+  if (!cachedConfig.theme) cachedConfig.theme = { id: 'dark', primaryColor: '#8C40B8' };
+  if (!cachedConfig.theme.primaryColor) cachedConfig.theme.primaryColor = '#8C40B8';
+  if (!cachedConfig.theme.id) cachedConfig.theme.id = 'dark';
   try {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, JSON.stringify(cachedConfig, null, 2), 'utf8');
@@ -58,6 +60,10 @@ function getConfig() {
 function updateConfig(partial) {
   const current = getConfig();
   const next = { ...current, ...(partial || {}) };
+  // Deep-merge theme to avoid wiping id or primaryColor on partial updates
+  if (partial && typeof partial.theme === 'object' && partial.theme !== null) {
+    next.theme = { ...(current.theme || {}), ...partial.theme };
+  }
   // Normalize arrays
   if (partial && 'libraryDirs' in partial && !Array.isArray(next.libraryDirs)) {
     next.libraryDirs = [];

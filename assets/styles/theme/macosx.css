@@ -1,0 +1,375 @@
+[data-theme="macos-aqua"] {
+  /* Aqua color palette */
+  --accent: var(--user-color, #0066CC); /* User's color with blue fallback */
+  --accent-light: color-mix(in srgb, var(--accent) 20%, white);
+  --accent-dark: color-mix(in srgb, var(--accent) 20%, black);
+  
+  /* System colors */
+  --system-blue: #0066CC;
+  --system-red: #FF2F2F;
+  --system-green: #00C234;
+  --system-yellow: #FFCC00;
+  --system-orange: #FF9500;
+  --system-purple: #AF52DE;
+  --system-pink: #FF2D55;
+  
+  /* Backgrounds with pinstripes */
+  --surface-0: #ececec; /* main background */
+  --surface-1: #f5f5f5; /* toolbar/sidebar */
+  --surface-2: #fafafa; /* cards/panels */
+  --surface-hover: rgba(0, 102, 204, 0.1);
+  --surface-header: #ebebeb;
+  
+  /* Borders */
+  --border: #b0b0b0;
+  --border-strong: #909090;
+  
+  /* Text */
+  --text-strong: #000;
+  --text: #333;
+  --text-muted: #666;
+  
+  /* Aqua specific */
+  --aqua-gradient: linear-gradient(to bottom, #f9f9f9, #ececec);
+  --aqua-button-gradient: linear-gradient(to bottom, #ffffff, #d9d9d9);
+  --aqua-button-active: linear-gradient(to bottom, #d9d9d9, #ffffff);
+  --aqua-highlight: rgba(255, 255, 255, 0.7);
+  --aqua-shadow: rgba(0, 0, 0, 0.15);
+  
+  /* Radius */
+  --radius: 10px;
+  --radius-small: 6px;
+  --radius-large: 12px;
+}
+
+/* Base styles */
+[data-theme="macos-aqua"] body {
+  color: var(--text);
+  background: var(--surface-0);
+  background-image: 
+    linear-gradient(90deg, rgba(255,255,255,0.05) 0%, transparent 5%, transparent 95%, rgba(255,255,255,0.05) 100%),
+    linear-gradient(rgba(255,255,255,0.05) 0%, transparent 5%, transparent 95%, rgba(255,255,255,0.05) 100%);
+  background-size: 10px 10px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+}
+
+/* Toolbar and sidebar */
+[data-theme="macos-aqua"] #toolbar,
+[data-theme="macos-aqua"] #sidebar,
+[data-theme="macos-aqua"] .playlist-header {
+  background: var(--surface-1);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 3px var(--aqua-shadow);
+}
+
+/* Buttons - Aqua style */
+[data-theme="macos-aqua"] .settings-btn,
+[data-theme="macos-aqua"] .view-btn,
+[data-theme="macos-aqua"] .sort-btn,
+[data-theme="macos-aqua"] .queue-add-btn,
+[data-theme="macos-aqua"] .playlist-actions-bar button,
+[data-theme="macos-aqua"] .favorite-toggle,
+[data-theme="macos-aqua"] .mode-btn,
+[data-theme="macos-aqua"] .control-btn {
+  background: var(--aqua-button-gradient);
+  color: var(--text);
+  border: 1px solid #a0a0a0;
+  border-radius: var(--radius-small);
+  box-shadow: 0 1px 1px var(--aqua-shadow);
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+  position: relative;
+  transition: all 0.1s ease;
+}
+
+[data-theme="macos-aqua"] .settings-btn:hover,
+[data-theme="macos-aqua"] .view-btn:hover,
+[data-theme="macos-aqua"] .sort-btn:hover,
+[data-theme="macos-aqua"] .queue-add-btn:hover,
+[data-theme="macos-aqua"] .playlist-actions-bar button:hover,
+[data-theme="macos-aqua"] .favorite-toggle:hover,
+[data-theme="macos-aqua"] .mode-btn:hover,
+[data-theme="macos-aqua"] .control-btn:hover {
+  background: linear-gradient(to bottom, #ffffff, #e9e9e9);
+  box-shadow: 0 1px 1px var(--aqua-shadow);
+}
+
+[data-theme="macos-aqua"] .settings-btn:active,
+[data-theme="macos-aqua"] .view-btn:active,
+[data-theme="macos-aqua"] .sort-btn:active,
+[data-theme="macos-aqua"] .queue-add-btn:active,
+[data-theme="macos-aqua"] .playlist-actions-bar button:active,
+[data-theme="macos-aqua"] .favorite-toggle:active,
+[data-theme="macos-aqua"] .mode-btn:active,
+[data-theme="macos-aqua"] .control-btn:active {
+  background: var(--aqua-button-active);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Play button with Aqua style */
+[data-theme="macos-aqua"] .control-btn.play {
+  background: linear-gradient(to bottom, var(--accent-light), var(--accent-dark));
+  color: white;
+  border: 1px solid var(--accent-dark);
+  box-shadow: 
+    inset 0 1px 0 var(--accent-light),
+    0 1px 2px var(--aqua-shadow);
+  text-shadow: 0 -1px 0 var(--accent-dark);
+}
+
+/* Cards */
+[data-theme="macos-aqua"] .track-card,
+[data-theme="macos-aqua"] .playlist-card {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 3px var(--aqua-shadow);
+}
+
+[data-theme="macos-aqua"] .track-card .track-name,
+[data-theme="macos-aqua"] .playlist-card .track-name { 
+  color: var(--text-strong); 
+  font-weight: 500;
+}
+
+[data-theme="macos-aqua"] .track-card .track-artist,
+[data-theme="macos-aqua"] .track-card .track-album,
+[data-theme="macos-aqua"] .playlist-card .track-artist { 
+  color: var(--text-muted); 
+  font-size: 12px;
+}
+
+/* Table */
+[data-theme="macos-aqua"] .table-header {
+  background: var(--surface-header);
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+[data-theme="macos-aqua"] .track {
+  background: transparent;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+[data-theme="macos-aqua"] .track:hover {
+  background: var(--surface-hover);
+}
+
+[data-theme="macos-aqua"] .track-name { 
+  color: var(--text-strong); 
+  font-weight: 500;
+}
+
+/* Inputs */
+[data-theme="macos-aqua"] #filter,
+[data-theme="macos-aqua"] select,
+[data-theme="macos-aqua"] input[type="text"],
+[data-theme="macos-aqua"] input[type="search"] {
+  background: white;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+[data-theme="macos-aqua"] #filter:focus,
+[data-theme="macos-aqua"] select:focus,
+[data-theme="macos-aqua"] input[type="text"]:focus,
+[data-theme="macos-aqua"] input[type="search"]:focus {
+  outline: none;
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.1),
+    0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* Player bar */
+[data-theme="macos-aqua"] #player-bar {
+  background: var(--surface-header);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -1px 3px var(--aqua-shadow);
+}
+
+/* Progress bar */
+[data-theme="macos-aqua"] .progress-bar {
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+  height: 6px;
+}
+
+[data-theme="macos-aqua"] .progress-bar-fill {
+  background: linear-gradient(to bottom, var(--accent-light), var(--accent-dark));
+  border-radius: 3px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Scrollbars - Classic Aqua style */
+[data-theme="macos-aqua"] ::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+  background: transparent;
+}
+
+[data-theme="macos-aqua"] ::-webkit-scrollbar-track {
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+[data-theme="macos-aqua"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border: 4px solid transparent;
+  border-radius: 8px;
+  background-clip: padding-box;
+}
+
+[data-theme="macos-aqua"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+[data-theme="macos-aqua"] ::-webkit-scrollbar-thumb:active {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="macos-aqua"] ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+[data-theme="macos-aqua"] #sidebar::-webkit-scrollbar {
+  width: 12px;
+}
+
+[data-theme="macos-aqua"] .filter-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Firefox scrollbars */
+[data-theme="macos-aqua"] #sidebar,
+[data-theme="macos-aqua"] .filter-list {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+[data-theme="macos-aqua"] #music-list {
+  scrollbar-width: auto;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+/* Sidebar items */
+[data-theme="macos-aqua"] .filter-item {
+  background: transparent;
+  border-radius: var(--radius-small);
+  padding: 6px 10px;
+  margin: 2px 4px;
+  font-size: 13px;
+}
+
+[data-theme="macos-aqua"] .filter-item:hover {
+  background: var(--surface-hover);
+}
+
+[data-theme="macos-aqua"] .filter-item.active {
+  background: var(--accent);
+  color: white;
+}
+
+/* Checkbox and radio inputs */
+[data-theme="macos-aqua"] input[type="checkbox"],
+[data-theme="macos-aqua"] input[type="radio"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: white;
+  position: relative;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+[data-theme="macos-aqua"] input[type="checkbox"]:checked::before,
+[data-theme="macos-aqua"] input[type="radio"]:checked::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+[data-theme="macos-aqua"] input[type="radio"] {
+  border-radius: 50%;
+}
+
+[data-theme="macos-aqua"] input[type="radio"]:checked::before {
+  border-radius: 50%;
+}
+
+/* Selection */
+[data-theme="macos-aqua"] ::selection {
+  background: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* Focus rings */
+[data-theme="macos-aqua"] button:focus,
+[data-theme="macos-aqua"] input:focus,
+[data-theme="macos-aqua"] select:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  outline-offset: 1px;
+}
+
+/* Window controls (close, minimize, maximize) */
+[data-theme="macos-aqua"] .window-controls {
+  display: flex;
+  gap: 6px;
+  position: absolute;
+  top: 12px;
+  left: 12px;
+}
+
+[data-theme="macos-aqua"] .window-control {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+}
+
+[data-theme="macos-aqua"] .window-control.close {
+  background: #ff5f57;
+}
+
+[data-theme="macos-aqua"] .window-control.minimize {
+  background: #ffbd2e;
+}
+
+[data-theme="macos-aqua"] .window-control.maximize {
+  background: #28ca42;
+}
+
+/* Title bar */
+[data-theme="macos-aqua"] #toolbar {
+  padding-top: 30px;
+  position: relative;
+}
+
+/* Brushed metal effect for player area */
+[data-theme="macos-aqua"] #player-bar {
+  background: linear-gradient(to bottom, #d9d9d9, #cccccc);
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.1'/%3E%3C/svg%3E"),
+    linear-gradient(to bottom, #d9d9d9, #cccccc);
+  border-top: 1px solid #999;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 -1px 2px rgba(0, 0, 0, 0.1);
+}

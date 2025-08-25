@@ -1,4 +1,5 @@
 import { getComplementaryColor } from './colorUtils.js';
+import { setAccent } from '../../theme.js';
 
 function showColorModal() {
   const modal = document.createElement('div');
@@ -54,10 +55,9 @@ function showColorModal() {
       document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(color));
     }
     colorDot.addEventListener('click', () => {
-      // update theme but keep modal open
-      document.documentElement.style.setProperty('--primary-color', color);
+      // update accent but keep modal open
+      setAccent(color);
       document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(color));
-      window.etune.updateConfig({ theme: { primaryColor: color } });
       refreshDynamicColors();
     });
     colorContainer.appendChild(colorDot);
@@ -82,15 +82,13 @@ function showColorModal() {
   colorPicker.style.cursor = 'pointer';
   colorPicker.style.marginBottom = '8px';
   colorPicker.oninput = (e) => {
-    document.documentElement.style.setProperty('--primary-color', e.target.value);
+    setAccent(e.target.value);
     document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(e.target.value));
-    window.etune.updateConfig({ theme: { primaryColor: e.target.value } });
     refreshDynamicColors();
   };
   colorPicker.onchange = (e) => {
-    document.documentElement.style.setProperty('--primary-color', e.target.value);
+    setAccent(e.target.value);
     document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(e.target.value));
-    window.etune.updateConfig({ theme: { primaryColor: e.target.value } });
     refreshDynamicColors();
   };
 // Refresh volume bar and favorite icon colors after theme change
