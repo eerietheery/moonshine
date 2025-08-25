@@ -21,15 +21,15 @@
 }
 
 .table-header {
-  background: #181818;
-  border-bottom: 1px solid #333;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
   padding: 0;
   display: grid;
   /* grid-template-columns set dynamically in JS */
   gap: 0;
   font-weight: 600;
   font-size: 0.9rem;
-  color: #b3b3b3;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   width: 100%;
@@ -57,7 +57,7 @@ body.playlists-active #music-table-header { display: none !important; }
 }
 
 .col-title:hover, .col-artist:hover, .col-album:hover, .col-year:hover, .col-genre:hover {
-  color: var(--primary-color);
+  color: var(--accent);
 }
 
 .col-genre {
@@ -83,7 +83,7 @@ body.playlists-active #music-table-header { display: none !important; }
   gap: 0;
   align-items: center;
   padding: 0;
-  border-bottom: 1px solid #282828;
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.15s;
   height: 56px;
@@ -92,13 +92,13 @@ body.playlists-active #music-table-header { display: none !important; }
 }
 
 .track:hover {
-  background: var(--primary-color);
-  color: #fff;
+  background: var(--accent);
+  color: var(--accent-contrast);
 }
 
 .track.playing {
-  background: color-mix(in srgb, var(--primary-color) 30%, #000);
-  border-left: 4px solid var(--primary-color);
+  background: var(--state-active);
+  border-left: 4px solid var(--accent);
 }
 
 .track-title {
@@ -113,7 +113,7 @@ body.playlists-active #music-table-header { display: none !important; }
 
 .track-name {
   font-weight: 500;
-  color: #fff;
+  color: var(--text-strong);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -132,14 +132,14 @@ body.playlists-active #music-table-header { display: none !important; }
 
 .track-name {
   font-weight: 500;
-  color: #fff;
+  color: var(--text-strong);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .track-artist, .track-album, .track-year, .track-genre, .track-bitrate {
-  color: #b3b3b3;
+  color: var(--text-muted);
   font-size: 0.9rem;
   padding: 0 16px;
   box-sizing: border-box;
@@ -187,6 +187,6 @@ body.playlists-active #music-table-header { display: none !important; }
 }
 
 .track-actions button:hover img, .track-actions button:hover {
-  filter: drop-shadow(0 0 4px var(--primary-color)) saturate(2);
-  color: #fff;
+  filter: drop-shadow(0 0 4px var(--accent)) saturate(2);
+  color: var(--text-strong);
 }

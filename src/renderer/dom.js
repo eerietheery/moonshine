@@ -19,6 +19,7 @@ export const currentTitle = document.getElementById('current-title');
 export const currentArtist = document.getElementById('current-artist');
 export const addFolderBtn = document.getElementById('add-folder-btn');
 export const scanBtn = document.getElementById('scan-btn');
+export const clearSearchBtn = document.getElementById('clear-search-btn');
 export const settingsBtn = document.querySelector('.settings-btn');
 export const gridViewBtn = document.getElementById('grid-view');
 export const listViewBtn = document.getElementById('list-view');

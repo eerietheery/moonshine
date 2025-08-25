@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="assets/styles/main-content.css">
   <link rel="stylesheet" href="assets/styles/player.css">
   <link rel="stylesheet" href="assets/styles/responsive.css">
+
+    <!-- Theme CSS: new themes -->
+    <link rel="stylesheet" href="assets/styles/theme/neumorphic_dark.css">
 </head>
 <body>
   <div id="app">
@@ -17,7 +20,12 @@
   <img src="assets/images/moonshinebottlelogo copy.svg" alt="Moonshine Bottle Logo" class="logo-img color-logo-svg" style="stroke: var(--primary-color);" />
         <h2>мооnѕჩіne</h2>
       </div>
-      <input type="text" id="filter" placeholder="Search library...">
+      <div style="position:relative;display:flex;align-items:center;">
+        <input type="text" id="filter" placeholder="Search library..." style="flex:1;" />
+        <button id="clear-search-btn" title="Clear search" style="display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;padding:0;cursor:pointer;width:22px;height:22px;">
+          <img src="assets/images/clear-search.svg" alt="Clear" style="width:18px;height:18px;display:block;" />
+        </button>
+      </div>
   <button id="scan-btn">Scan Music</button>
       
       <div class="sidebar-section">
@@ -121,7 +129,7 @@
     </div>
     
     <div class="player-right">
-      <div class="volume-container">
+  <div class="volume-container">
         <button id="queue-toggle" class="queue-btn" title="Show Queue">
             <img src="assets/images/queue.svg" alt="Show Queue" style="width:16px;height:18px;filter:var(--queue-icon-filter, invert(1) brightness(1)); color:var(--primary-color);" />
         </button>

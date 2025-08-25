@@ -1,0 +1,366 @@
+[data-theme="dark-neumorphic"] #queue-upcoming {
+  background: var(--surface-1);
+  border-radius: var(--radius);
+  padding: 8px 0;
+}
+[data-theme="dark-neumorphic"] #queue-panel .queue-upcoming-header {
+  background: var(--surface-header);
+  color: var(--text-strong);
+  font-weight: 600;
+  padding: 6px 16px;
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+}
+[data-theme="dark-neumorphic"] #queue-panel .queue-upcoming-item {
+  background: var(--surface-2);
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+}
+[data-theme="dark-neumorphic"] #queue-panel .queue-upcoming-item .queue-title {
+  color: var(--text-strong);
+}
+[data-theme="dark-neumorphic"] #queue-panel .queue-upcoming-item:hover {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+}
+/* Dark neumorphic queue panel flyout */
+[data-theme="dark-neumorphic"] #queue-panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 8px 8px 24px rgba(0, 0, 0, 0.4), -8px -8px 24px rgba(60, 60, 65, 0.3);
+  color: var(--text);
+}
+[data-theme="dark-neumorphic"] #queue-panel .queue-header {
+  background: var(--surface-header);
+  color: var(--text-strong);
+  border-bottom: 1px solid var(--border-strong);
+  font-weight: 600;
+  padding: 10px 16px;
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+}
+[data-theme="dark-neumorphic"] #queue-panel .queue-list {
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  padding: 8px 0;
+}
+[data-theme="dark-neumorphic"] #queue-panel .queue-btn {
+  background: var(--surface-0);
+  color: var(--text);
+  border: none;
+  border-radius: 8px;
+  box-shadow: var(--elev-1);
+}
+[data-theme="dark-neumorphic"] #queue-panel .queue-btn:hover {
+  background: var(--surface-hover);
+}
+/* Dark neumorphic theme overrides */
+
+[data-theme="dark-neumorphic"] {
+  /* Dark surfaces */
+  --surface-0: #2a2b2f; /* base */
+  --surface-1: #323338; /* panels/toolbars */
+  --surface-2: #3a3b40; /* cards/rows */
+  --surface-hover: #404147; /* subtle hover */
+  --surface-header: #323338; /* sticky header */
+
+  /* Borders */
+  --border: #44454a;
+  --border-strong: #55565b;
+
+  /* Text */
+  --text-strong: #f0f0f0;
+  --text: #d0d0d0;
+  --text-muted: #a0a0a5;
+
+  /* Accent contrast flips to white on dark backgrounds */
+  --accent-contrast: #fff;
+
+  /* Radius and shadows */
+  --radius: 14px;
+  --neu-shadow-dark: 8px 8px 24px rgba(0, 0, 0, 0.4);
+  --neu-shadow-light: -8px -8px 24px rgba(60, 60, 65, 0.3);
+  --elev-1: var(--neu-shadow-dark), var(--neu-shadow-light);
+  --elev-2: 0 12px 36px rgba(0, 0, 0, 0.5);
+  --neu-inset: inset 2px 2px 8px rgba(0, 0, 0, 0.4), inset -2px -2px 8px rgba(60, 60, 65, 0.3);
+}
+
+/* Component overrides for a strong dark neumorphic look */
+[data-theme="dark-neumorphic"] body {
+  color: var(--text);
+  background: #232428;
+}
+
+/* Player bar: soften the top shadow for a gentler neumorphic feel */
+[data-theme="dark-neumorphic"] #player-bar {
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Panels */
+[data-theme="dark-neumorphic"] #toolbar,
+[data-theme="dark-neumorphic"] #sidebar,
+[data-theme="dark-neumorphic"] .playlist-header {
+  background: var(--surface-1);
+  border-color: var(--border);
+  box-shadow: var(--elev-1);
+}
+
+/* Settings modal: dark neumorphic theme */
+[data-theme="dark-neumorphic"] .settings-modal {
+  background: var(--surface-1);
+  color: var(--text);
+  border-radius: var(--radius);
+  box-shadow: var(--elev-1);
+  border: 1px solid var(--border);
+  padding: 24px 32px;
+}
+[data-theme="dark-neumorphic"] .settings-modal .modal-header {
+  background: var(--surface-header);
+  color: var(--text-strong);
+  border-bottom: 1px solid var(--border-strong);
+  font-weight: 600;
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+  padding: 12px 0 8px 0;
+}
+[data-theme="dark-neumorphic"] .settings-modal .modal-section {
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  box-shadow: var(--elev-1);
+  margin-bottom: 18px;
+  padding: 16px;
+}
+[data-theme="dark-neumorphic"] .settings-modal button,
+[data-theme="dark-neumorphic"] .settings-modal select {
+  background: var(--surface-0);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--elev-1);
+  padding: 6px 14px;
+}
+[data-theme="dark-neumorphic"] .settings-modal button:hover {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+}
+
+/* Player bar queue button: dark neumorphic style */
+[data-theme="dark-neumorphic"] .player-right .queue-btn {
+  background: linear-gradient(135deg, #323338 70%, #2a2b2f 100%);
+  box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.4), -4px -4px 16px rgba(60, 60, 65, 0.3), 0 0 0 2px var(--accent);
+  border-radius: 16px;
+  border: 1.5px solid #44454a;
+  padding: 8px 16px;
+  transition: box-shadow 0.18s cubic-bezier(.4,2,.3,1), background 0.18s;
+  position: relative;
+  overflow: hidden;
+}
+[data-theme="dark-neumorphic"] .player-right .queue-btn::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 50%;
+  opacity: 0.18;
+  transform: translate(-50%, -50%) scale(0.5);
+  transition: width 0.3s, height 0.3s, opacity 0.3s, transform 0.3s;
+  z-index: 0;
+}
+[data-theme="dark-neumorphic"] .player-right .queue-btn:active::after {
+  width: 120%;
+  height: 120%;
+  opacity: 0.28;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+[data-theme="dark-neumorphic"] .player-right .queue-btn:hover {
+  box-shadow: 6px 6px 24px rgba(0, 0, 0, 0.4), -6px -6px 24px rgba(60, 60, 65, 0.3), 0 0 0 3px var(--accent);
+  background: linear-gradient(135deg, #2a2b2f 60%, #323338 100%);
+}
+[data-theme="dark-neumorphic"] .player-right .queue-btn:hover {
+  box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.4), -2px -2px 12px rgba(60, 60, 65, 0.3);
+  background: linear-gradient(145deg, #25262a 60%, #303136 100%);
+}
+
+/* Cards */
+[data-theme="dark-neumorphic"] .track-card,
+[data-theme="dark-neumorphic"] .playlist-card {
+  background: var(--surface-0);
+  color: var(--text);
+  box-shadow: var(--elev-1);
+  border: none;
+}
+[data-theme="dark-neumorphic"] .track-card .album-art,
+[data-theme="dark-neumorphic"] .playlist-card .album-art {
+  background: var(--surface-1);
+}
+[data-theme="dark-neumorphic"] .track-card .track-name,
+[data-theme="dark-neumorphic"] .playlist-card .track-name { color: var(--text-strong); }
+[data-theme="dark-neumorphic"] .track-card .track-artist,
+[data-theme="dark-neumorphic"] .track-card .track-album,
+[data-theme="dark-neumorphic"] .playlist-card .track-artist { color: var(--text-muted); }
+
+/* Table rows */
+[data-theme="dark-neumorphic"] .table-header {
+  background: var(--surface-1);
+  color: var(--text-muted);
+  border-bottom-color: var(--border);
+}
+[data-theme="dark-neumorphic"] .track {
+  background: var(--surface-0);
+  border-bottom: 1px solid var(--border);
+}
+[data-theme="dark-neumorphic"] .track-name { color: var(--text-strong); }
+[data-theme="dark-neumorphic"] .track:hover {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+  box-shadow: var(--elev-1);
+  position: relative;
+  z-index: 1;
+}
+[data-theme="dark-neumorphic"] .track:hover .track-artist,
+[data-theme="dark-neumorphic"] .track:hover .track-album,
+[data-theme="dark-neumorphic"] .track:hover .track-year,
+[data-theme="dark-neumorphic"] .track:hover .track-genre,
+[data-theme="dark-neumorphic"] .track:hover .track-bitrate { color: var(--text); }
+
+/* Generic buttons (raised) */
+[data-theme="dark-neumorphic"] .settings-btn,
+[data-theme="dark-neumorphic"] .view-btn,
+[data-theme="dark-neumorphic"] .sort-btn,
+[data-theme="dark-neumorphic"] .queue-add-btn,
+[data-theme="dark-neumorphic"] .playlist-actions-bar button,
+[data-theme="dark-neumorphic"] .favorite-toggle {
+  background: var(--surface-0);
+  color: var(--text);
+  border: 1px solid transparent;
+  box-shadow: var(--elev-1);
+}
+[data-theme="dark-neumorphic"] .settings-btn:hover,
+[data-theme="dark-neumorphic"] .view-btn:hover,
+[data-theme="dark-neumorphic"] .sort-btn:hover,
+[data-theme="dark-neumorphic"] .queue-add-btn:hover,
+[data-theme="dark-neumorphic"] .playlist-actions-bar button:hover,
+[data-theme="dark-neumorphic"] .favorite-toggle:hover {
+  background: var(--surface-hover);
+}
+[data-theme="dark-neumorphic"] .view-btn.active,
+[data-theme="dark-neumorphic"] .favorite-toggle.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+/* Player controls: keep Play on accent; others raised */
+[data-theme="dark-neumorphic"] .control-btn { box-shadow: var(--elev-1); background: var(--surface-0); color: var(--text); }
+[data-theme="dark-neumorphic"] .control-btn:hover { background: var(--surface-hover); color: var(--text-strong); }
+[data-theme="dark-neumorphic"] .control-btn.play { background: var(--accent); color: var(--accent-contrast); box-shadow: 0 0 12px 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+
+[data-theme="dark-neumorphic"] .control-btn.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* Inputs: text/search/select */
+[data-theme="dark-neumorphic"] #filter,
+[data-theme="dark-neumorphic"] select {
+  background: var(--surface-0);
+  color: var(--text);
+  border: none;
+  box-shadow: var(--neu-inset);
+}
+
+/* Icon filters that assume light theme: invert for dark */
+[data-theme="dark-neumorphic"] .queue-btn img { filter: invert(1); }
+
+/* Sidebar items */
+[data-theme="dark-neumorphic"] .filter-item {
+  background: transparent;
+}
+[data-theme="dark-neumorphic"] .filter-item:hover {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+  box-shadow: var(--elev-1);
+}
+[data-theme="dark-neumorphic"] .filter-item.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* Sidebar mode buttons (Artist/Album/Playlists) */
+[data-theme="dark-neumorphic"] .mode-btn {
+  background: var(--surface-0);
+  color: var(--text);
+  border: 1px solid transparent;
+  box-shadow: var(--elev-1);
+}
+[data-theme="dark-neumorphic"] .mode-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+}
+[data-theme="dark-neumorphic"] .mode-btn.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* Sidebar counters: higher contrast, soft-raised pill */
+[data-theme="dark-neumorphic"] .filter-count {
+  opacity: 1; /* override base dimming */
+  background: var(--surface-2);
+  color: var(--text-strong);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  min-width: 18px;
+  text-align: center;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4), -2px -2px 6px rgba(60, 60, 65, 0.3);
+}
+[data-theme="dark-neumorphic"] .filter-item.active .filter-count {
+  background: color-mix(in srgb, var(--accent) 85%, #2a2b2f);
+  color: var(--accent-contrast);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  box-shadow: none; /* avoid heavy glow against accent */
+}
+
+/* Scrollbars (Chromium/WebKit) */
+[data-theme="dark-neumorphic"] ::-webkit-scrollbar {
+  width: 18px; /* keep global width consistent with default */
+  height: 18px;
+  background: var(--surface-1);
+}
+[data-theme="dark-neumorphic"] ::-webkit-scrollbar-track {
+  background: var(--surface-1);
+}
+[data-theme="dark-neumorphic"] ::-webkit-scrollbar-thumb {
+  background: #44454a; /* dark thumb */
+  border-radius: 999px;
+  border: 3px solid var(--surface-1); /* creates padding and neumorphic gap */
+}
+[data-theme="dark-neumorphic"] ::-webkit-scrollbar-thumb:hover {
+  background: #55565b;
+}
+/* Ensure specific areas blend track/edges nicely */
+[data-theme="dark-neumorphic"] #sidebar::-webkit-scrollbar-thumb,
+[data-theme="dark-neumorphic"] .filter-list::-webkit-scrollbar-thumb,
+[data-theme="dark-neumorphic"] #music-list::-webkit-scrollbar-thumb {
+  border-color: var(--surface-1);
+}
+
+/* Container-specific scrollbar sizing to mirror app defaults */
+[data-theme="dark-neumorphic"] #sidebar::-webkit-scrollbar { width: 12px; height: 12px; }
+[data-theme="dark-neumorphic"] .filter-list::-webkit-scrollbar { width: 10px; height: 10px; }
+
+/* Scrollbars (Firefox) */
+[data-theme="dark-neumorphic"] #sidebar,
+[data-theme="dark-neumorphic"] .filter-list {
+  scrollbar-color: #44454a var(--surface-1);
+  scrollbar-width: thin;
+}
+[data-theme="dark-neumorphic"] #music-list { scrollbar-width: auto; }

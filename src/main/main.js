@@ -96,8 +96,9 @@ ipcMain.handle('get-config', async () => {
 ipcMain.handle('update-config', async (event, partial) => {
   const next = updateConfig(partial || {});
   // If color changed, update window background
-  if (mainWindow && partial && partial.primaryColor) {
-    mainWindow.setBackgroundColor(partial.primaryColor);
+  const color = partial?.theme?.primaryColor || partial?.primaryColor;
+  if (mainWindow && color) {
+    mainWindow.setBackgroundColor(color);
   }
   return next;
 });

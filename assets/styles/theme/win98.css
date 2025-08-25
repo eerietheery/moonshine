@@ -1,0 +1,370 @@
+[data-theme="win98"] .track-card .queue-add-btn,
+[data-theme="win98"] .playlist-card .queue-add-btn {
+  background: silver;
+  color: #000;
+  border: none;
+  border-radius: 0;
+  min-width: 23px;
+  min-height: 23px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey, inset 2px 2px #dfdfdf;
+  font-weight: bold;
+  cursor: pointer;
+  transition: box-shadow 0.15s, background 0.15s;
+}
+[data-theme="win98"] .track-card .queue-add-btn:hover,
+[data-theme="win98"] .playlist-card .queue-add-btn:hover {
+  background: #d5d5d5;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px grey;
+}
+[data-theme="win98"] .track-card .queue-add-btn:active,
+[data-theme="win98"] .playlist-card .queue-add-btn:active {
+  background: #bfbfbf;
+  box-shadow: inset -2px -2px #0a0a0a, inset 2px 2px #fff, inset -3px -3px grey, inset 3px 3px #dfdfdf;
+}
+[data-theme="win98"] .track-card .queue-add-btn img,
+[data-theme="win98"] .playlist-card .queue-add-btn img {
+  width: 18px;
+  height: 18px;
+  filter: none;
+}
+[data-theme="win98"] #player-bar .volume-icon img {
+  filter: none !important;
+  color: #000 !important;
+}
+[data-theme="win98"] #player-bar .queue-btn {
+  min-width: 36px;
+  min-height: 28px;
+  width: 36px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme="win98"] #player-bar .queue-btn img {
+  width: 22px;
+  height: 22px;
+}
+
+[data-theme="win98"] .settings-btn {
+  min-width: 36px;
+  min-height: 28px;
+  width: 36px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+[data-theme="win98"] .settings-btn img {
+  width: 18px;
+  height: 18px;
+}
+/* Windows 98 theme overrides: crisp, beveled, high-contrast */
+
+[data-theme="win98"] {
+  /* Accent: classic Win98 blue */
+  --accent: #1084d0;
+  --accent-contrast: #fff;
+
+  /* Text */
+  --text-strong: #000;
+  --text: #222;
+  --text-muted: gray;
+
+  /* Surfaces */
+  --surface-0: #C0C7C8; /* app background/silver */
+  --surface-1: #C0C7C8; /* panels/toolbars */
+  --surface-2: #DFDFDF; /* cards/rows */
+  --surface-hover: #DADADA;
+  --surface-header: #C0C0C0; /* sticky header */
+
+  /* Borders */
+  --border: gray;
+  --border-strong: #0a0a0a;
+
+  /* States */
+  --state-hover: #d5d5d5;
+  --state-active: #bfbfbf;
+
+  /* Shape/Elevation: emulate Win98 bevels (raised default) */
+  --radius: 0px;
+  --elev-1: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey, inset 2px 2px #dfdfdf;
+  --elev-2: inset -2px -2px #0a0a0a, inset 2px 2px #fff, inset -3px -3px grey, inset 3px 3px #dfdfdf;
+}
+
+/* Win98 theme: queue flyout panel */
+[data-theme="win98"] #queue-panel {
+  background: var(--surface-1);
+  border: 2px solid #fff;
+  border-radius: 0;
+  box-shadow: inset -2px -2px #0a0a0a, inset 2px 2px #dfdfdf;
+  color: var(--text);
+}
+[data-theme="win98"] #queue-panel .queue-header {
+  background: var(--surface-header);
+  color: var(--text-strong);
+  border-bottom: 2px solid #0a0a0a;
+  font-weight: bold;
+  padding: 10px 16px;
+}
+[data-theme="win98"] #queue-panel .queue-list {
+  background: var(--surface-2);
+  border-radius: 0;
+  padding: 8px 0;
+}
+[data-theme="win98"] #queue-panel .queue-upcoming-header {
+  background: var(--surface-header);
+  color: var(--text-strong);
+  font-weight: bold;
+  padding: 6px 16px;
+  border-top: 2px solid #fff;
+  border-bottom: 2px solid #0a0a0a;
+}
+[data-theme="win98"] #queue-panel .queue-upcoming-item {
+  background: var(--surface-2);
+  color: var(--text);
+  border-bottom: 1px solid gray;
+  padding: 6px 12px;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+}
+[data-theme="win98"] #queue-panel .queue-upcoming-item .queue-title {
+  color: var(--text-strong);
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-theme="win98"] #queue-panel .queue-upcoming-item .queue-artist {
+  color: var(--text-muted);
+  flex: 0 0 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
+[data-theme="win98"] #queue-panel .queue-upcoming-item:hover {
+  background: var(--surface-hover);
+  color: #000;
+}
+[data-theme="win98"] #queue-panel .queue-upcoming-empty {
+  font-size: 11px;
+  opacity: 0.5;
+  padding: 4px;
+}
+
+/* Base text color on light surfaces */
+[data-theme="win98"] body { color: var(--text); background: var(--surface-0); }
+
+/* Panels: toolbar, sidebar, headers */
+[data-theme="win98"] #toolbar,
+[data-theme="win98"] #sidebar,
+[data-theme="win98"] .playlist-header {
+  background: var(--surface-1);
+  color: var(--text);
+  border: none;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #dfdfdf, inset -2px -2px grey, inset 2px 2px #fff;
+}
+
+/* Cards/containers */
+[data-theme="win98"] .track-card,
+[data-theme="win98"] .playlist-card {
+  background: #fff;
+  color: var(--text);
+  background: #fff;
+  color: #000;
+  outline: 1px dotted #000;
+  border-radius: 0;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px grey, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+}
+[data-theme="win98"] .track-card .track-name,
+[data-theme="win98"] .playlist-card .track-name { color: var(--text-strong); }
+[data-theme="win98"] .track-card .track-artist,
+[data-theme="win98"] .track-card .track-album,
+[data-theme="win98"] .playlist-card .track-artist { color: var(--text-muted); }
+
+/* Table header & rows */
+[data-theme="win98"] .table-header {
+  background: silver;
+  color: #000;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey, inset 2px 2px #dfdfdf;
+}
+[data-theme="win98"] .track {
+  background: #fff;
+  color: var(--text);
+  border-bottom: 1px solid grey;
+}
+[data-theme="win98"] .track-name { color: var(--text-strong); }
+[data-theme="win98"] .track:hover {
+  background: navy;
+  color: #fff;
+}
+[data-theme="win98"] .track:hover .track-name { color: #fff; }
+[data-theme="win98"] .track:hover .track-artist,
+[data-theme="win98"] .track:hover .track-album,
+[data-theme="win98"] .track:hover .track-year,
+[data-theme="win98"] .track:hover .track-genre,
+[data-theme="win98"] .track:hover .track-bitrate { color: #fff; }
+
+/* Buttons: raised, pressed on active */
+[data-theme="win98"] .settings-btn,
+[data-theme="win98"] .view-btn,
+[data-theme="win98"] .sort-btn,
+[data-theme="win98"] .queue-add-btn,
+[data-theme="win98"] .playlist-actions-bar button,
+[data-theme="win98"] .favorite-toggle,
+[data-theme="win98"] .mode-btn,
+[data-theme="win98"] .control-btn {
+  background: silver;
+  color: #000;
+  border: none;
+  border-radius: 0;
+  min-height: 23px;
+  padding: 0 12px;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey, inset 2px 2px #dfdfdf;
+  text-shadow: 0 0 #222; /* 98.css trick for bold-ish look */
+}
+[data-theme="win98"] .settings-btn:hover,
+[data-theme="win98"] .view-btn:hover,
+[data-theme="win98"] .sort-btn:hover,
+[data-theme="win98"] .queue-add-btn:hover,
+[data-theme="win98"] .playlist-actions-bar button:hover,
+[data-theme="win98"] .favorite-toggle:hover,
+[data-theme="win98"] .mode-btn:hover,
+[data-theme="win98"] .control-btn:hover {
+  box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px grey; /* pressed look on hover for touchy vibe */
+}
+[data-theme="win98"] .settings-btn:active,
+[data-theme="win98"] .view-btn:active,
+[data-theme="win98"] .sort-btn:active,
+[data-theme="win98"] .queue-add-btn:active,
+[data-theme="win98"] .playlist-actions-bar button:active,
+[data-theme="win98"] .favorite-toggle:active,
+[data-theme="win98"] .mode-btn:active,
+[data-theme="win98"] .control-btn:active {
+  box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px grey;
+}
+[data-theme="win98"] .mode-btn.active,
+[data-theme="win98"] .favorite-toggle.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+[data-theme="win98"] .control-btn.play { background: var(--accent); color: var(--accent-contrast); }
+
+[data-theme="win98"] .control-btn.active {
+  background: silver;
+  color: #000;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px grey;
+}
+
+/* Player bar queue & scan buttons */
+[data-theme="win98"] #player-bar .queue-btn,
+[data-theme="win98"] #player-bar #scan-btn-player {
+  background: silver;
+  color: #000;
+  border: none;
+  border-radius: 0;
+  min-height: 23px;
+  padding: 0 12px;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey, inset 2px 2px #dfdfdf;
+}
+[data-theme="win98"] #player-bar .queue-btn:hover,
+[data-theme="win98"] #player-bar #scan-btn-player:hover {
+  box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px grey;
+}
+[data-theme="win98"] #player-bar .queue-btn img {
+  filter: none; /* icon dark on light */
+}
+
+/* Inputs */
+[data-theme="win98"] #filter,
+[data-theme="win98"] select,
+[data-theme="win98"] input[type="text"],
+[data-theme="win98"] input[type="search"] {
+  background: #fff;
+  color: #000;
+  border: none;
+  border-radius: 0;
+  box-shadow: inset -1px -1px #fff, inset 1px 1px grey, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+}
+[data-theme="win98"] #filter:focus,
+[data-theme="win98"] select:focus,
+[data-theme="win98"] input[type="text"]:focus,
+[data-theme="win98"] input[type="search"]:focus { outline: 1px dotted #000; }
+
+/* Icons that assumed dark theme: remove filters on light */
+[data-theme="win98"] .queue-btn img { filter: none; }
+
+/* Scrollbars (match app widths; style like 98) */
+[data-theme="win98"] ::-webkit-scrollbar {
+  width: 18px;
+  height: 18px;
+}
+[data-theme="win98"] ::-webkit-scrollbar-track {
+  background: #dfdfdf;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='2' height='2' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M1 0H0v1h1v1h1V1H1V0z' fill='silver'/%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M2 0H1v1H0v1h1V1h1V0z' fill='%23fff'/%3E%3C/svg%3E");
+}
+[data-theme="win98"] ::-webkit-scrollbar-thumb {
+  background-color: #dfdfdf;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey, inset 2px 2px #dfdfdf;
+}
+/* Container-specific sizing to match app rhythm */
+[data-theme="win98"] #sidebar::-webkit-scrollbar { width: 12px; height: 12px; }
+[data-theme="win98"] #sidebar::-webkit-scrollbar-track {
+  background: #dfdfdf;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='2' height='2' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M1 0H0v1h1v1h1V1H1V0z' fill='silver'/%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M2 0H1v1H0v1h1V1h1V0z' fill='%23fff'/%3E%3C/svg%3E");
+}
+[data-theme="win98"] #sidebar::-webkit-scrollbar-thumb {
+  background-color: #dfdfdf;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey, inset 2px 2px #dfdfdf;
+}
+[data-theme="win98"] .filter-list::-webkit-scrollbar { width: 10px; height: 10px; }
+
+/* Firefox */
+[data-theme="win98"] #sidebar,
+[data-theme="win98"] .filter-list { scrollbar-color: #bfbfbf #dfdfdf; scrollbar-width: thin; }
+[data-theme="win98"] #music-list { scrollbar-width: auto; }
+
+[data-theme="win98"] #music-list {
+  padding-bottom: 120px;
+}
+
+/* Sidebar filter counts: ensure strong contrast on light silver background */
+[data-theme="win98"] .filter-count {
+  color: #000;               /* black text for contrast */
+  background: #dfdfdf;       /* light chip, distinct from sidebar silver */
+  opacity: 1;                /* remove inherited dimming */
+  border-radius: 0;          /* square 98 look */
+  box-shadow: inset -1px -1px #fff, inset 1px 1px grey, inset -2px -2px #dfdfdf, inset 2px 2px #0a0a0a;
+}
+[data-theme="win98"] .filter-item.active .filter-count {
+  background: rgba(0,0,0,0.2); /* subtle dark chip on blue */
+  color: #fff;                  /* readable on accent */
+  box-shadow: none;
+}
+
+/* Sidebar Scan Music button */
+[data-theme="win98"] #scan-btn {
+  display: block;
+  width: 100%;
+  margin: 10px 0 16px;
+  background: silver;
+  color: #000;
+  border: none;
+  border-radius: 0;
+  min-height: 23px;
+  padding: 6px 12px;
+  text-align: center;
+  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey, inset 2px 2px #dfdfdf;
+}
+[data-theme="win98"] #scan-btn:hover {
+  box-shadow: inset -1px -1px #fff, inset 1px 1px #0a0a0a, inset -2px -2px #dfdfdf, inset 2px 2px grey;
+}

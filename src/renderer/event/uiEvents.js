@@ -6,7 +6,8 @@ import * as dom from '../dom.js';
 import { state } from '../components/shared/state.js';
 
 export function setupUiEventListeners() {
-  dom.settingsBtn.addEventListener('click', showSettingsModal);
+  console.log('[uiEvents] settingsBtn element:', dom.settingsBtn);
+  if (dom.settingsBtn) dom.settingsBtn.addEventListener('click', showSettingsModal);
 
   // Mode toggle events for sidebar (Artists/Albums/Playlists)
   const applyMode = (mode) => {

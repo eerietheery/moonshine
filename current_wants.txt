@@ -1,4 +1,7 @@
 changing colors slowly kills performance, implement gpu based handling for 🌈rainbowmode🌈 (scrolling colors)
 
-absolutely ensure that when the user clicks the linked aritst name from the list view it also resets the sidebar filter 
+absolutely ensure that when the user clicks the linked aritst name from the list view it also resets the sidebar filter, sometimes I feel trapped viewing a 2 track list lol 
 
+improve playlists tab so it shows the first four artists/albums in the thumbnail if there are that many 
+
+Skin 2.0 - draw album art to edge of card for fuller look. 
