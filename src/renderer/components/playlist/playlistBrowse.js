@@ -119,7 +119,10 @@ export function renderPlaylistBrowseList(container) {
   const header = document.createElement('div');
   header.className = 'table-header';
   header.innerHTML = '<div class="col-title">Name</div><div class="col-artist">Type</div><div class="col-album">Count</div><div class="col-actions"></div>';
-  header.style.gridTemplateColumns = '3fr 1.5fr 1fr 140px';
+  const tpl = '3fr 1.5fr 1fr 140px';
+  const musicTable = document.getElementById('music-table');
+  if (musicTable) musicTable.style.setProperty('--music-grid-template', tpl);
+  header.style.gridTemplateColumns = tpl;
   container.appendChild(header);
   for (const it of items) {
     const tracks = resolveTracks(it);
@@ -127,7 +130,7 @@ export function renderPlaylistBrowseList(container) {
     const art = tracks[0]?.albumArtDataUrl || 'assets/images/default-art.png';
     const row = document.createElement('div');
     row.className = 'track';
-    row.style.gridTemplateColumns = '3fr 1.5fr 1fr 140px';
+  row.style.gridTemplateColumns = tpl;
     row.innerHTML = `
       <div class="track-title"><img class="album-art" src="${art}" alt="" /><span class="track-name">${it.title}</span></div>
       <div class="track-artist">${it.type==='user'?'Playlist':'Genre'}</div>

@@ -141,6 +141,30 @@ function showSettingsModal() {
   body.appendChild(headersSection);
   body.appendChild(filterSection);
   body.appendChild(artistSection);
+  // --- Full Art Display Card Toggle ---
+  const fullArtSection = document.createElement('div');
+  fullArtSection.style.margin = '12px 0';
+  fullArtSection.style.display = 'flex';
+  fullArtSection.style.alignItems = 'center';
+  fullArtSection.style.gap = '12px';
+  const fullArtLabel = document.createElement('label');
+  fullArtLabel.textContent = 'Full Art Display Card';
+  fullArtLabel.style.fontWeight = '600';
+  fullArtLabel.style.color = '#fff';
+  const fullArtToggle = document.createElement('input');
+  fullArtToggle.type = 'checkbox';
+  fullArtToggle.checked = !!state.fullArtCardDisplay;
+  fullArtToggle.style.transform = 'scale(1.3)';
+  fullArtToggle.style.marginRight = '8px';
+  fullArtToggle.addEventListener('change', (e) => {
+    state.fullArtCardDisplay = fullArtToggle.checked;
+    if (window.etune?.updateConfig) window.etune.updateConfig({ fullArtCardDisplay: state.fullArtCardDisplay });
+    // Optionally trigger a grid re-render if needed
+    if (typeof window.renderGrid === 'function') window.renderGrid(document.getElementById('music-list'));
+  });
+  fullArtSection.appendChild(fullArtToggle);
+  fullArtSection.appendChild(fullArtLabel);
+  body.appendChild(fullArtSection);
   body.appendChild(themeSection);
   body.appendChild(updatesSection);
 

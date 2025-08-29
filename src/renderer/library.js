@@ -16,11 +16,24 @@ function showSpinner(show = true) {
       spinner.style.display = 'flex';
       spinner.style.alignItems = 'center';
       spinner.style.justifyContent = 'center';
-      spinner.style.width = '72px';
-      spinner.style.height = '72px';
+  spinner.style.width = '96px';
+  spinner.style.height = '96px';
       spinner.style.opacity = '0.85';
       spinner.style.pointerEvents = 'none';
-      spinner.innerHTML = `<img src="assets/images/clock.svg" alt="Loading..." style="width:100%;height:100%;filter:invert(1) drop-shadow(0 0 6px rgba(0,0,0,0.6));">`;
+   spinner.innerHTML = `
+     <div style="position:relative;width:100%;height:100%;">
+    <!-- Logo behind spinner (colored via mask with --primary-color) -->
+    <div aria-hidden="true"
+      style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) translate(-5px, -25px);width:175%;height:175%;
+          background: var(--primary-color);
+          -webkit-mask: url('assets/images/moonshinebottlelogo.svg') no-repeat center / contain;
+          mask: url('assets/images/moonshinebottlelogo.svg') no-repeat center / contain;
+          filter: drop-shadow(0 0 10px color-mix(in srgb, var(--primary-color) 60%, transparent));">
+    </div>
+    <!-- Spinner on top -->
+    <img src="assets/images/clock.svg" alt="Loading..." 
+      style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58%;height:58%;object-fit:contain;filter:invert(1) drop-shadow(0 0 6px rgba(0,0,0,0.6));" />
+     </div>`;
       // Ensure music table parent is positioned
       const container = document.getElementById('music-table') || dom.list.parentElement;
       if (container && getComputedStyle(container).position === 'static') {

@@ -39,6 +39,20 @@
   gap: 10px;
 }
 
+/* Theme-specific sidebar search input colors */
+[data-theme="win98"] #sidebar-search {
+  background: #fff;
+  color: #222;
+  border: 1px solid #888;
+}
+
+[data-theme="neumorphic"] #sidebar-search {
+  background: #f5f5f7;
+  color: #222;
+  border: 1px solid #d1d1d1;
+}
+}
+
 .track-actions .favorite-btn,
 .track-actions .queue-add-btn,
 .track-actions .playlist-add-btn {

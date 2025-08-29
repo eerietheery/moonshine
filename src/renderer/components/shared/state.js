@@ -1,5 +1,5 @@
 // App state and filtering logic (canonical location)
-import { filterTracks } from './filter.js';
+import { filterTracks, normalizeArtist } from './filter.js';
 
 export const state = {
   tracks: [],
@@ -27,6 +27,10 @@ export const state = {
   favoriteViewEnabled: false,
   // Grid sorting preference: when true, grid prefers album-first sorting
   gridSortByAlbum: false,
+  // Global UI: Full Art Display Card toggle
+  fullArtCardDisplay: false,
+  // Whether sidebar artist/album/year filters should be applied
+  sidebarFilteringEnabled: false,
 };
 
 // Expose to window for legacy modules that expect window.state immediately
@@ -55,14 +59,24 @@ export function updateFilters(filterInput, sidebarFilteringEnabled=false) {
   state.filteredTracks = state.tracks.slice();
   if (searchFilter) state.filteredTracks = filterTracks(state.filteredTracks, searchFilter);
   if (sidebarFilteringEnabled) {
-    if (state.activeArtist && state.activeArtist !== 'All') state.filteredTracks = state.filteredTracks.filter(t => (t.tags.artist||'Unknown')===state.activeArtist);
+    if (state.activeArtist && state.activeArtist !== 'All') {
+      const target = state.activeArtist;
+      const targetNorm = normalizeArtist(target);
+      state.filteredTracks = state.filteredTracks.filter(t => {
+        const raw = (t.tags && t.tags.artist) || 'Unknown';
+        // When explicitArtistNames is on, prefer exact raw match; otherwise accept normalized match or exact raw match
+        if (state.explicitArtistNames) return raw === target;
+        const norm = normalizeArtist(raw);
+        return norm === targetNorm || raw === target;
+      });
+    }
     if (state.activeAlbum && state.activeAlbum !== 'All') state.filteredTracks = state.filteredTracks.filter(t => (t.tags.album||'Unknown')===state.activeAlbum);
     if (state.activeYear && state.activeYear !== 'All') state.filteredTracks = state.filteredTracks.filter(t => String(t.tags.year||'')===String(state.activeYear));
   }
   if (state.isShuffle) rebuildPlayOrder(); else state.playOrder = null;
 }
 
-export function resetSidebarFilters(){ state.activeArtist=null; state.activeAlbum=null; }
+export function resetSidebarFilters(){ state.activeArtist=null; state.activeAlbum=null; state.activeYear=null; }
 
 export function rebuildPlayOrder(startAtCurrent=true){
   const n = state.filteredTracks.length;

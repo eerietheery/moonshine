@@ -33,18 +33,42 @@
     border-bottom: 1px solid #333;
   }
   .table-header {
-    grid-template-columns: 2fr 1fr 1fr 80px;
+    grid-template-columns: 2fr 1fr 1fr 100px; /* Smaller actions column on mobile */
   }
   .track {
-    grid-template-columns: 2fr 1fr 1fr 80px;
+    grid-template-columns: 2fr 1fr 1fr 100px; /* Smaller actions column on mobile */
   }
   .col-year, .col-genre, .track-year, .track-genre {
     display: none;
   }
+  
+  .col-actions {
+    width: 100px;
+    min-width: 100px;
+    max-width: 100px;
+  }
+  
   .track-actions {
     justify-content: flex-end;
     padding: 0 8px;
+    width: 100px; /* Match mobile grid column */
+    min-width: 100px;
+    max-width: 100px;
+    gap: 4px; /* Reduce gap on mobile */
   }
+  
+  /* Make buttons slightly smaller on mobile */
+  .track-actions button {
+    min-width: 24px;
+    max-width: 24px;
+    height: 24px;
+  }
+  
+  .track-actions button img {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  
   .player-left {
     flex: 0 0 150px;
   }
@@ -91,9 +115,20 @@
 
   /* Ensure actions column keeps enough room and aligns to the right */
   .col-actions, .track-actions {
-    min-width: 120px;
+    min-width: 140px;
+    max-width: 140px; /* Prevent expansion */
     padding-right: 12px;
     justify-content: flex-end;
+    flex-shrink: 0; /* Critical: prevent shrinking */
+  }
+
+  /* Force grid to respect fixed action column width */
+  .table-header {
+    grid-template-columns: auto auto auto 140px !important;
+  }
+  
+  .track {
+    grid-template-columns: auto auto auto 140px !important;
   }
 
   /* Allow horizontal overflow on the header row if needed rather than collapsing items */
