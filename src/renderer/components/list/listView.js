@@ -9,6 +9,7 @@ import * as dom from '../../dom.js';
 import { getPlaylistTracks } from '../playlist/playlists.js';
 import { showToast } from '../ui/ui.js';
 import { renderPlaylistBrowse } from '../playlist/playlistBrowse.js';
+import { renderPlaylistHeader as renderPlaylistHeaderModule } from './playlistHeader.js';
 
 export function renderList(list) {
   // Ensure body has a class indicating playlist *browse* mode so CSS can react
@@ -130,90 +131,13 @@ export function renderList(list) {
 
   // Render playlist header section when viewing a playlist
   function renderPlaylistHeader(container, source) {
-    const tracks = getPlaylistTracks(source);
-    const title = source.type === 'user' ? (source.name || 'Playlist') : (source.genre || 'Playlist');
-    const count = tracks.length;
-    container.innerHTML = '';
-    const artUrl = tracks[0]?.albumArtDataUrl || 'assets/images/default-art.png';
-    
-    // Main container with horizontal layout
-    const mainContent = document.createElement('div');
-    mainContent.className = 'playlist-main-content';
-    
-    // Left side - large thumbnail
-    const thumbnailContainer = document.createElement('div');
-    thumbnailContainer.className = 'playlist-thumbnail';
-    const img = document.createElement('img');
-    img.className = 'playlist-cover';
-    img.src = artUrl;
-    img.alt = 'Playlist cover';
-    thumbnailContainer.appendChild(img);
-    
-    // Right side - text content
-    const textContent = document.createElement('div');
-    textContent.className = 'playlist-text-content';
-    
-    const badge = document.createElement('div');
-    badge.className = 'playlist-badge';
-    badge.textContent = source.type === 'user' ? 'Playlist' : 'Genre';
-    
-    const titleEl = document.createElement('h1');
-    titleEl.className = 'playlist-title';
-    titleEl.textContent = title;
-    titleEl.title = title;
-    
-    const subtitle = document.createElement('div');
-    subtitle.className = 'playlist-subtitle';
-    subtitle.textContent = `${count} track${count===1?'':'s'}`;
-    
-    // Actions row
-    const actions = document.createElement('div');
-    actions.className = 'playlist-actions-bar';
-    const playBtn = document.createElement('button');
-    playBtn.id = 'pl-play';
-    playBtn.className = 'primary';
-    playBtn.textContent = 'Play';
-    const queueBtn = document.createElement('button');
-    queueBtn.id = 'pl-queue';
-    queueBtn.textContent = 'Queue All';
-    actions.appendChild(playBtn);
-    actions.appendChild(queueBtn);
-    
-    // Assemble text content
-    textContent.appendChild(badge);
-    textContent.appendChild(titleEl);
-    textContent.appendChild(subtitle);
-    textContent.appendChild(actions);
-    
-    // Assemble main content
-    mainContent.appendChild(thumbnailContainer);
-    mainContent.appendChild(textContent);
-    
-    container.appendChild(mainContent);
-    container.style.display = 'block';
-    container.classList.add('visible');
-    playBtn.onclick = async () => {
-      if (!tracks.length) return showToast('Playlist is empty');
-      state.filteredTracks = tracks.slice();
-      renderList(dom.list);
-      const { playTrack } = await import('./playerCore.js');
-      playTrack(
-        tracks[0],
-        0,
-        document.getElementById('audio'),
-        document.getElementById('play-btn'),
-        document.getElementById('current-art'),
-        document.getElementById('current-title'),
-        document.getElementById('current-artist'),
-        () => renderList(dom.list)
-      );
-    };
-    queueBtn.onclick = async () => {
-      if (!tracks.length) return showToast('Playlist is empty');
-  const { addToQueue } = await import('../shared/state.js');
-      tracks.forEach(t => addToQueue(t));
-      showToast(`Queued ${tracks.length} track${tracks.length===1?'':'s'}`);
-    };
+    // Delegate to extracted module and pass a callback to re-render list
+    try {
+      renderPlaylistHeaderModule(container, source, renderList);
+    } catch (e) {
+      // Best-effort fallback: dynamic import
+      import('./playlistHeader.js').then(m => m.renderPlaylistHeader(container, source, renderList)).catch(() => {});
+    }
   }
   // Remove legacy dynamic header row if present
   const legacyHeader = document.getElementById('music-list-headers');
@@ -235,7 +159,7 @@ export function renderList(list) {
   headerEl.innerHTML = headers.map(h => {
       const isActive = state.sortBy === h;
       const arrow = isActive ? (state.sortOrder === 'asc' ? '↑' : '↓') : '';
-      return `<div class="col-${h} sort-header${isActive ? ' active-sort' : ''}" tabindex="0" role="button" data-sort="${h}" title="Sort by ${headerLabels[h] || h}">${headerLabels[h] || h} <span class="sort-arrow">${arrow}</span></div>`;
+      return `<div class="col-${h} sort-header${isActive ? ' active-sort' : ''}" tabindex="0" role="button" data-sort="${h}" title="Sort by ${headerLabels[h] || h}">${headerLabels[h] || h} <span class="sort-arrow">${arrow}</span><span class="col-resizer" data-resize="${h}"></span></div>`;
     }).join('') + '<div class="col-actions"></div>';
     // Column width mapping similar to original proportions
     // Use shared helper so header and rows use identical grid templates.
@@ -256,6 +180,54 @@ export function renderList(list) {
       headerEl.addEventListener('scroll', () => { listEl.scrollLeft = headerEl.scrollLeft; }, { passive: true });
     }
   });
+
+    // Column resize: add drag handlers to .col-resizer handles
+    try {
+      const musicTable = document.getElementById('music-table');
+      const handles = headerEl.querySelectorAll('.col-resizer[data-resize]');
+      let dragging = null; // { key, startX, startW }
+      const minWidths = { title: 240, artist: 160, album: 160, year: 80, genre: 80, bitrate: 80 };
+      const onMove = (e) => {
+        if (!dragging) return;
+        const dx = (e.touches ? e.touches[0].clientX : e.clientX) - dragging.startX;
+        const next = Math.max(minWidths[dragging.key] || 80, Math.round(dragging.startW + dx));
+        state.columnWidths = state.columnWidths || {};
+        state.columnWidths[dragging.key] = next;
+        // Recompute and apply template live while dragging
+        const tpl = getGridTemplate(headers);
+        musicTable?.style.setProperty('--music-grid-template', tpl);
+        headerEl.style.gridTemplateColumns = tpl;
+      };
+      const onUp = () => {
+        if (!dragging) return;
+        dragging = null;
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onUp);
+        // Persist to config if available
+        try { window.etune?.updateConfig && window.etune.updateConfig({ columnWidths: state.columnWidths }); } catch (_) {}
+      };
+      handles.forEach(h => {
+        const key = h.getAttribute('data-resize');
+        h.addEventListener('mousedown', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          const rect = h.parentElement.getBoundingClientRect();
+          const startW = rect.width;
+          dragging = { key, startX: e.clientX, startW };
+          document.addEventListener('mousemove', onMove, { passive: false });
+          document.addEventListener('mouseup', onUp, { passive: true });
+        });
+        h.addEventListener('touchstart', (e) => {
+          const t = e.touches[0];
+          const rect = h.parentElement.getBoundingClientRect();
+          const startW = rect.width;
+          dragging = { key, startX: t.clientX, startW };
+          document.addEventListener('touchmove', onMove, { passive: false });
+          document.addEventListener('touchend', onUp, { passive: true });
+        }, { passive: true });
+      });
+    } catch (_) { /* noop */ }
 
     // Ensure grid template responds to container/window width changes
     try {

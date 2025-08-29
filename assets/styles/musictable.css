@@ -28,7 +28,7 @@
   
   .track-title {
     gap: 6px;
-    padding: 0 8px;
+  padding: 0 8px 0 4px;
   }
   .table-header, .track {
     font-size: 0.85rem;
@@ -47,6 +47,7 @@
   background: var(--surface-1);
   border-bottom: 1px solid var(--border);
   padding: 0;
+  margin-left: 0;
   display: grid;
   /* Use CSS variable set by JS (fallback to sensible defaults) */
   grid-template-columns: var(--music-grid-template, 3fr 2fr 2fr 1fr 1fr 140px);
@@ -64,6 +65,20 @@
   scrollbar-width: none;        /* Firefox */
 }
 
+/* Default padding for header cells (title column overrides below) */
+.table-header > div {
+  /* horizontal padding to align text with rows, no vertical padding for header */
+  padding: 10px 25px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: right;
+  justify-content: flex-start; /* default left alignment */
+  min-width: 0;               /* allow text to shrink within grid track */
+  overflow: hidden;           /* constrain header text */
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Hide WebKit scrollbars for header */
 .table-header::-webkit-scrollbar { display: none; }
 
@@ -77,15 +92,16 @@
 /* Prefer body class toggle for stronger intent-based hiding */
 body.playlists-active #music-table-header { display: none !important; }
 
-.col-title, .col-artist, .col-album, .col-year, .col-genre {
+.col-title {
   cursor: pointer;
   transition: color 0.15s;
-  padding: 12px 16px;
+  padding: 12px 16px 12px 30px;
   /* Remove vertical separators to simplify look and match rows */
   border-right: none;
   box-sizing: border-box;
   display: flex;
   align-items: center;
+  position: relative;
 }
 
 .col-title:hover, .col-artist:hover, .col-album:hover, .col-year:hover, .col-genre:hover {
@@ -94,9 +110,36 @@ body.playlists-active #music-table-header { display: none !important; }
 
 .col-genre { border-right: none; }
 
-.col-year, .col-genre {
-  justify-content: center;
+/* Column resizer handle */
+.table-header .col-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  /* subtle visual affordance */
+  background: transparent;
 }
+.table-header .col-resizer::after {
+  content: '';
+  position: absolute;
+  top: 20%;
+  bottom: 20%;
+  left: 3px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--border);
+  opacity: 0.0;
+  transition: opacity .15s ease;
+}
+.table-header .sort-header:hover .col-resizer::after,
+.table-header .col-resizer:active::after {
+  opacity: 0.7;
+}
+
+/* Center numeric/categorical headers to match row cells */
+.col-year, .col-genre { justify-content: center; }
 
 #music-list {
   flex: 1;
@@ -106,6 +149,7 @@ body.playlists-active #music-table-header { display: none !important; }
   scrollbar-gutter: stable both-edges;
   position: relative;
   width: 100%;
+  margin-left: 0;
 }
 
 .track {
@@ -150,7 +194,7 @@ body.playlists-active #music-table-header { display: none !important; }
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0 16px;
+  padding: 0 16px 0 12px;
   box-sizing: border-box;
   min-width: 0;
   flex: 1 1 0;
@@ -205,14 +249,14 @@ body.playlists-active #music-table-header { display: none !important; }
   white-space: nowrap;
 }
 
-.track-year, .track-genre, .track-bitrate {
-  justify-content: center;
-}
+.track-year, .track-genre { justify-content: left; }
+.track-bitrate { justify-content: flex-start; text-align: left; }
 
 .col-bitrate {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  text-align: left;
 }
 
 /* Actions column */

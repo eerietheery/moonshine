@@ -1,0 +1,141 @@
+// Playlist header rendering extracted from listView.js
+import { getPlaylistTracks } from '../playlist/playlists.js';
+import { state, addToQueue } from '../shared/state.js';
+import { showToast } from '../ui/ui.js';
+import * as dom from '../../dom.js';
+import { playTrack } from '../player/playerCore.js';
+import { getGridTemplate } from '../shared/layout.js';
+
+export function renderPlaylistHeader(container, source, renderListCallback) {
+  const tracks = getPlaylistTracks(source);
+  // Ensure playlist header uses same grid template as music table so columns align
+  try {
+    const headers = state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre'];
+    const tpl = getGridTemplate(headers);
+    container.style.display = 'grid';
+    container.style.gridTemplateColumns = tpl;
+    // Outer container should not add extra padding so its left edge lines up with the table
+    container.style.padding = '0';
+  } catch (_) {}
+  const title = source.type === 'user' ? (source.name || 'Playlist') : (source.genre || 'Playlist');
+  const count = tracks.length;
+  container.innerHTML = '';
+  const artUrl = tracks[0]?.albumArtDataUrl || 'assets/images/default-art.png';
+
+  // Main container with horizontal layout
+  const mainContent = document.createElement('div');
+  mainContent.className = 'playlist-main-content';
+  // Place the main content into the grid left area (all columns except the last actions column)
+  try { mainContent.style.gridColumn = '1 / -2'; } catch (_) {}
+
+  // Left side - large thumbnail
+  const thumbnailContainer = document.createElement('div');
+  thumbnailContainer.className = 'playlist-thumbnail';
+  const img = document.createElement('img');
+  img.className = 'playlist-cover';
+  img.src = artUrl;
+  img.alt = 'Playlist cover';
+  thumbnailContainer.appendChild(img);
+
+  // Right side - text content
+  const textContent = document.createElement('div');
+  textContent.className = 'playlist-text-content';
+
+  const badge = document.createElement('div');
+  badge.className = 'playlist-badge';
+  badge.textContent = source.type === 'user' ? 'Playlist' : 'Genre';
+
+  const titleEl = document.createElement('h1');
+  titleEl.className = 'playlist-title';
+  titleEl.textContent = title;
+  titleEl.title = title;
+
+  const subtitle = document.createElement('div');
+  subtitle.className = 'playlist-subtitle';
+  subtitle.textContent = `${count} track${count===1?'':'s'}`;
+
+  // We'll render action buttons in the right-most grid column so they align with table actions
+  const actions = document.createElement('div');
+  actions.className = 'playlist-actions-bar';
+  // action host sits in the last grid column
+  const actionsHost = document.createElement('div');
+  actionsHost.style.display = 'flex';
+  actionsHost.style.alignItems = 'center';
+  actionsHost.style.justifyContent = 'flex-end';
+  try { actionsHost.style.gridColumn = '-1 / -0'; } catch (_) {}
+  const playBtn = document.createElement('button');
+  playBtn.id = 'pl-play';
+  playBtn.className = 'primary';
+  playBtn.textContent = 'Play';
+  const queueBtn = document.createElement('button');
+  queueBtn.id = 'pl-queue';
+  queueBtn.textContent = 'Queue All';
+  actions.appendChild(playBtn);
+  actions.appendChild(queueBtn);
+
+  // Assemble text content
+  textContent.appendChild(badge);
+  textContent.appendChild(titleEl);
+  textContent.appendChild(subtitle);
+  textContent.appendChild(actions);
+
+  // Assemble main content into left area and place actions into the last column
+  mainContent.appendChild(thumbnailContainer);
+  mainContent.appendChild(textContent);
+  // action host receives the action elements (keeps them aligned to last column)
+  actionsHost.appendChild(actions);
+  container.appendChild(mainContent);
+  container.appendChild(actionsHost);
+  container.style.display = 'grid';
+  container.classList.add('visible');
+
+  playBtn.onclick = async () => {
+    if (!tracks.length) return showToast('Playlist is empty');
+    state.filteredTracks = tracks.slice();
+    // Request the list view to re-render
+    try { renderListCallback && renderListCallback(dom.list); } catch (_) {}
+    // Start playing first track
+    try {
+      playTrack(
+        tracks[0],
+        0,
+        document.getElementById('audio'),
+        document.getElementById('play-btn'),
+        document.getElementById('current-art'),
+        document.getElementById('current-title'),
+        document.getElementById('current-artist'),
+        () => { try { renderListCallback && renderListCallback(dom.list); } catch (_) {} }
+      );
+    } catch (e) {
+      // fallback: dynamic import if static import fails
+      try {
+        const mod = await import('../player/playerCore.js');
+        mod.playTrack(
+          tracks[0],
+          0,
+          document.getElementById('audio'),
+          document.getElementById('play-btn'),
+          document.getElementById('current-art'),
+          document.getElementById('current-title'),
+          document.getElementById('current-artist'),
+          () => { try { renderListCallback && renderListCallback(dom.list); } catch (_) {} }
+        );
+      } catch (_) { /* noop */ }
+    }
+  };
+
+  queueBtn.onclick = async () => {
+    if (!tracks.length) return showToast('Playlist is empty');
+    try {
+      tracks.forEach(t => addToQueue(t));
+      showToast(`Queued ${tracks.length} track${tracks.length===1?'':'s'}`);
+    } catch (e) {
+      // fallback: try dynamic import of state if addToQueue wasn't available
+      try {
+        const s = await import('../shared/state.js');
+        tracks.forEach(t => s.addToQueue && s.addToQueue(t));
+        showToast(`Queued ${tracks.length} track${tracks.length===1?'':'s'}`);
+      } catch (_) { /* noop */ }
+    }
+  };
+}
