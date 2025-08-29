@@ -59,22 +59,29 @@
   letter-spacing: 0.5px;
   width: 100%;
   box-sizing: border-box;
-  overflow-x: auto; /* allow scrollLeft sync without showing visible scrollbar */
+  overflow-x: hidden; /* header is not a scroll container; we translate inner */
   overflow-y: hidden;
   -ms-overflow-style: none;     /* IE/Edge */
   scrollbar-width: none;        /* Firefox */
 }
+/* Inner scroller that we translate to follow the list's horizontal scroll */
+.table-header-inner {
+  display: grid;
+  grid-template-columns: var(--music-grid-template, 3fr 2fr 2fr 1fr 1fr 140px);
+  transform: translateX(calc(-1 * var(--header-offset, 0px)));
+  will-change: transform;
+}
 
-/* Default padding for header cells (title column overrides below) */
-.table-header > div {
-  /* horizontal padding to align text with rows, no vertical padding for header */
+/* Default padding for header cells (title/others override below) */
+.table-header-inner > div {
+  /* fuller header padding and right-aligned labels */
   padding: 10px 25px;
   box-sizing: border-box;
   display: flex;
-  align-items: right;
-  justify-content: flex-start; /* default left alignment */
-  min-width: 0;               /* allow text to shrink within grid track */
-  overflow: hidden;           /* constrain header text */
+  align-items: center;
+  justify-content: flex-end; /* align text to right edge of column */
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -95,8 +102,16 @@ body.playlists-active #music-table-header { display: none !important; }
 .col-title {
   cursor: pointer;
   transition: color 0.15s;
-  padding: 12px 16px 12px 30px;
-  /* Remove vertical separators to simplify look and match rows */
+  padding: 12px 16px 12px 30px; /* extra left to match row first column feel */
+  border-right: none;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.col-artist, .col-album, .col-year, .col-genre {
+  cursor: pointer;
+  transition: color 0.15s;
   border-right: none;
   box-sizing: border-box;
   display: flex;
@@ -109,6 +124,34 @@ body.playlists-active #music-table-header { display: none !important; }
 }
 
 .col-genre { border-right: none; }
+
+/* Column resizer handle */
+.table-header .col-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+  /* subtle visual affordance */
+  background: transparent;
+}
+.table-header .col-resizer::after {
+  content: '';
+  position: absolute;
+  top: 20%;
+  bottom: 20%;
+  left: 3px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--border);
+  opacity: 0.0;
+  transition: opacity .15s ease;
+}
+.table-header .sort-header:hover .col-resizer::after,
+.table-header .col-resizer:active::after {
+  opacity: 0.7;
+}
 
 /* Column resizer handle */
 .table-header .col-resizer {
@@ -249,8 +292,9 @@ body.playlists-active #music-table-header { display: none !important; }
   white-space: nowrap;
 }
 
-.track-year, .track-genre { justify-content: left; }
-.track-bitrate { justify-content: flex-start; text-align: left; }
+.track-year, .track-genre, .track-bitrate {
+  justify-content: center;
+}
 
 .col-bitrate {
   display: flex;
@@ -271,18 +315,14 @@ body.playlists-active #music-table-header { display: none !important; }
   flex-shrink: 0; /* Prevent column from shrinking */
 }
 
-/* Header actions column */
+/* Header actions column (no sticky; header mirrors list via transform) */
 .col-actions {
-  position: sticky;
-  right: 0; /* Stick to right edge */
-  background: var(--surface-1); /* Match header background */
-  z-index: 10; /* Ensure it stays above content */
-  width: var(--actions-width, 140px); /* Match track actions width */
+  width: var(--actions-width, 140px);
   min-width: var(--actions-width, 140px);
   max-width: var(--actions-width, 140px);
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* right-align header actions to match rows */
+  justify-content: flex-end;
 }
 
 /* Add a subtle visual indicator for the actions column header */

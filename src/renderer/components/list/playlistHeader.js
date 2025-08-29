@@ -8,13 +8,10 @@ import { getGridTemplate } from '../shared/layout.js';
 
 export function renderPlaylistHeader(container, source, renderListCallback) {
   const tracks = getPlaylistTracks(source);
-  // Ensure playlist header uses same grid template as music table so columns align
+  // Ensure playlist header uses same grid template as music table via CSS var
   try {
-    const headers = state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre'];
-    const tpl = getGridTemplate(headers);
     container.style.display = 'grid';
-    container.style.gridTemplateColumns = tpl;
-    // Outer container should not add extra padding so its left edge lines up with the table
+    container.style.gridTemplateColumns = 'var(--music-grid-template, 3fr 2fr 2fr 1fr 1fr 140px)';
     container.style.padding = '0';
   } catch (_) {}
   const title = source.type === 'user' ? (source.name || 'Playlist') : (source.genre || 'Playlist');
@@ -62,7 +59,7 @@ export function renderPlaylistHeader(container, source, renderListCallback) {
   actionsHost.style.display = 'flex';
   actionsHost.style.alignItems = 'center';
   actionsHost.style.justifyContent = 'flex-end';
-  try { actionsHost.style.gridColumn = '-1 / -0'; } catch (_) {}
+  try { actionsHost.style.gridColumn = '-2 / -1'; } catch (_) {}
   const playBtn = document.createElement('button');
   playBtn.id = 'pl-play';
   playBtn.className = 'primary';
@@ -77,7 +74,7 @@ export function renderPlaylistHeader(container, source, renderListCallback) {
   textContent.appendChild(badge);
   textContent.appendChild(titleEl);
   textContent.appendChild(subtitle);
-  textContent.appendChild(actions);
+  // Actions will render in the last grid column; don't place inside text block
 
   // Assemble main content into left area and place actions into the last column
   mainContent.appendChild(thumbnailContainer);
@@ -86,7 +83,6 @@ export function renderPlaylistHeader(container, source, renderListCallback) {
   actionsHost.appendChild(actions);
   container.appendChild(mainContent);
   container.appendChild(actionsHost);
-  container.style.display = 'grid';
   container.classList.add('visible');
 
   playBtn.onclick = async () => {
