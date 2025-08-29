@@ -5,3 +5,11 @@ absolutely ensure that when the user clicks the linked aritst name from the list
 improve playlists tab so it shows the first four artists/albums in the thumbnail if there are that many 
 
 Skin 2.0 - draw album art to edge of card for fuller look. 
+
+Fix list mode like /add to queue /add to playlist buttons 
+
+organize settings
+
+fix sidebar filtering disable, grid sort by album
+
+98 context menu style match

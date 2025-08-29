@@ -1,10 +1,12 @@
 // Grid view rendering logic
 import { state, updateFilters } from '../shared/state.js';
+import { normalizeArtist } from '../shared/filter.js';
 import { updateSidebarFilters } from '../sidebar/sidebar.js';
 import { renderList } from '../shared/view.js';
 import * as dom from '../../dom.js';
 import { showToast } from '../ui/ui.js';
 import { getPlaylistTracks } from '../playlist/playlists.js';
+import { getGridTemplate } from '../shared/layout.js';
 
 export function renderGrid(list) {
   try { document.body.classList.toggle('playlists-active', state.viewMode === 'playlist' && !state.activePlaylist); } catch(e) {}
@@ -24,7 +26,12 @@ export function renderGrid(list) {
       const arrow = isActive ? (state.sortOrder === 'asc' ? '↑' : '↓') : '';
       return `<div class="col-${h} sort-header${isActive ? ' active-sort' : ''}" tabindex="0" role="button" data-sort="${h}" title="Sort by ${headerLabels[h] || h}">${headerLabels[h] || h} <span class="sort-arrow">${arrow}</span></div>`;
     }).join('') + '<div class="col-actions"></div>';
-    headerEl.style.gridTemplateColumns = (state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre']).map(h => ({ title: '3fr', artist: '2fr', album: '2fr', year: '1fr', genre: '1fr', bitrate: '1fr' }[h] || '1fr')).concat('140px').join(' ');
+    // Set grid template with consistent actions column sizing via CSS variable
+  const gridHeadersForTemplate = state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre'];
+  const template = getGridTemplate(gridHeadersForTemplate);
+  const musicTable = document.getElementById('music-table');
+  if (musicTable) musicTable.style.setProperty('--music-grid-template', template);
+  headerEl.style.gridTemplateColumns = template;
 
     gridHeaders.forEach(h => {
       const cell = headerEl.querySelector(`[data-sort="${h}"]`);
@@ -58,33 +65,91 @@ export function renderGrid(list) {
   list.style.gap = '12px';
   list.classList.add('grid');
 
-  // Build album-centric view: group by album + condensed artist name
-  const albumMap = new Map();
-  for (const track of state.filteredTracks) {
-    const tgs = track.tags || {};
-    const album = tgs.album || 'Unknown';
-    const artistRaw = tgs.artist || 'Unknown';
-    // Condense artist: take first before comma or semicolon
-    const artist = artistRaw.split(/[,;]/)[0].trim();
-    const key = `${album}|||${artist}`;
-    if (!albumMap.has(key)) {
-      albumMap.set(key, {
-        album,
-        artist,
-        artistRaw,
-        art: track.albumArtDataUrl || 'assets/images/default-art.png',
-        year: tgs.year || null,
-        genre: tgs.genre || '',
-        tracks: [],
-      });
+  // Grouping logic: group by album or artist depending on sidebar selection
+  let cards = [];
+  if (state.sidebarMode === 'album') {
+    // Group by album
+    const albumMap = new Map();
+    for (const track of state.filteredTracks) {
+      const tgs = track.tags || {};
+      const album = tgs.album || 'Unknown';
+  const artistRaw = tgs.artist || 'Unknown';
+  // Display should preserve original casing; album grouping does not need a normalized artist for the label
+  const artist = artistRaw || 'Unknown';
+      if (!albumMap.has(album)) {
+        albumMap.set(album, {
+          album,
+          artist,
+          artistRaw,
+          art: track.albumArtDataUrl || 'assets/images/default-art.png',
+          year: tgs.year || '',
+          genre: tgs.genre || '',
+          tracks: [],
+        });
+      }
+      const entry = albumMap.get(album);
+      if (!entry.art && track.albumArtDataUrl) entry.art = track.albumArtDataUrl;
+      if (!entry.year && tgs.year) entry.year = tgs.year;
+      entry.tracks.push(track);
     }
-    const entry = albumMap.get(key);
-    if (!entry.art && track.albumArtDataUrl) entry.art = track.albumArtDataUrl;
-    if (!entry.year && tgs.year) entry.year = tgs.year;
-    entry.tracks.push(track);
+    cards = Array.from(albumMap.values());
+  } else if (state.sidebarMode === 'artist') {
+    // Group by artist
+    const artistMap = new Map();
+    for (const track of state.filteredTracks) {
+      const tgs = track.tags || {};
+      const artistRaw = tgs.artist || 'Unknown';
+      // Use normalized key for grouping when not explicit, but keep display as raw-cased
+      const artistKey = state.explicitArtistNames ? (artistRaw || 'Unknown') : (normalizeArtist(artistRaw) || 'Unknown');
+      const artist = artistRaw || 'Unknown';
+      const album = tgs.album || 'Unknown';
+      if (!artistMap.has(artistKey)) {
+        artistMap.set(artistKey, {
+          artist,
+          artistRaw,
+          album,
+          art: track.albumArtDataUrl || 'assets/images/default-art.png',
+          year: tgs.year || '',
+          genre: tgs.genre || '',
+          tracks: [],
+        });
+      }
+      const entry = artistMap.get(artistKey);
+      if (!entry.art && track.albumArtDataUrl) entry.art = track.albumArtDataUrl;
+      if (!entry.year && tgs.year) entry.year = tgs.year;
+      entry.tracks.push(track);
+    }
+    cards = Array.from(artistMap.values());
+  } else {
+    // Default: group by album + artist (legacy)
+    const albumMap = new Map();
+    for (const track of state.filteredTracks) {
+      const tgs = track.tags || {};
+      const album = tgs.album || 'Unknown';
+      const artistRaw = tgs.artist || 'Unknown';
+      const artistKey = state.explicitArtistNames ? (artistRaw || 'Unknown') : (normalizeArtist(artistRaw) || 'Unknown');
+      const artist = artistRaw || 'Unknown';
+      const key = `${album}|||${artistKey}`;
+      if (!albumMap.has(key)) {
+        albumMap.set(key, {
+          album,
+          artist,
+          artistRaw,
+          art: track.albumArtDataUrl || 'assets/images/default-art.png',
+          year: tgs.year || null,
+          genre: tgs.genre || '',
+          tracks: [],
+        });
+      }
+      const entry = albumMap.get(key);
+      if (!entry.art && track.albumArtDataUrl) entry.art = track.albumArtDataUrl;
+      if (!entry.year && tgs.year) entry.year = tgs.year;
+      entry.tracks.push(track);
+    }
+    cards = Array.from(albumMap.values());
   }
 
-  let albums = Array.from(albumMap.values());
+  let albums = cards;
   // Determine sort: primary key is always state.sortBy (header-driven).
   // If gridSortByAlbum or sidebarMode==='album' is set, use album/artist as secondary tie-breakers.
   const preferAlbumSort = !!state.gridSortByAlbum || state.sidebarMode === 'album';
@@ -115,10 +180,14 @@ export function renderGrid(list) {
       const cmp = aKey < bKey ? -1 : aKey > bKey ? 1 : 0;
       if (cmp !== 0) return cmp * dir;
     }
-    // tie-breakers: if preferAlbumSort, try album then artist; otherwise fall back to album then artist for stability
-    const albumCmp = A.album.localeCompare(B.album);
-    if (albumCmp !== 0) return albumCmp * dir;
-    return A.artist.localeCompare(B.artist) * dir;
+  // tie-breakers: if preferAlbumSort, try album then artist; otherwise fall back to album then artist for stability
+  const albumA = (A.album || '');
+  const albumB = (B.album || '');
+  const artistA = (A.artist || '');
+  const artistB = (B.artist || '');
+  const albumCmp = albumA.localeCompare(albumB);
+  if (albumCmp !== 0) return albumCmp * dir;
+  return artistA.localeCompare(artistB) * dir;
   });
 
   if (albums.length === 0) {
@@ -131,7 +200,13 @@ export function renderGrid(list) {
     // When clicking an album card, switch to list view showing the album's tracks.
     if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true;
     if (opts.album !== undefined) state.activeAlbum = opts.album;
-    if (opts.artist !== undefined) state.activeArtist = opts.artist;
+    if (opts.artist !== undefined) {
+      state.activeArtist = opts.artist;
+      if (opts.album === undefined) {
+        // Clear any prior album filter when the intent is to view by artist
+        state.activeAlbum = null;
+      }
+    }
     if (opts.year !== undefined) state.activeYear = opts.year;
     // Ensure view switches to list and UI buttons reflect it
     state.viewMode = 'library';
@@ -157,7 +232,9 @@ export function renderGrid(list) {
     : '';
 
   // Render album cards
+  // Only render cards with at least one track
   for (const a of albums) {
+    if (!a.tracks || !a.tracks.length) continue;
     const card = document.createElement('div');
     card.className = 'track-card album-card';
     const yearText = a.year ? String(a.year) : '';
@@ -196,12 +273,16 @@ export function renderGrid(list) {
         // Close any open ephemeral panels first
         document.querySelectorAll('.playlist-popup').forEach(p => p.remove());
         import('../playlist/playlists.js')
-          .then(({ playlists }) => import(new URL('../shared/playlistPopup.js', import.meta.url).href).then(({ showPlaylistPopup }) => showPlaylistPopup(e, a.tracks.slice(), { playlists })))
+          .then(({ playlists }) => {
+            return import(new URL('../shared/playlistPopup.js', import.meta.url).href)
+              .then(({ showPlaylistPopup }) => showPlaylistPopup(e, a.tracks.slice(), { playlists }));
+          })
           .catch(async (err) => {
             console.error('Failed to open playlist popup for album', err);
             try { const { showToast } = await import('../ui/ui.js'); showToast('Could not open playlist menu'); } catch (_) {}
           });
-      } });
+      }
+    });
       items.push({ label: 'Reveal in Explorer', onClick: () => { const path = a.tracks[0]?.filePath || a.tracks[0]?.file || null; if (!path) { import('../ui/ui.js').then(({ showToast }) => showToast('No file path available')); return; } if (window.etune && typeof window.etune.revealFile === 'function') window.etune.revealFile(path); else if (window.etune && typeof window.etune.revealInFolder === 'function') window.etune.revealInFolder(path); else if (window.require) { try { const { shell } = window.require('electron'); shell.showItemInFolder(path); } catch (err) { import('../ui/ui.js').then(({ showToast }) => showToast('Reveal not available')); } } else import('../ui/ui.js').then(({ showToast }) => showToast('Reveal not supported')); } });
       items.push({ label: 'Copy file path', onClick: () => { const path = a.tracks[0]?.filePath || a.tracks[0]?.file || ''; navigator.clipboard?.writeText(path).catch(() => {}); } });
 

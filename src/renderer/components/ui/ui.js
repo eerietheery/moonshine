@@ -13,19 +13,73 @@ export function showToast(message, timeout = 1800) {
   }, timeout);
 }
 
+// ---- Bitrate formatting helpers ----
+function snapCommonKbps(kbps) {
+  const commons = [32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320];
+  const tol = 0.03; // ±3%
+  for (const c of commons) {
+    if (Math.abs(kbps - c) / c <= tol) return c;
+  }
+  return kbps;
+}
+
+// style: 'cell' -> compact number for table cell (no unit)
+//         'cellUnit' -> compact number with unit (e.g., "192 kbps" / "1 Mbps")
+//         'short' -> compact with unit suffix for badges (e.g. "1M")
+//         'long' -> full text with units (e.g. "VBR 192 kbps")
+function formatBitrate(bps, opts = {}) {
+  const { vbr = false, style = 'cell' } = opts;
+  if (!bps || !Number.isFinite(bps) || bps <= 0) {
+    return style === 'cell' ? '—' : 'Unknown';
+  }
+  // Accept kbps inputs too; treat >= 10000 as bps, otherwise as kbps
+  const kbpsRaw = bps >= 10000 ? (bps / 1000) : bps;
+  const kbps = snapCommonKbps(kbpsRaw);
+  if (kbps >= 1000) {
+  const mbps = kbps / 1000;
+  // If Mbps > 1, show two decimals; otherwise keep integer style
+  const useTwoDecimals = mbps > 1;
+  const val = useTwoDecimals ? mbps.toFixed(2) : String(Math.round(mbps));
+  if (style === 'cell') return val;                // number only
+  if (style === 'cellUnit') return `${val} Mbps`;  // with unit
+  if (style === 'short') return `${useTwoDecimals ? Number(val).toFixed(2) : val}M`;
+  return `${vbr ? 'VBR ' : ''}${val} Mbps`;
+  }
+  const val = String(Math.round(kbps)); // no decimals in kbps
+  if (style === 'cell') return val;
+  if (style === 'cellUnit') return `${val} kbps`;
+  if (style === 'short') return `${vbr ? '~' : ''}${val}`;
+  return `${vbr ? 'VBR ' : ''}${val} kbps`;
+}
+
 export function createTrackElement(track, onClick, headers = ['title','artist','album','year','genre','bitrate']) {
   const div = document.createElement('div');
   div.className = 'track';
+  // Tag row with its filePath for quick highlight updates without re-render
+  try {
+    if (track && track.filePath) {
+      div.__filePath = track.filePath;
+      div.dataset.filePath = track.filePath;
+    }
+  } catch(_) {}
   const art = track.albumArtDataUrl || 'assets/images/default-art.png';
   const titleText = (track.tags?.title) || track.file;
   const artistText = (track.tags?.artist) || 'Unknown';
   const albumText = (track.tags?.album) || 'Unknown';
   const yearText = (track.tags?.year) || '';
   const genreText = (track.tags?.genre) || '';
-  let bitrateText = '';
-  if (track.bitrate) {
-    const rounded = Math.round(track.bitrate);
-    bitrateText = `${String(rounded).slice(0,3)} kbps`;
+  // Robust bitrate formatting
+  const isVbr = Boolean(
+    track?.vbr || track?.variableBitrate ||
+    track?.bitrateMode === 'vbr' || track?.bitrate_mode === 'vbr' ||
+    /vbr/i.test(String(track?.profile || track?.codecProfile || ''))
+  );
+  let bitrateCellText = '—';
+  let bitrateTitleText = 'Unknown';
+  if (track.bitrate != null && Number.isFinite(track.bitrate) && track.bitrate > 0) {
+    const bps = track.bitrate >= 10000 ? track.bitrate : track.bitrate * 1000; // accept kbps or bps
+    bitrateCellText = formatBitrate(bps, { vbr: isVbr, style: 'cellUnit' });
+    bitrateTitleText = formatBitrate(bps, { vbr: isVbr, style: 'long' });
   }
   const userColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#8C40B8';
   let rowHtml = '';
@@ -38,16 +92,16 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
       case 'album':
         rowHtml += `<div class="track-album"><span class="linkish" data-album title="${albumText}" tabindex="0">${albumText}</span></div>`; break;
       case 'year':
-        rowHtml += `<div class="track-year" title="${yearText}">${yearText}</div>`; break;
+        rowHtml += `<div class="track-year"><span class="linkish" data-year title="${yearText}" tabindex="0">${yearText}</span></div>`; break;
       case 'genre':
         rowHtml += `<div class="track-genre" title="${genreText}"><span class="genre-text">${genreText}</span></div>`; break;
       case 'bitrate':
-        rowHtml += `<div class="track-bitrate" title="${bitrateText}">${bitrateText}</div>`; break;
+        rowHtml += `<div class="track-bitrate" title="${bitrateTitleText}" aria-label="${bitrateTitleText}">${bitrateCellText}</div>`; break;
       default:
         rowHtml += `<div>${track[h] || ''}</div>`;
     }
   });
-  rowHtml += `<div class="track-actions"><button class="favorite-btn" title="Toggle Favorite" style="background:none;border:none;cursor:pointer;padding:0;margin-right:8px;vertical-align:middle;">
+  rowHtml += `<div class="track-actions"><button class="favorite-btn" title="Toggle Favorite" style="background:none;border:none;cursor:pointer;padding:0;vertical-align:middle;">
   <img src="assets/images/heart.svg" alt="Favorite" style="width:22px;height:22px;filter:${track.favorite ? `drop-shadow(0 0 4px ${userColor}) saturate(2)`:'grayscale(1) opacity(0.5)'};transition:filter .2s;" /></button>
     <button class="queue-add-btn" title="Add to Queue" style="background:none;border:none;cursor:pointer;padding:0;vertical-align:middle;">
       <img src="assets/images/addtoqueue.svg" alt="Add to Queue" style="width:22px;height:22px;filter:grayscale(1) opacity(0.7);transition:filter .2s;" /></button>
@@ -181,6 +235,26 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault(); e.stopPropagation(); albumSpan.click();
     }
+  });
+
+  // Year click -> apply year filter
+  const yearSpan = div.querySelector('.track-year .linkish[data-year]');
+  yearSpan?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!yearText) return;
+    const filterInput = document.getElementById('filter');
+    if (filterInput) filterInput.value = '';
+    import('../shared/state.js').then(({ state }) => { if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true; }).finally(() => {
+      applyFilter({ year: yearText });
+    });
+    setTimeout(() => {
+      const esc = String(yearText).replace(/"/g, '\"');
+      const target = document.querySelector(`#year-list .filter-item[data-value="${esc}"]`);
+      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  });
+  yearSpan?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); yearSpan.click(); }
   });
 
   div.addEventListener('click', () => onClick(track));

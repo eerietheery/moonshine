@@ -20,7 +20,21 @@ export function playTrack(track, index, audio, playBtn, currentArt, currentTitle
   currentArt.src = track.albumArtDataUrl || 'assets/images/default-art.png';
   playBtn.innerHTML = '<img src="assets/images/pause.svg" alt="Pause" style="width:18px;height:18px;vertical-align:middle;" />';
   state.isPlaying = true;
-  renderList();
+  // Lightweight: update playing highlight without re-render to prevent flicker
+  try {
+    const listEl = document.getElementById('music-list');
+    if (listEl) {
+      listEl.querySelectorAll('.track.playing').forEach(el => el.classList.remove('playing'));
+      // Find a visible row whose attached filePath matches
+      const rows = listEl.querySelectorAll('.track');
+      for (const el of rows) {
+        if (el.__filePath && el.__filePath === track.filePath) {
+          el.classList.add('playing');
+          break;
+        }
+      }
+    }
+  } catch (_) { /* ignore */ }
   import('../queue/queue.js').then(m => m.renderQueuePanel && m.renderQueuePanel()).catch(()=>{});
 }
 

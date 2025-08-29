@@ -1,8 +1,31 @@
 @media (max-width: 700px) {
+  .col-actions {
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
+  }
+  
   .track-actions {
     justify-content: flex-end;
-    gap: 4px;
+    gap: 2px; /* Even smaller gap for very small screens */
+    padding: 0 6px;
+    width: 90px; /* Further reduced width */
+    min-width: 90px;
+    max-width: 90px;
   }
+  
+  .track-actions button {
+    min-width: 22px;
+    max-width: 22px;
+    height: 22px;
+    padding: 2px;
+  }
+  
+  .track-actions button img {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
   .track-title {
     gap: 6px;
     padding: 0 8px;
@@ -25,7 +48,8 @@
   border-bottom: 1px solid var(--border);
   padding: 0;
   display: grid;
-  /* grid-template-columns set dynamically in JS */
+  /* Use CSS variable set by JS (fallback to sensible defaults) */
+  grid-template-columns: var(--music-grid-template, 3fr 2fr 2fr 1fr 1fr 140px);
   gap: 0;
   font-weight: 600;
   font-size: 0.9rem;
@@ -34,7 +58,14 @@
   letter-spacing: 0.5px;
   width: 100%;
   box-sizing: border-box;
+  overflow-x: auto; /* allow scrollLeft sync without showing visible scrollbar */
+  overflow-y: hidden;
+  -ms-overflow-style: none;     /* IE/Edge */
+  scrollbar-width: none;        /* Firefox */
 }
+
+/* Hide WebKit scrollbars for header */
+.table-header::-webkit-scrollbar { display: none; }
 
 /* When code adds the `hidden` class we want the header fully removed from layout
    (playlist browse/selected mode uses this class). Use !important to guard
@@ -50,7 +81,8 @@ body.playlists-active #music-table-header { display: none !important; }
   cursor: pointer;
   transition: color 0.15s;
   padding: 12px 16px;
-  border-right: 1px solid #282828;
+  /* Remove vertical separators to simplify look and match rows */
+  border-right: none;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -60,9 +92,7 @@ body.playlists-active #music-table-header { display: none !important; }
   color: var(--accent);
 }
 
-.col-genre {
-  border-right: none;
-}
+.col-genre { border-right: none; }
 
 .col-year, .col-genre {
   justify-content: center;
@@ -71,6 +101,7 @@ body.playlists-active #music-table-header { display: none !important; }
 #music-list {
   flex: 1;
   overflow-y: auto;
+  overflow-x: auto; /* allow horizontal scrolling when columns exceed viewport */
   /* Prevent horizontal layout shift when scrollbar appears/disappears */
   scrollbar-gutter: stable both-edges;
   position: relative;
@@ -79,7 +110,8 @@ body.playlists-active #music-table-header { display: none !important; }
 
 .track {
   display: grid;
-  /* grid-template-columns set dynamically in JS to match headers + actions */
+  /* Use the same grid template as the header via CSS variable */
+  grid-template-columns: var(--music-grid-template, 3fr 2fr 2fr 1fr 1fr 140px);
   gap: 0;
   align-items: center;
   padding: 0;
@@ -89,6 +121,18 @@ body.playlists-active #music-table-header { display: none !important; }
   height: 56px;
   box-sizing: border-box;
   width: 100%;
+  /* Ensure grid items don't overflow */
+  overflow: hidden;
+}
+
+/* Ensure header and rows expand only when needed; no extra scroll when there's space */
+#music-table .table-header, #music-list .track {
+  width: max(100%, var(--music-grid-min-width, 100%));
+}
+
+/* Force the last child (actions) to occupy the last defined grid column */
+.track > :last-child {
+  grid-column: -2 / -1; /* Start at the second-to-last line and end at the last line */
 }
 
 .track:hover {
@@ -98,7 +142,8 @@ body.playlists-active #music-table-header { display: none !important; }
 
 .track.playing {
   background: var(--state-active);
-  border-left: 4px solid var(--accent);
+  /* Replace left border (which shifts grid content) with an inset glow */
+  box-shadow: inset 4px 0 0 0 var(--accent);
 }
 
 .track-title {
@@ -150,6 +195,10 @@ body.playlists-active #music-table-header { display: none !important; }
   text-overflow: ellipsis;
 }
 
+/* Make row cells mirror header border style so text aligns horizontally */
+.track-title, .track-artist, .track-album, .track-year, .track-genre { border-right: none; }
+.track-genre { border-right: none; }
+
 .track-artist, .track-album {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -174,6 +223,43 @@ body.playlists-active #music-table-header { display: none !important; }
   gap: 8px;
   padding: 0 12px;
   box-sizing: border-box;
+  min-width: var(--actions-width, 140px); /* Ensure stable minimum width */
+  flex-shrink: 0; /* Prevent column from shrinking */
+}
+
+/* Header actions column */
+.col-actions {
+  position: sticky;
+  right: 0; /* Stick to right edge */
+  background: var(--surface-1); /* Match header background */
+  z-index: 10; /* Ensure it stays above content */
+  width: var(--actions-width, 140px); /* Match track actions width */
+  min-width: var(--actions-width, 140px);
+  max-width: var(--actions-width, 140px);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* right-align header actions to match rows */
+}
+
+/* Add a subtle visual indicator for the actions column header */
+/* keep header simple; don't add pseudo-content that affects alignment */
+
+.track-actions {
+  position: relative;
+  width: var(--actions-width, 140px); /* Fixed width to match grid template */
+}
+
+/* Ensure all three buttons are consistently positioned */
+.track-actions .favorite-btn {
+  order: 1; /* First button */
+}
+
+.track-actions .queue-add-btn {
+  order: 2; /* Second button */
+}
+
+.track-actions .playlist-add-btn {
+  order: 3; /* Third button */
 }
 
 .track-actions button {
@@ -182,8 +268,21 @@ body.playlists-active #music-table-header { display: none !important; }
   color: #b3b3b3;
   cursor: pointer;
   font-size: 0.9rem;
-  padding: 4px;
+  padding: 0; /* remove inherited padding that caused misalignment */
+  margin: 0;
   max-width: 28px;
+  min-width: 28px; /* Ensure consistent button width */
+  height: 28px; /* Ensure consistent button height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+
+/* Ensure button images stay consistent */
+.track-actions button img {
+  pointer-events: none; /* Prevent image from interfering with button clicks */
+  transition: filter 0.2s ease;
 }
 
 .track-actions button:hover img, .track-actions button:hover {

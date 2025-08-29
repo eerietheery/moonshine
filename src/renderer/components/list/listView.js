@@ -1,5 +1,6 @@
 // List view rendering logic
 import { state, updateFilters } from '../shared/state.js';
+import { getGridTemplate } from '../shared/layout.js';
 import { createTrackElement } from '../ui/ui.js';
 import { VirtualList } from '../ui/virtualList.js';
 import { playTrack } from '../player/playerCore.js';
@@ -231,15 +232,65 @@ export function renderList(list) {
       genre: 'Genre',
       bitrate: 'Bit Rate'
     };
-    headerEl.innerHTML = headers.map(h => {
+  headerEl.innerHTML = headers.map(h => {
       const isActive = state.sortBy === h;
       const arrow = isActive ? (state.sortOrder === 'asc' ? '↑' : '↓') : '';
       return `<div class="col-${h} sort-header${isActive ? ' active-sort' : ''}" tabindex="0" role="button" data-sort="${h}" title="Sort by ${headerLabels[h] || h}">${headerLabels[h] || h} <span class="sort-arrow">${arrow}</span></div>`;
     }).join('') + '<div class="col-actions"></div>';
     // Column width mapping similar to original proportions
-  const colWidths = { title: '3fr', artist: '2fr', album: '2fr', year: '1fr', genre: '1fr', bitrate: '1fr' };
-  const template = headers.map(h => colWidths[h] || '1fr').concat('140px').join(' ');
-    headerEl.style.gridTemplateColumns = template;
+    // Use shared helper so header and rows use identical grid templates.
+  // Set the CSS variable on the root music-table element so rows inherit it from CSS.
+  const template = getGridTemplate(headers);
+  const musicTable = document.getElementById('music-table');
+  if (musicTable) musicTable.style.setProperty('--music-grid-template', template);
+  headerEl.style.gridTemplateColumns = template;
+  // Defer a tick to ensure header/list widths apply before first paint (helps initial refresh correctness)
+  queueMicrotask?.(() => {
+    const listEl = document.getElementById('music-list');
+    if (listEl && headerEl) {
+      // keep header scroll in sync with list horizontal scroll
+      // remove existing handlers then add fresh ones
+      headerEl.onscroll = null;
+      listEl.onscroll = null;
+      listEl.addEventListener('scroll', () => { headerEl.scrollLeft = listEl.scrollLeft; }, { passive: true });
+      headerEl.addEventListener('scroll', () => { listEl.scrollLeft = headerEl.scrollLeft; }, { passive: true });
+    }
+  });
+
+    // Ensure grid template responds to container/window width changes
+    try {
+      const musicTableEl = document.getElementById('music-table');
+      if (musicTableEl && !musicTableEl._gridResizeObserver) {
+        if (typeof ResizeObserver !== 'undefined') {
+          const ro = new ResizeObserver(() => {
+            try {
+              const currentHeaders = (state.listHeaders && state.listHeaders.length) ? state.listHeaders : ['title','artist','album','year','genre'];
+              const tpl = getGridTemplate(currentHeaders);
+              musicTableEl.style.setProperty('--music-grid-template', tpl);
+              if (headerEl) headerEl.style.gridTemplateColumns = tpl;
+            } catch (_) { /* noop */ }
+          });
+          ro.observe(musicTableEl);
+          musicTableEl._gridResizeObserver = ro;
+        } else {
+          let pending = false;
+          window.addEventListener('resize', () => {
+            if (pending) return;
+            pending = true;
+            requestAnimationFrame(() => {
+              pending = false;
+              try {
+                const currentHeaders = (state.listHeaders && state.listHeaders.length) ? state.listHeaders : ['title','artist','album','year','genre'];
+                const tpl = getGridTemplate(currentHeaders);
+                musicTableEl.style.setProperty('--music-grid-template', tpl);
+                if (headerEl) headerEl.style.gridTemplateColumns = tpl;
+              } catch (_) { /* noop */ }
+            });
+          }, { passive: true });
+        }
+      }
+    } catch (_) { /* ignore */ }
+
 
     // Add click/keyboard handlers for sorting
     headers.forEach(h => {
@@ -264,9 +315,9 @@ export function renderList(list) {
   }
 
   // Precompute grid template for rows (headers + actions)
-  const colWidths = { title: '3fr', artist: '2fr', album: '2fr', year: '1fr', genre: '1fr', bitrate: '1fr' };
-  const rowTemplate = (state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre'])
-    .map(h => colWidths[h] || '1fr').concat('140px').join(' ');
+  // Reuse the `template` computed for the header so header and rows are identical.
+  // If `template` is not present (header not rendered), fall back to computing one.
+  const rowTemplate = (typeof template !== 'undefined' && template) ? template : getGridTemplate(state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre']);
   // Render rows using original track element for styling and selection, but only selected headers
   list.vlist = new VirtualList({
     container: list,
@@ -289,7 +340,7 @@ export function renderList(list) {
         ),
         state.listHeaders
       );
-      el.style.gridTemplateColumns = rowTemplate;
+  // Rows inherit the grid-template from CSS variable on #music-table, so remove inline templates.
       if (state.currentTrack && state.currentTrack.filePath === track.filePath) {
         el.classList.add('playing');
       }

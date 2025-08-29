@@ -16,10 +16,15 @@
 /* Prevent layout nudge when switching to Playlists mode by reserving scrollbar space */
 #playlist-header,
 #music-list,
-.grid,
+.grid {
+  scrollbar-gutter: stable both-edges;
+  /* Keep natural scrollbars without forcing them on non-scrolling elements */
+  overflow-y: auto;
+}
+
+/* Header should not reserve vertical scrollbar space; it syncs horizontal scroll only */
 .table-header {
   scrollbar-gutter: stable both-edges;
-  overflow-y: scroll !important;
 }
 
 #toolbar {
