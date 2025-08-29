@@ -156,11 +156,12 @@ export function renderList(list) {
       genre: 'Genre',
       bitrate: 'Bit Rate'
     };
-  headerEl.innerHTML = headers.map(h => {
+  const headerCells = headers.map(h => {
       const isActive = state.sortBy === h;
       const arrow = isActive ? (state.sortOrder === 'asc' ? '↑' : '↓') : '';
       return `<div class="col-${h} sort-header${isActive ? ' active-sort' : ''}" tabindex="0" role="button" data-sort="${h}" title="Sort by ${headerLabels[h] || h}">${headerLabels[h] || h} <span class="sort-arrow">${arrow}</span><span class="col-resizer" data-resize="${h}"></span></div>`;
     }).join('') + '<div class="col-actions"></div>';
+    headerEl.innerHTML = `<div class="table-header-inner">${headerCells}</div>`;
     // Column width mapping similar to original proportions
     // Use shared helper so header and rows use identical grid templates.
   // Set the CSS variable on the root music-table element so rows inherit it from CSS.
@@ -168,16 +169,19 @@ export function renderList(list) {
   const musicTable = document.getElementById('music-table');
   if (musicTable) musicTable.style.setProperty('--music-grid-template', template);
   headerEl.style.gridTemplateColumns = template;
-  // Defer a tick to ensure header/list widths apply before first paint (helps initial refresh correctness)
+  // Defer a tick to sync header transform with list's horizontal scroll
   queueMicrotask?.(() => {
     const listEl = document.getElementById('music-list');
     if (listEl && headerEl) {
-      // keep header scroll in sync with list horizontal scroll
-      // remove existing handlers then add fresh ones
-      headerEl.onscroll = null;
+      // Clear previous listeners
       listEl.onscroll = null;
-      listEl.addEventListener('scroll', () => { headerEl.scrollLeft = listEl.scrollLeft; }, { passive: true });
-      headerEl.addEventListener('scroll', () => { listEl.scrollLeft = headerEl.scrollLeft; }, { passive: true });
+      headerEl.onscroll = null;
+      const syncHeader = () => {
+        headerEl.style.setProperty('--header-offset', `${listEl.scrollLeft}px`);
+      };
+      listEl.addEventListener('scroll', syncHeader, { passive: true });
+      // Initialize position
+      syncHeader();
     }
   });
 

@@ -22,10 +22,8 @@
   overflow-y: auto;
 }
 
-/* Header should not reserve vertical scrollbar space; it syncs horizontal scroll only */
-.table-header {
-  scrollbar-gutter: stable both-edges;
-}
+/* Header should not reserve vertical scrollbar space; let the list manage it */
+/* (removed scrollbar-gutter to avoid extra right gap) */
 
 #toolbar {
   background: var(--surface-1);
@@ -65,6 +63,8 @@
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  display: grid; /* align with table columns via CSS var */
+  grid-template-columns: var(--music-grid-template, 3fr 2fr 2fr 1fr 1fr 140px);
 }
 .playlist-header.visible { display: block; }
 
@@ -75,6 +75,7 @@
   max-width: 100%;
   /* keep internal horizontal padding similar to previous outer padding */
   padding: 16px 20px 16px 30px;
+  grid-column: 1 / -2; /* span all but last actions column */
 }
 
 /* Ensure actions host sits in last column and vertically centers */
@@ -83,6 +84,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  grid-column: -2 / -1; /* pin to last column matching actions */
 }
 
 .playlist-thumbnail {
