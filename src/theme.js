@@ -25,6 +25,12 @@ export function initTheme(themeCfg = {}) {
 			delete root.dataset.theme;
 		}
 		if (themeCfg.primaryColor) applyAccent(themeCfg.primaryColor);
+		// Initialize rainbow overlay if configured
+		if (themeCfg.rainbowMode) {
+			setRainbowMode(true);
+		} else {
+			setRainbowMode(false);
+		}
 	} catch (e) {
 		// swallow
 	}
@@ -41,4 +47,32 @@ export function setAccent(color) {
 	applyAccent(color);
 	window.etune?.updateConfig?.({ theme: { primaryColor: color } });
 	document.dispatchEvent(new CustomEvent('theme:accent', { detail: { color } }));
+}
+
+export function setRainbowMode(enabled) {
+	const root = document.documentElement;
+	const APP_ID = 'app';
+	const OVERLAY_ID = 'rainbow-overlay';
+	const ensureOverlay = () => {
+		let overlay = document.getElementById(OVERLAY_ID);
+		if (!overlay) {
+			overlay = document.createElement('div');
+			overlay.id = OVERLAY_ID;
+			overlay.className = 'rainbow-overlay';
+			const host = document.getElementById(APP_ID) || document.body;
+			host.appendChild(overlay);
+		}
+		return overlay;
+	};
+
+	if (enabled) {
+		root.classList.add('rainbow-mode');
+		ensureOverlay().style.display = '';
+	} else {
+		root.classList.remove('rainbow-mode');
+		const overlay = document.getElementById(OVERLAY_ID);
+		if (overlay) overlay.style.display = 'none';
+	}
+	window.etune?.updateConfig?.({ rainbowMode: enabled });
+	document.dispatchEvent(new CustomEvent('rainbow:toggle', { detail: { enabled } }));
 }

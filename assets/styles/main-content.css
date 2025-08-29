@@ -56,7 +56,9 @@
   display: none;
   background: var(--surface-header);
   border-bottom: 1px solid var(--border-strong);
-  padding: 16px 20px;
+  /* outer shell aligns to table grid; inner padding lives on .playlist-main-content */
+  padding: 0;
+  margin-left: 0;
   position: sticky;
   top: 0;
   z-index: 800;
@@ -71,6 +73,16 @@
   align-items: center;
   gap: 12px;
   max-width: 100%;
+  /* keep internal horizontal padding similar to previous outer padding */
+  padding: 16px 20px 16px 30px;
+}
+
+/* Ensure actions host sits in last column and vertically centers */
+.playlist-header > div:last-child { /* actions host */
+  padding: 16px 20px 16px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .playlist-thumbnail {
