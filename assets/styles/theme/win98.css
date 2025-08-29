@@ -197,6 +197,10 @@
   color: #000;
   box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #fff, inset -2px -2px grey, inset 2px 2px #dfdfdf;
 }
+/* Respect base column spacing; avoid overriding grid or text alignment.
+  Explicitly mirror bitrate alignment preview (left) for consistency. */
+[data-theme="win98"] .col-bitrate,
+[data-theme="win98"] .track-bitrate { justify-content: flex-start; text-align: left; }
 [data-theme="win98"] .track {
   background: #fff;
   color: var(--text);

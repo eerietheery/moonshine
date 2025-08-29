@@ -199,8 +199,14 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
     if (filterInput) {
       filterInput.value = '';
     }
-    // Ensure sidebar filtering mode is enabled so artist selection takes effect
-    import('../shared/state.js').then(({ state }) => { if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true; }).finally(() => {
+    // Reset sidebar filters before applying new artist filter to prevent being trapped
+    import('../shared/state.js').then(({ state, resetSidebarFilters }) => {
+      resetSidebarFilters();
+      if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true;
+      state.activeArtist = artistText;
+      // Clear album filter so selecting an artist shows all albums for that artist
+      state.activeAlbum = null;
+    }).finally(() => {
       applyFilter({ artist: artistText });
     });
     setTimeout(() => {

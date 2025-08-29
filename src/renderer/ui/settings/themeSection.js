@@ -66,8 +66,54 @@ function createThemeSection(showColorModal, modal, teardown) {
 
   themeSection.appendChild(changeColor);
 
+  // Rainbow Mode checkbox
+  const rainbowContainer = document.createElement('div');
+  rainbowContainer.style.display = 'flex';
+  rainbowContainer.style.alignItems = 'center';
+  rainbowContainer.style.gap = '10px';
+  rainbowContainer.style.marginTop = '12px';
+
+  const rainbowCheckbox = document.createElement('input');
+  rainbowCheckbox.type = 'checkbox';
+  rainbowCheckbox.id = 'rainbow-mode';
+  rainbowCheckbox.style.cursor = 'pointer';
+
+  const rainbowLabel = document.createElement('label');
+  rainbowLabel.textContent = '🌈 Rainbow Mode';
+  rainbowLabel.htmlFor = 'rainbow-mode';
+  rainbowLabel.style.color = '#ddd';
+  rainbowLabel.style.fontSize = '0.95rem';
+  rainbowLabel.style.cursor = 'pointer';
+
+  // Initialize from current state
+  import('../../../theme.js').then(({ themes, setRainbowMode }) => {
+    const currentTheme = document.documentElement.dataset.theme || 'dark';
+    const isRainbow = document.documentElement.classList.contains('rainbow-mode');
+    rainbowCheckbox.checked = isRainbow;
+  });
+
+  const onRainbowChange = () => {
+    const isEnabled = rainbowCheckbox.checked;
+    import('../../../theme.js').then(({ setRainbowMode }) => setRainbowMode(isEnabled));
+  };
+
+  rainbowCheckbox.addEventListener('change', onRainbowChange);
+  rainbowLabel.addEventListener('click', () => {
+    rainbowCheckbox.checked = !rainbowCheckbox.checked;
+    onRainbowChange();
+  });
+
+  rainbowContainer.appendChild(rainbowCheckbox);
+  rainbowContainer.appendChild(rainbowLabel);
+  themeSection.appendChild(rainbowContainer);
+
   const themeTeardown = () => {
     select.removeEventListener('change', onThemeChange);
+    rainbowCheckbox.removeEventListener('change', onRainbowChange);
+    rainbowLabel.removeEventListener('click', () => {
+      rainbowCheckbox.checked = !rainbowCheckbox.checked;
+      onRainbowChange();
+    });
   };
 
   return { element: themeSection, teardown: themeTeardown };

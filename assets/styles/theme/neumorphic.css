@@ -246,6 +246,9 @@
   color: var(--text-muted);
   border-bottom-color: var(--border);
 }
+/* Respect base header/row spacing and bitrate alignment (left). */
+[data-theme="neumorphic"] .col-bitrate,
+[data-theme="neumorphic"] .track-bitrate { justify-content: flex-start; text-align: left; }
 [data-theme="neumorphic"] .track {
   background: var(--surface-0);
   border-bottom: 1px solid var(--border);

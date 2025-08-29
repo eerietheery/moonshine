@@ -152,7 +152,8 @@ export function renderGrid(list) {
   let albums = cards;
   // Determine sort: primary key is always state.sortBy (header-driven).
   // If gridSortByAlbum or sidebarMode==='album' is set, use album/artist as secondary tie-breakers.
-  const preferAlbumSort = !!state.gridSortByAlbum || state.sidebarMode === 'album';
+  // When sidebar filtering is disabled, still respect gridSortByAlbum preference
+  const preferAlbumSort = !!state.gridSortByAlbum || state.sidebarMode === 'album' || !state.sidebarFilteringEnabled;
   const dir = state.sortOrder === 'asc' ? 1 : -1;
   const keyFor = (a) => {
     switch (state.sortBy) {
