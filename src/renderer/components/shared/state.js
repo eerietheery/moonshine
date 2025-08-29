@@ -25,6 +25,8 @@ export const state = {
   favorites: [],
   listHeaders: ['title','artist','album','year','genre'],
   favoriteViewEnabled: false,
+  // User-defined column widths in pixels, keyed by header id (e.g., { title: 300, artist: 180 })
+  columnWidths: {},
   // Grid sorting preference: when true, grid prefers album-first sorting
   gridSortByAlbum: false,
   // Global UI: Full Art Display Card toggle

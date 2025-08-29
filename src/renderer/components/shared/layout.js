@@ -1,3 +1,5 @@
+import { state } from './state.js';
+
 export function getGridTemplate(headers = ['title','artist','album','year','genre']) {
   // Prefer pixel-calculated template to avoid subpixel/fr rounding differences
   // Determine actions width by breakpoint
@@ -21,7 +23,9 @@ export function getGridTemplate(headers = ['title','artist','album','year','genr
     const intSizes = rawSizes.map((n, idx) => {
       const h = headers[idx];
       const minW = minWidths[h] || 80;
-      return Math.max(Math.floor(n), minW);
+      const userW = (state && state.columnWidths && Number.isFinite(state.columnWidths[h])) ? state.columnWidths[h] : null;
+      // Respect user-defined width when present; clamp to min
+      return Math.max(Math.floor(userW ?? n), minW);
     });
     // Distribute leftover pixels to earliest columns
     let used = intSizes.reduce((s, v) => s + v, 0);
@@ -44,7 +48,7 @@ export function getGridTemplate(headers = ['title','artist','album','year','genr
     return parts.join(' ');
   } catch (err) {
     // Fallback to fr units if DOM unavailable
-    const frMap = { title: '3fr', artist: '2fr', album: '2fr', year: '1fr', genre: '1fr', bitrate: '1fr' };
+  const frMap = { title: '3fr', artist: '2fr', album: '2fr', year: '1fr', genre: '1fr', bitrate: '1fr' };
     const actionsWidth = actionsWidthPx + 'px';
     return headers.map(h => frMap[h] || '1fr').concat(actionsWidth).join(' ');
   }

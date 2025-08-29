@@ -235,7 +235,7 @@ export function renderList(list) {
   headerEl.innerHTML = headers.map(h => {
       const isActive = state.sortBy === h;
       const arrow = isActive ? (state.sortOrder === 'asc' ? '↑' : '↓') : '';
-      return `<div class="col-${h} sort-header${isActive ? ' active-sort' : ''}" tabindex="0" role="button" data-sort="${h}" title="Sort by ${headerLabels[h] || h}">${headerLabels[h] || h} <span class="sort-arrow">${arrow}</span></div>`;
+      return `<div class="col-${h} sort-header${isActive ? ' active-sort' : ''}" tabindex="0" role="button" data-sort="${h}" title="Sort by ${headerLabels[h] || h}">${headerLabels[h] || h} <span class="sort-arrow">${arrow}</span><span class="col-resizer" data-resize="${h}"></span></div>`;
     }).join('') + '<div class="col-actions"></div>';
     // Column width mapping similar to original proportions
     // Use shared helper so header and rows use identical grid templates.
@@ -256,6 +256,54 @@ export function renderList(list) {
       headerEl.addEventListener('scroll', () => { listEl.scrollLeft = headerEl.scrollLeft; }, { passive: true });
     }
   });
+
+    // Column resize: add drag handlers to .col-resizer handles
+    try {
+      const musicTable = document.getElementById('music-table');
+      const handles = headerEl.querySelectorAll('.col-resizer[data-resize]');
+      let dragging = null; // { key, startX, startW }
+      const minWidths = { title: 240, artist: 160, album: 160, year: 80, genre: 80, bitrate: 80 };
+      const onMove = (e) => {
+        if (!dragging) return;
+        const dx = (e.touches ? e.touches[0].clientX : e.clientX) - dragging.startX;
+        const next = Math.max(minWidths[dragging.key] || 80, Math.round(dragging.startW + dx));
+        state.columnWidths = state.columnWidths || {};
+        state.columnWidths[dragging.key] = next;
+        // Recompute and apply template live while dragging
+        const tpl = getGridTemplate(headers);
+        musicTable?.style.setProperty('--music-grid-template', tpl);
+        headerEl.style.gridTemplateColumns = tpl;
+      };
+      const onUp = () => {
+        if (!dragging) return;
+        dragging = null;
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onUp);
+        // Persist to config if available
+        try { window.etune?.updateConfig && window.etune.updateConfig({ columnWidths: state.columnWidths }); } catch (_) {}
+      };
+      handles.forEach(h => {
+        const key = h.getAttribute('data-resize');
+        h.addEventListener('mousedown', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          const rect = h.parentElement.getBoundingClientRect();
+          const startW = rect.width;
+          dragging = { key, startX: e.clientX, startW };
+          document.addEventListener('mousemove', onMove, { passive: false });
+          document.addEventListener('mouseup', onUp, { passive: true });
+        });
+        h.addEventListener('touchstart', (e) => {
+          const t = e.touches[0];
+          const rect = h.parentElement.getBoundingClientRect();
+          const startW = rect.width;
+          dragging = { key, startX: t.clientX, startW };
+          document.addEventListener('touchmove', onMove, { passive: false });
+          document.addEventListener('touchend', onUp, { passive: true });
+        }, { passive: true });
+      });
+    } catch (_) { /* noop */ }
 
     // Ensure grid template responds to container/window width changes
     try {
