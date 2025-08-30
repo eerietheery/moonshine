@@ -117,6 +117,44 @@
   margin-bottom: 10px;
   background: #222;
 }
+.playlist-card .thumb-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.playlist-card .thumb-wrap .album-art { margin-bottom: 0; }
+.playlist-card .title-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.0));
+}
+.playlist-card .title-overlay .title {
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1 1 auto;
+}
+.playlist-card .title-overlay .badge {
+  font-size: 0.75em;
+  color: #fff;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 2px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
 .playlist-card .track-name {
   font-size: 1.05em;
   font-weight: 700;

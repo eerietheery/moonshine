@@ -1,3 +1,12 @@
+// Sets the grid template for both music table header and rows
+export function setMusicGridTemplate(template) {
+  const musicTable = document.getElementById('music-table');
+  const headerInner = document.querySelector('.table-header-inner');
+  const musicList = document.getElementById('music-list');
+  if (musicTable) musicTable.style.setProperty('--music-grid-template', template);
+  if (headerInner) headerInner.style.setProperty('--music-grid-template', template);
+  if (musicList) musicList.style.setProperty('--music-grid-template', template);
+}
 import { state } from './state.js';
 
 export function getGridTemplate(headers = ['title','artist','album','year','genre']) {

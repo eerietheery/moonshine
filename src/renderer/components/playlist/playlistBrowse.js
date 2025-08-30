@@ -102,9 +102,14 @@ export function renderPlaylistBrowseGrid(container) {
         <button class="pl-action play" title="Play">▶</button>
         <button class="pl-action queue" title="Queue All">＋</button>
       </div>
-      <img class="album-art" src="${art}" alt="Playlist" />
-      <div class="track-name" title="${it.title}">${it.title}</div>
-      <div class="track-artist">${count} track${count===1?'':'s'} • ${it.type==='user'?'Playlist':'Genre'}</div>
+      <div class="thumb-wrap">
+        <img class="album-art" src="${art}" alt="${it.type==='user'?'Playlist':'Genre'} cover" />
+        <div class="title-overlay" title="${it.title}">
+          <span class="title">${it.title}</span>
+          <span class="badge">${it.type==='user'?'Playlist':'Genre'}</span>
+        </div>
+      </div>
+      <div class="track-artist">${count} track${count===1?'':'s'}</div>
     `;
     card.addEventListener('click', (e) => {
       const t = e.target;
@@ -132,36 +137,21 @@ export function renderPlaylistBrowseList(container) {
   const actionsWidthPx = window.innerWidth <= 700 ? 90 : window.innerWidth <= 768 ? 100 : 140;
   const tpl = `3fr 1.5fr 1fr ${actionsWidthPx}px`;
   const musicTable = document.getElementById('music-table');
-  // Move header outside the music list container for proper alignment
-  let header = musicTable?.querySelector('.table-header');
-  if (!header) {
-    header = document.createElement('div');
-    header.className = 'table-header';
-    const headerInner = document.createElement('div');
-    headerInner.className = 'table-header-inner';
-    header.appendChild(headerInner);
+  if (musicTable) musicTable.style.setProperty('--music-grid-template', tpl);
+  const header = document.querySelector('#music-table .table-header');
+  if (header) {
+    header.style.gridTemplateColumns = tpl;
+    header.classList.remove('hidden');
+    header.style.display = '';
+    // Ensure header remains a direct child of #music-table and before #music-list
+    if (musicTable) {
+      if (header.parentElement !== musicTable) {
+        musicTable.insertBefore(header, container);
+      } else if (header.nextElementSibling !== container) {
+        musicTable.insertBefore(header, container);
+      }
+    }
   }
-  // Always insert header before #music-list
-  if (musicTable && header.nextSibling !== container) {
-    musicTable.insertBefore(header, container);
-  }
-  header.classList.remove('hidden');
-  header.style.display = '';
-  let headerInner = header.querySelector('.table-header-inner');
-  if (!headerInner) {
-    headerInner = document.createElement('div');
-    headerInner.className = 'table-header-inner';
-    header.appendChild(headerInner);
-  }
-  // Reset header offset to ensure no stale transform
-  headerInner.style.setProperty('--header-offset', '0px');
-  // Use standard header classes for consistent padding
-  headerInner.innerHTML = '<div class="col-title">Name</div><div class="col-artist">Type</div><div class="col-album">Count</div><div class="col-actions"></div>';
-  // Apply grid template via CSS var for alignment with rows
-  musicTable?.style.setProperty('--music-grid-template', tpl);
-  musicTable?.style.setProperty('--actions-width', `${actionsWidthPx}px`);
-  header.style.gridTemplateColumns = tpl; // harmless, inner uses CSS var
-  headerInner.style.gridTemplateColumns = '';
   for (const it of items) {
     const tracks = resolveTracks(it);
     const count = tracks.length;

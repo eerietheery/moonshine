@@ -32,8 +32,8 @@ export function renderList(list) {
       }
       // Show the standard table header
       if (headerEl) {
-        headerEl.classList.remove('hidden');
-        headerEl.style.display = '';
+    headerEl.classList.remove('hidden');
+    headerEl.style.display = '';
       }
     } else {
       // Browsing playlists: use the standard header container for a simple 4-col browse header
