@@ -14,7 +14,6 @@ organize fat files into smaller files
 
 Reduce RAM usage
 
-
 fix sidebar filtering disable, grid sort by album
 
 98 context menu style match
@@ -23,3 +22,7 @@ new sort in the toolbar in the app next to List and Grid we're going to add Brow
 Browse will load a grid of random Artists (displayed by circles) and albums (displayed by rounded squares) in scrollable side-scrolling categories 
 
 fix logic of bit rate sort (320 kbps comes out on top)
+
+
+Implement Sustrand? 
+
