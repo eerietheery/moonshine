@@ -8,16 +8,14 @@ import { getGridTemplate } from '../shared/layout.js';
 
 export function renderPlaylistHeader(container, source, renderListCallback) {
   const tracks = getPlaylistTracks(source);
-  // Ensure playlist header uses same grid template as music table via CSS var
-  try {
-    container.style.display = 'grid';
-    container.style.gridTemplateColumns = 'var(--music-grid-template, 3fr 2fr 2fr 1fr 1fr 140px)';
-    container.style.padding = '0';
-  } catch (_) {}
   const title = source.type === 'user' ? (source.name || 'Playlist') : (source.genre || 'Playlist');
   const count = tracks.length;
   container.innerHTML = '';
   const artUrl = tracks[0]?.albumArtDataUrl || 'assets/images/default-art.png';
+
+  // Create inner wrapper for grid layout (use .table-header-inner for perfect alignment)
+  const innerWrapper = document.createElement('div');
+  innerWrapper.className = 'table-header-inner';
 
   // Main container with horizontal layout
   const mainContent = document.createElement('div');
@@ -81,8 +79,11 @@ export function renderPlaylistHeader(container, source, renderListCallback) {
   mainContent.appendChild(textContent);
   // action host receives the action elements (keeps them aligned to last column)
   actionsHost.appendChild(actions);
-  container.appendChild(mainContent);
-  container.appendChild(actionsHost);
+  
+  // Add elements to inner wrapper instead of directly to container
+  innerWrapper.appendChild(mainContent);
+  innerWrapper.appendChild(actionsHost);
+  container.appendChild(innerWrapper);
   container.classList.add('visible');
 
   playBtn.onclick = async () => {

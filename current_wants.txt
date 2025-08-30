@@ -1,8 +1,4 @@
-changing colors slowly kills performance, implement gpu based handling for 🌈rainbowmode🌈 (scrolling colors)
-
 Event Handler library? 
-
-absolutely ensure that when the user clicks the linked aritst name from the list view it also resets the sidebar filter, sometimes I feel trapped viewing a 2 track list lol 
 
 improve playlists tab so it shows the first four artists/albums in the thumbnail if there are that many 
 
@@ -14,7 +10,6 @@ organize fat files into smaller files
 
 Reduce RAM usage
 
-
 fix sidebar filtering disable, grid sort by album
 
 98 context menu style match
@@ -23,3 +18,7 @@ new sort in the toolbar in the app next to List and Grid we're going to add Brow
 Browse will load a grid of random Artists (displayed by circles) and albums (displayed by rounded squares) in scrollable side-scrolling categories 
 
 fix logic of bit rate sort (320 kbps comes out on top)
+
+
+Implement Sustrand? 
+
