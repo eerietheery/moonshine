@@ -6,7 +6,7 @@ import { renderList } from '../shared/view.js';
 import * as dom from '../../dom.js';
 import { showToast } from '../ui/ui.js';
 import { getPlaylistTracks } from '../playlist/playlists.js';
-import { getGridTemplate } from '../shared/layout.js';
+import { getGridTemplate, setMusicGridTemplate } from '../shared/layout.js';
 
 export function renderGrid(list) {
   try { document.body.classList.toggle('playlists-active', state.viewMode === 'playlist' && !state.activePlaylist); } catch(e) {}
@@ -38,10 +38,8 @@ export function renderGrid(list) {
     
     // Set grid template with consistent actions column sizing via CSS variable
     const gridHeadersForTemplate = state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre'];
-    const template = getGridTemplate(gridHeadersForTemplate);
-    const musicTable = document.getElementById('music-table');
-    if (musicTable) musicTable.style.setProperty('--music-grid-template', template);
-    if (headerInner) headerInner.style.setProperty('--music-grid-template', template);
+  const template = getGridTemplate(gridHeadersForTemplate);
+  setMusicGridTemplate(template);
     gridHeaders.forEach(h => {
       const cell = headerEl.querySelector(`[data-sort="${h}"]`);
       if (!cell) return;
