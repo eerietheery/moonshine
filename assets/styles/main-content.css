@@ -54,8 +54,7 @@
   display: none;
   background: var(--surface-header);
   border-bottom: 1px solid var(--border-strong);
-  /* outer shell aligns to table grid; inner padding lives on .playlist-main-content */
-  padding: 0;
+  padding: 0 0 0 var(--first-col-left, 30px); /* match header left padding */
   margin-left: 0;
   position: sticky;
   top: 0;
@@ -63,10 +62,23 @@
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-  display: grid; /* align with table columns via CSS var */
-  grid-template-columns: var(--music-grid-template, 3fr 2fr 2fr 1fr 1fr 140px);
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden; /* same as table header */
+  overflow-y: hidden;
 }
-.playlist-header.visible { display: block; }
+.playlist-header.visible { 
+  display: block; /* let inner wrapper handle grid layout like table header */
+}
+
+/* Inner wrapper for playlist header to match table-header-inner structure */
+.playlist-header-inner {
+  display: grid;
+  grid-template-columns: var(--music-grid-template, 3fr 2fr 2fr 1fr 1fr 140px);
+  transform: translateX(calc(-1 * var(--header-offset, 0px)));
+  will-change: transform;
+  width: max(100%, var(--music-grid-min-width, 100%));
+}
 
 .playlist-main-content {
   display: flex;

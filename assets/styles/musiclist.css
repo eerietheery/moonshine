@@ -1,0 +1,189 @@
+
+#music-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto; /* allow horizontal scrolling when columns exceed viewport */
+  /* Prevent horizontal layout shift when scrollbar appears/disappears */
+  scrollbar-gutter: stable both-edges;
+  position: relative;
+  width: 100%;
+  margin-left: 0;
+}
+
+.track {
+  display: grid;
+  /* Use the same grid template as the header via CSS variable */
+  grid-template-columns: var(--music-grid-template, 3fr 2fr 2fr 1fr 1fr 140px);
+  gap: 0;
+  align-items: center;
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+  height: 56px;
+  box-sizing: border-box;
+  width: 100%;
+  /* Ensure grid items don't overflow */
+  overflow: hidden;
+}
+
+/* Ensure header and rows expand only when needed; no extra scroll when there's space */
+#music-table .table-header, #music-list .track {
+  width: max(100%, var(--music-grid-min-width, 100%));
+}
+
+/* Force the last child (actions) to occupy the last defined grid column */
+.track > :last-child {
+  grid-column: -2 / -1; /* Start at the second-to-last line and end at the last line */
+}
+
+.track:hover {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.track.playing {
+  background: var(--state-active);
+  /* Replace left border (which shifts grid content) with an inset glow */
+  box-shadow: inset 4px 0 0 0 var(--accent);
+}
+
+.track-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px 0 var(--first-col-left, 30px);
+  box-sizing: border-box;
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+.track-name {
+  font-weight: 500;
+  color: var(--text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+.album-art {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #333;
+  flex-shrink: 0;
+}
+
+.track-name {
+  font-weight: 500;
+  color: var(--text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-artist, .track-album, .track-year, .track-genre, .track-bitrate {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 0 16px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Make row cells mirror header border style so text aligns horizontally */
+.track-title, .track-artist, .track-album, .track-year, .track-genre { border-right: none; }
+.track-genre { border-right: none; }
+
+.track-artist, .track-album {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-year, .track-genre { justify-content: center; }
+.track-bitrate { justify-content: flex-end; text-align: right; }
+
+.col-bitrate {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+/* Actions column */
+.col-actions, .track-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  min-width: var(--actions-width, 140px); /* Ensure stable minimum width */
+  flex-shrink: 0; /* Prevent column from shrinking */
+}
+
+/* Header actions column (no sticky; header mirrors list via transform) */
+.col-actions {
+  width: var(--actions-width, 140px);
+  min-width: var(--actions-width, 140px);
+  max-width: var(--actions-width, 140px);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Add a subtle visual indicator for the actions column header */
+/* keep header simple; don't add pseudo-content that affects alignment */
+
+.track-actions {
+  position: relative;
+  width: var(--actions-width, 140px); /* Fixed width to match grid template */
+}
+
+/* Ensure all three buttons are consistently positioned */
+.track-actions .favorite-btn {
+  order: 1; /* First button */
+}
+
+.track-actions .queue-add-btn {
+  order: 2; /* Second button */
+}
+
+.track-actions .playlist-add-btn {
+  order: 3; /* Third button */
+}
+
+.track-actions button {
+  background: none;
+  border: none;
+  color: #b3b3b3;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0; /* remove inherited padding that caused misalignment */
+  margin: 0;
+  max-width: 28px;
+  min-width: 28px; /* Ensure consistent button width */
+  height: 28px; /* Ensure consistent button height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+
+/* Ensure button images stay consistent */
+.track-actions button img {
+  pointer-events: none; /* Prevent image from interfering with button clicks */
+  transition: filter 0.2s ease;
+}
+
+.track-actions button:hover img, .track-actions button:hover {
+  filter: drop-shadow(0 0 4px var(--accent)) saturate(2);
+  color: var(--text-strong);
+}

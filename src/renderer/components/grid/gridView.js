@@ -21,18 +21,27 @@ export function renderGrid(list) {
   if (headerEl && state.tracks && state.tracks.length) {
     // Ensure header labels and active-sort arrow reflect current state (similar to list view)
     const headerLabels = { title: 'Title', artist: 'Artist', album: 'Album', year: 'Year', genre: 'Genre', bitrate: 'Bit Rate' };
-    headerEl.innerHTML = gridHeaders.map(h => {
+    const headerCells = gridHeaders.map(h => {
       const isActive = state.sortBy === h;
       const arrow = isActive ? (state.sortOrder === 'asc' ? '↑' : '↓') : '';
       return `<div class="col-${h} sort-header${isActive ? ' active-sort' : ''}" tabindex="0" role="button" data-sort="${h}" title="Sort by ${headerLabels[h] || h}">${headerLabels[h] || h} <span class="sort-arrow">${arrow}</span></div>`;
     }).join('') + '<div class="col-actions"></div>';
+    
+    // Find or create the table-header-inner element
+    let headerInner = headerEl.querySelector('.table-header-inner');
+    if (!headerInner) {
+      headerInner = document.createElement('div');
+      headerInner.className = 'table-header-inner';
+      headerEl.appendChild(headerInner);
+    }
+    headerInner.innerHTML = headerCells;
+    
     // Set grid template with consistent actions column sizing via CSS variable
-  const gridHeadersForTemplate = state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre'];
-  const template = getGridTemplate(gridHeadersForTemplate);
-  const musicTable = document.getElementById('music-table');
-  if (musicTable) musicTable.style.setProperty('--music-grid-template', template);
-  headerEl.style.gridTemplateColumns = template;
-
+    const gridHeadersForTemplate = state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre'];
+    const template = getGridTemplate(gridHeadersForTemplate);
+    const musicTable = document.getElementById('music-table');
+    if (musicTable) musicTable.style.setProperty('--music-grid-template', template);
+    if (headerInner) headerInner.style.setProperty('--music-grid-template', template);
     gridHeaders.forEach(h => {
       const cell = headerEl.querySelector(`[data-sort="${h}"]`);
       if (!cell) return;
