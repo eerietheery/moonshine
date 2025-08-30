@@ -1,6 +1,6 @@
 // src/renderer/components/list/listHeader.js
 import { state } from '../shared/state.js';
-import { getGridTemplate } from '../shared/layout.js';
+import { getGridTemplate, setMusicGridTemplate } from '../shared/layout.js';
 
 function renderHeaderCells(headers) {
   const headerLabels = {
@@ -29,10 +29,9 @@ function setupColumnResizing(headerEl, headers) {
       const next = Math.max(minWidths[dragging.key] || 80, Math.round(dragging.startW + dx));
       state.columnWidths = state.columnWidths || {};
       state.columnWidths[dragging.key] = next;
-      const tpl = getGridTemplate(headers);
-      const musicTableEl = document.getElementById('music-table');
-      musicTableEl?.style.setProperty('--music-grid-template', tpl);
-      headerEl.style.gridTemplateColumns = tpl;
+  const tpl = getGridTemplate(headers);
+  setMusicGridTemplate(tpl);
+  headerEl.style.gridTemplateColumns = tpl;
     };
     const onUp = () => {
       if (!dragging) return;
@@ -98,8 +97,7 @@ function syncHeaderScroll(headerEl) {
             const currentHeaders = (state.listHeaders && state.listHeaders.length) ? state.listHeaders : ['title','artist','album','year','genre'];
             const newTemplate = getGridTemplate(currentHeaders);
             const musicTable = document.getElementById('music-table');
-            if (musicTable) musicTable.style.setProperty('--music-grid-template', newTemplate);
-            if (headerInner) headerInner.style.setProperty('--music-grid-template', newTemplate);
+            setMusicGridTemplate(newTemplate);
           } catch (_) { /* noop */ }
         };
         
@@ -129,7 +127,7 @@ function syncHeaderScroll(headerEl) {
 
 export function renderListHeader(renderListCallback) {
   const headerEl = document.querySelector('#music-table .table-header');
-  if (!headerEl || (state.viewMode === 'playlist' && !state.activePlaylist) || !state.tracks || !state.tracks.length) {
+  if (!headerEl || !state.tracks || !state.tracks.length) {
     if (headerEl) headerEl.classList.add('hidden');
     return;
   }
@@ -146,8 +144,7 @@ export function renderListHeader(renderListCallback) {
   headerInner.innerHTML = renderHeaderCells(headers);
 
   const template = getGridTemplate(headers);
-  const musicTable = document.getElementById('music-table');
-  if (musicTable) musicTable.style.setProperty('--music-grid-template', template);
+  setMusicGridTemplate(template);
   headerEl.style.gridTemplateColumns = template;
 
   syncHeaderScroll(headerEl);

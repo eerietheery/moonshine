@@ -53,19 +53,31 @@ export function setupUiEventListeners() {
     state.activeAlbum = null;
     state.activeYear = null;
     applyMode('artist');
-  // Respect current toolbar view: update sidebar filters and render grid when grid is active
-  const renderer = dom.gridViewBtn && dom.gridViewBtn.classList.contains('active') ? renderGrid : renderList;
-  updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer(dom.list), state.sidebarFilteringEnabled);
-  renderer(dom.list);
+    // Explicitly restore/unhide music table header
+    const headerEl = document.querySelector('#music-table .table-header');
+    if (headerEl) {
+      headerEl.classList.remove('hidden');
+      headerEl.style.display = '';
+    }
+    // Respect current toolbar view: update sidebar filters and render grid when grid is active
+    const renderer = dom.gridViewBtn && dom.gridViewBtn.classList.contains('active') ? renderGrid : renderList;
+    updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer(dom.list), state.sidebarFilteringEnabled);
+    renderer(dom.list);
   });
   dom.modeAlbumsBtn?.addEventListener('click', () => {
     state.activeArtist = null;
     state.activeAlbum = null;
     state.activeYear = null;
     applyMode('album');
-  const renderer = dom.gridViewBtn && dom.gridViewBtn.classList.contains('active') ? renderGrid : renderList;
-  updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer(dom.list), state.sidebarFilteringEnabled);
-  renderer(dom.list);
+    // Explicitly restore/unhide music table header
+    const headerEl = document.querySelector('#music-table .table-header');
+    if (headerEl) {
+      headerEl.classList.remove('hidden');
+      headerEl.style.display = '';
+    }
+    const renderer = dom.gridViewBtn && dom.gridViewBtn.classList.contains('active') ? renderGrid : renderList;
+    updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer(dom.list), state.sidebarFilteringEnabled);
+    renderer(dom.list);
   });
   dom.modePlaylistsBtn?.addEventListener('click', async () => {
     state.activeArtist = null;
