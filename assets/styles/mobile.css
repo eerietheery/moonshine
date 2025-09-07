@@ -1,0 +1,86 @@
+/* Minimal mobile stylesheet for narrow viewports.
+   Non-invasive: rules are limited to max-width media so desktop CSS is untouched.
+   Adds:
+     - Bottom navigation bar with 5 entries (Home / Playlists / Albums / Songs / Artists)
+     - Small mobile player area that appears above the nav bar (per page)
+     - Slight layout adjustments to main content for narrow screens
+*/
+
+@media (max-width: 720px) {
+  /* Make the app stack vertically and hide desktop sidebar by default */
+  #sidebar { display: none !important; }
+  #main-content { margin-left: 0 !important; padding-bottom: 72px; /* room for bottom nav */ }
+
+  /* Compact the toolbar */
+  #toolbar { padding: 8px; display:flex; align-items:center; justify-content:space-between; }
+  #toolbar .view-controls { display:flex; gap:8px; }
+  #toolbar .sort-controls { display:none; }
+
+  /* Music table tweaks for mobile: allow simpler single-column rows in list mode */
+  #music-table .table-header { display:none; } /* hide the desktop header on tiny screens */
+  #music-list .track { display:flex; align-items:center; gap:8px; padding:8px 10px; border-bottom:1px solid rgba(0,0,0,0.06); }
+  #music-list .track .album-art { width:44px; height:44px; border-radius:6px; }
+  #music-list .track .track-name { display:block; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #music-list .track .track-artist { display:none; }
+
+  /* Small mobile player area sits above the nav bar */
+  .mobile-player {
+    position:fixed;
+    left:8px;
+    right:8px;
+    bottom:64px; /* above the bottom nav */
+    height:56px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 12px;
+    background:var(--surface, #111);
+    color:var(--text-color, #fff);
+    border-radius:10px;
+    box-shadow:0 8px 18px rgba(0,0,0,0.35);
+  z-index:1200;
+  transition: transform 320ms cubic-bezier(.2,.9,.2,1), height 200ms ease, opacity 160ms ease;
+  transform: translateY(0);
+  }
+  .mobile-player .mp-art { width:48px; height:48px; border-radius:6px; }
+  .mobile-player .mp-meta { flex:1; overflow:hidden; }
+  .mobile-player .mp-meta .mp-title { font-weight:600; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mobile-player .mp-meta .mp-artist { font-size:0.85rem; opacity:0.85; }
+  .mobile-player .mp-controls { display:flex; gap:8px; align-items:center; }
+
+  /* Expanded player state (hidden by default) */
+  .mobile-player.expanded {
+    height: calc(100vh - 80px);
+    left:0; right:0; bottom:56px; /* keep above nav */
+    border-radius: 12px 12px 0 0;
+    padding:16px;
+    transform: translateY(-6px);
+    display:block;
+  }
+  .mobile-player .mp-expanded { display:block; margin-top:12px; }
+  .mobile-player .mp-mini { cursor: pointer; }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-player { transition: none; }
+  }
+
+  /* Bottom navigation bar */
+  .mobile-bottom-nav {
+    position:fixed;
+    left:0; right:0; bottom:0;
+    height:56px;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    background:var(--surface-elevated, #0f0f0f);
+    border-top:1px solid rgba(255,255,255,0.04);
+    z-index:1300;
+  }
+  .mobile-bottom-nav button { background:none; border:none; color:var(--text-color, #fff); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:0.7rem; padding:6px 8px; }
+  .mobile-bottom-nav button .nav-icon { width:22px; height:22px; display:block; }
+  .mobile-bottom-nav button.active { color:var(--primary-color); }
+
+  /* Keep desktop player-bar hidden (we use mobile-player) */
+  #player-bar { display:none !important; }
+}

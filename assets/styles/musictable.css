@@ -2,10 +2,14 @@
 
 :root {
   /* Shared first-column inset so header + rows match */
-  --first-col-left: 15px;
+  --first-col-left: 16px;
 }
 
 @media (max-width: 700px) {
+  :root {
+    --first-col-left: 8px; /* Smaller left padding on mobile */
+  }
+  
   .col-actions {
     width: 90px;
     min-width: 90px;
@@ -35,7 +39,7 @@
   
   .track-title {
     gap: 6px;
-  padding: 0 8px 0 4px;
+    /* Remove the manual padding override - let CSS variable handle it */
   }
   .table-header, .track {
     font-size: 0.85rem;
@@ -53,7 +57,7 @@
 .table-header {
   background: var(--surface-1);
   border-bottom: 1px solid var(--border);
-  padding: 0 0 0 var(--first-col-left, 30px); /* match the left padding of the first track column */
+  padding: 0; /* Remove left padding - let first column handle its own padding */
   margin-left: 0;
   display: block; /* let the inner grid handle layout */
   position: relative;
@@ -108,7 +112,7 @@
 .col-title {
   cursor: pointer;
   transition: color 0.15s;
-  padding: 12px 16px 12px var(--first-col-left); /* match row first column */
+  padding: 12px 16px 12px var(--first-col-left, 16px); /* consistent with track-title */
   border-right: none;
   box-sizing: border-box;
   display: flex;

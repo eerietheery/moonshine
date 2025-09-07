@@ -31,30 +31,60 @@ function bufferToDataUrl(buf, mime = 'image/jpeg') {
   }
 }
 
+// Cache for album art deduplication during scanning
+const albumArtScanCache = new Map();
+
+// Generate album key for deduplication
+function generateAlbumKey(tags) {
+  const album = (tags.album || 'Unknown').toLowerCase().trim();
+  const artist = (tags.artist || tags.albumartist || 'Unknown').toLowerCase().trim();
+  return `${album}::${artist}`;
+}
+
 async function readMeta(filePath) {
   try {
     const meta = await mm.parseFile(filePath, { duration: false });
     const { common, format } = meta;
+    
+    const tags = {
+      artist: common.artist || common.albumartist || 'Unknown',
+      album: common.album || 'Unknown',
+      title: common.title || path.basename(filePath),
+      track: (common.track && common.track.no) || null,
+      year: common.year || null,
+      genre: (common.genre && common.genre[0]) || null,
+    };
+    
     let albumArtDataUrl = null;
-    if (common.picture && common.picture.length) {
+    
+    // Check if we've already processed album art for this album
+    const albumKey = generateAlbumKey(tags);
+    
+    if (albumArtScanCache.has(albumKey)) {
+      // Reuse existing album art
+      albumArtDataUrl = albumArtScanCache.get(albumKey);
+    } else if (common.picture && common.picture.length) {
+      // Process new album art
       const pic = common.picture[0];
       const mime = pic.format || 'image/jpeg';
       albumArtDataUrl = bufferToDataUrl(pic.data, mime);
+      
+      // Cache it for other tracks from the same album
+      albumArtScanCache.set(albumKey, albumArtDataUrl);
+    } else {
+      // No album art, cache null to avoid reprocessing
+      albumArtScanCache.set(albumKey, null);
     }
+    
     return {
       file: path.basename(filePath),
       filePath,
-      tags: {
-        artist: common.artist || common.albumartist || 'Unknown',
-        album: common.album || 'Unknown',
-        title: common.title || path.basename(filePath),
-        track: (common.track && common.track.no) || null,
-        year: common.year || null,
-        genre: (common.genre && common.genre[0]) || null,
-      },
+      tags,
       albumArtDataUrl,
       bitrate: format && format.bitrate ? format.bitrate : null,
       error: null,
+      // Add album key for later optimization
+      _albumKey: albumKey,
     };
   } catch (e) {
     return { file: path.basename(filePath), filePath, tags: {}, albumArtDataUrl: null, bitrate: null, error: e.message };
@@ -77,8 +107,25 @@ async function mapWithConcurrency(items, limit, mapper) {
 
 async function scanMusic(dirPath) {
   try {
+    // Clear the album art cache for new scan
+    albumArtScanCache.clear();
+    
     const files = walkDir(dirPath);
+    console.log(`🎵 Scanning ${files.length} music files...`);
+    
     const metas = await mapWithConcurrency(files, CONCURRENCY, readMeta);
+    
+    // Log deduplication stats
+    const uniqueAlbums = albumArtScanCache.size;
+    const tracksWithArt = metas.filter(m => m.albumArtDataUrl).length;
+    const totalTracks = metas.length;
+    
+    console.log(`🎨 Album art scan complete: ${uniqueAlbums} unique albums, ${tracksWithArt}/${totalTracks} tracks with art`);
+    if (uniqueAlbums > 0 && tracksWithArt > uniqueAlbums) {
+      const savedSpace = ((tracksWithArt - uniqueAlbums) / tracksWithArt * 100).toFixed(1);
+      console.log(`💾 Estimated space saved through deduplication: ${savedSpace}%`);
+    }
+    
     return metas;
   } catch (e) {
     return [{ file: '', filePath: dirPath, tags: {}, albumArtDataUrl: null, error: e.message }];

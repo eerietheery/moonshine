@@ -7,6 +7,7 @@ import * as dom from '../../dom.js';
 import { showToast } from '../ui/ui.js';
 import { getPlaylistTracks } from '../playlist/playlists.js';
 import { getGridTemplate, setMusicGridTemplate } from '../shared/layout.js';
+import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
 
 export function renderGrid(list) {
   try { document.body.classList.toggle('playlists-active', state.viewMode === 'playlist' && !state.activePlaylist); } catch(e) {}
@@ -88,14 +89,19 @@ export function renderGrid(list) {
           album,
           artist,
           artistRaw,
-          art: track.albumArtDataUrl || 'assets/images/default-art.png',
+          art: getAlbumArtUrl(track),
           year: tgs.year || '',
           genre: tgs.genre || '',
           tracks: [],
         });
       }
       const entry = albumMap.get(album);
-      if (!entry.art && track.albumArtDataUrl) entry.art = track.albumArtDataUrl;
+      if (!entry.art || entry.art === 'assets/images/default-art.png') {
+        const trackArt = getAlbumArtUrl(track);
+        if (trackArt !== 'assets/images/default-art.png') {
+          entry.art = trackArt;
+        }
+      }
       if (!entry.year && tgs.year) entry.year = tgs.year;
       entry.tracks.push(track);
     }
@@ -115,14 +121,19 @@ export function renderGrid(list) {
           artist,
           artistRaw,
           album,
-          art: track.albumArtDataUrl || 'assets/images/default-art.png',
+          art: getAlbumArtUrl(track),
           year: tgs.year || '',
           genre: tgs.genre || '',
           tracks: [],
         });
       }
       const entry = artistMap.get(artistKey);
-      if (!entry.art && track.albumArtDataUrl) entry.art = track.albumArtDataUrl;
+      if (!entry.art || entry.art === 'assets/images/default-art.png') {
+        const trackArt = getAlbumArtUrl(track);
+        if (trackArt !== 'assets/images/default-art.png') {
+          entry.art = trackArt;
+        }
+      }
       if (!entry.year && tgs.year) entry.year = tgs.year;
       entry.tracks.push(track);
     }
@@ -142,14 +153,19 @@ export function renderGrid(list) {
           album,
           artist,
           artistRaw,
-          art: track.albumArtDataUrl || 'assets/images/default-art.png',
+          art: getAlbumArtUrl(track),
           year: tgs.year || null,
           genre: tgs.genre || '',
           tracks: [],
         });
       }
       const entry = albumMap.get(key);
-      if (!entry.art && track.albumArtDataUrl) entry.art = track.albumArtDataUrl;
+      if (!entry.art || entry.art === 'assets/images/default-art.png') {
+        const trackArt = getAlbumArtUrl(track);
+        if (trackArt !== 'assets/images/default-art.png') {
+          entry.art = trackArt;
+        }
+      }
       if (!entry.year && tgs.year) entry.year = tgs.year;
       entry.tracks.push(track);
     }

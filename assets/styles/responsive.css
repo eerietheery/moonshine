@@ -91,8 +91,7 @@
     max-width: 980px;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 8px;
-    padding-right: 8px;
+    /* Remove conflicting padding overrides - let CSS variables handle it */
     box-sizing: border-box;
     width: 100%;
   }
@@ -106,12 +105,7 @@
 /* Medium-small screens: keep header/rows padded and ensure action column retains space
    This fixes cases where dynamic grid templates push action buttons left around ~800-900px */
 @media (max-width: 920px) {
-  .table-header,
-  .track {
-    padding-left: 12px;
-    padding-right: 12px;
-    box-sizing: border-box;
-  }
+  /* Remove conflicting padding overrides - let CSS variables and first-column handle alignment */
 
   /* Ensure actions column keeps enough room and aligns to the right */
   .col-actions, .track-actions {

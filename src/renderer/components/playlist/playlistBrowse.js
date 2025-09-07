@@ -3,6 +3,7 @@ import { state } from '../shared/state.js';
 import * as dom from '../../dom.js';
 import { renderList } from '../shared/view.js';
 import { showToast } from '../ui/ui.js';
+import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
 
 // Public API: render playlist browse using current toolbar mode (list/grid)
 export function renderPlaylistBrowse(container) {
@@ -94,7 +95,7 @@ export function renderPlaylistBrowseGrid(container) {
   for (const it of items) {
     const tracks = resolveTracks(it);
     const count = tracks.length;
-    const art = tracks[0]?.albumArtDataUrl || 'assets/images/default-art.png';
+    const art = getAlbumArtUrl(tracks[0]) || 'assets/images/default-art.png';
     const card = document.createElement('div');
     card.className = 'track-card playlist-card';
     card.innerHTML = `
@@ -155,7 +156,7 @@ export function renderPlaylistBrowseList(container) {
   for (const it of items) {
     const tracks = resolveTracks(it);
     const count = tracks.length;
-    const art = tracks[0]?.albumArtDataUrl || 'assets/images/default-art.png';
+    const art = getAlbumArtUrl(tracks[0]) || 'assets/images/default-art.png';
     const row = document.createElement('div');
     row.className = 'track playlist-browse-row';
     row.innerHTML = `
