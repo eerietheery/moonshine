@@ -10,6 +10,7 @@ import { setupQueuePanel } from './components/queue/queue.js';
 import { state } from './components/shared/state.js';
 import { loadPlaylists, buildSmartPlaylists, renderPlaylistsSidebar, createPlaylist, getPlaylistTracks } from './components/playlist/playlists.js';
 import { playlists } from './components/playlist/playlists.js';
+import { initMobile } from './components/mobile/mobileUI.js';
 
 function playlistsName(source) {
   if (source?.type !== 'user') return null;
@@ -166,6 +167,9 @@ export function initializeApp() {
         showNewPlaylistModal({ onCreate: () => renderPlaylists() });
       };
     }
+    
+    // Initialize mobile UI
+    initMobile();
   });
 }
 

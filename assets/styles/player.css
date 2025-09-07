@@ -178,6 +178,16 @@ body, #app, #main-content, #music-table, #music-list { position: relative; }
   border-radius: 2px;
   position: relative;
   cursor: pointer;
+  transition: height 0.15s ease;
+}
+
+#progress-bar:hover {
+  height: 6px;
+}
+
+#progress-bar:active,
+#progress-bar.dragging {
+  cursor: grabbing;
 }
 
 #progress-fill {
@@ -198,7 +208,20 @@ body, #app, #main-content, #music-table, #music-list { position: relative; }
   border-radius: 50%;
   transform: translate(-50%, -50%);
   opacity: 0;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  cursor: grab;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+#progress-handle:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+#progress-handle:active,
+#progress-handle.dragging {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(1.2);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4);
 }
 
 #progress-bar:hover #progress-handle {

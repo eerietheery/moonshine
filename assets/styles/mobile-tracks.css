@@ -1,0 +1,332 @@
+/* ===== MOBILE TRACK LIST - REDESIGNED WITH MASKED ALBUM ART ===== */
+
+/* New design: Album art as background with 45° fade, layered text */
+
+@media (max-width: 768px) {
+  
+  /* ===== MOBILE TRACK CONTAINER ===== */
+  .mobile-view #music-list {
+    padding: 0;
+    background: var(--surface-0);
+    /* Improve scrolling performance */
+    transform: translateZ(0);
+    -webkit-overflow-scrolling: touch;
+    will-change: scroll-position;
+  }
+  
+  /* ===== MOBILE TRACK - NEW LAYERED DESIGN ===== */
+  .mobile-view .track {
+    /* Reset all desktop grid styling */
+    display: block !important;
+    grid-template-columns: none !important;
+    grid-template-areas: none !important;
+    
+    /* Mobile track container */
+    background: var(--surface-0);
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+    min-height: 76px;
+    position: relative;
+    overflow: hidden;
+    
+    /* Performance optimizations */
+    contain: layout style paint;
+    will-change: transform;
+  }
+  
+  .mobile-view .track:active {
+    background: var(--surface-1);
+    transform: scale(0.995);
+  }
+  
+  .mobile-view .track:hover {
+    background: var(--surface-05);
+  }
+  
+  .mobile-view .track.playing {
+    background: var(--surface-1);
+    border-left: 3px solid var(--accent);
+  }
+  
+  /* ===== ALBUM ART BACKGROUND WITH MASK ===== */
+  .mobile-view .track::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 120px;
+    height: 100%;
+    background-image: var(--track-album-art, url('../images/default-art.png'));
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.15;
+    
+    /* 45-degree fade mask */
+    mask: linear-gradient(135deg, 
+      rgba(0,0,0,1) 0%, 
+      rgba(0,0,0,1) 40%, 
+      rgba(0,0,0,0.7) 60%, 
+      rgba(0,0,0,0) 100%
+    );
+    -webkit-mask: linear-gradient(135deg, 
+      rgba(0,0,0,1) 0%, 
+      rgba(0,0,0,1) 40%, 
+      rgba(0,0,0,0.7) 60%, 
+      rgba(0,0,0,0) 100%
+    );
+    
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  /* Responsive album art masking for different screen sizes */
+  @media (max-width: 480px) {
+    .mobile-view .track::before {
+      width: 100px; /* Smaller on very small screens */
+    }
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    .mobile-view .track::before {
+      width: 130px; /* Slightly larger on medium mobile screens */
+    }
+  }
+  
+  /* ===== MOBILE TRACK CONTENT LAYER ===== */
+  .mobile-view .track-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    padding: 18px 16px;
+    gap: 16px;
+    min-height: 76px;
+    background: transparent;
+    transition: transform 0.1s ease;
+  }
+  
+  /* ===== SMALL ALBUM ART THUMBNAIL ===== */
+  .mobile-view .track .album-art {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 6px;
+    flex-shrink: 0;
+    object-fit: cover;
+    background: var(--surface-2);
+    z-index: 3;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .mobile-view .track:active .album-art {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* ===== TRACK INFO - ENHANCED TYPOGRAPHY HIERARCHY ===== */
+  .mobile-view .track-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 3;
+    /* Better text spacing for hierarchy */
+    padding: 2px 0;
+  }
+  
+  .mobile-view .track-title-mobile {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-strong);
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin: 0;
+    letter-spacing: -0.02em;
+    /* Enhanced typography for large song titles */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+  
+  .mobile-view .track-meta-mobile {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  
+  .mobile-view .track-artist-mobile,
+  .mobile-view .track-album-mobile {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .mobile-view .track-artist-mobile {
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 0.01em;
+  }
+  
+  .mobile-view .track-album-mobile {
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--text-faint);
+    opacity: 0.8;
+  }
+  
+  .mobile-view .track-meta-mobile .separator {
+    color: var(--text-faint);
+    font-weight: normal;
+    flex-shrink: 0;
+    padding: 0 4px;
+    opacity: 0.6;
+    font-size: 11px;
+    line-height: 1;
+  }
+  
+  /* ===== MOBILE TRACK ACTIONS ===== */
+  .mobile-view .track-actions-mobile {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 3;
+  }
+  
+  .mobile-view .mobile-track-menu {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 18px;
+    font-weight: bold;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    min-width: 32px;
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .mobile-view .mobile-track-menu:hover {
+    background: var(--surface-1);
+    color: var(--text-strong);
+  }
+  
+  .mobile-view .mobile-track-menu:active {
+    background: var(--surface-2);
+    color: var(--text-strong);
+    transform: scale(0.95);
+  }
+  
+  /* ===== HIDE DESKTOP TRACK ELEMENTS IN MOBILE ===== */
+  .mobile-view .track .track-title,
+  .mobile-view .track .track-artist,
+  .mobile-view .track .track-album,
+  .mobile-view .track .track-year,
+  .mobile-view .track .track-genre,
+  .mobile-view .track .track-bitrate,
+  .mobile-view .track .track-actions {
+    display: none !important;
+  }
+  
+  /* ===== MOBILE TRACK STATES ===== */
+  .mobile-view .track.selected {
+    background: var(--surface-1);
+  }
+  
+  .mobile-view .track.loading {
+    opacity: 0.6;
+  }
+  
+  .mobile-view .track.loading .track-content {
+    pointer-events: none;
+  }
+  
+  /* ===== MOBILE TRACK TOUCH FEEDBACK ===== */
+  .mobile-view .track {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* ===== ENHANCED VISUAL EFFECTS ===== */
+  .mobile-view .track.playing::before {
+    opacity: 0.25;
+    animation: pulseAlbumArt 3s ease-in-out infinite;
+  }
+  
+  /* ===== LOADING PLACEHOLDER ===== */
+  .mobile-view .track-placeholder {
+    height: 72px;
+    background: var(--surface-0);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    color: var(--text-muted);
+    font-size: 14px;
+    opacity: 0.7;
+    
+    /* Subtle loading animation */
+    background: linear-gradient(
+      90deg,
+      var(--surface-0) 25%,
+      var(--surface-1) 50%,
+      var(--surface-0) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  
+  @keyframes pulseAlbumArt {
+    0%, 100% { opacity: 0.25; }
+    50% { opacity: 0.35; }
+  }
+  
+  /* ===== RESPONSIVE TYPOGRAPHY ADJUSTMENTS ===== */
+  @media (max-width: 480px) {
+    .mobile-view .track-title-mobile {
+      font-size: 16px; /* Smaller title on very small screens */
+    }
+    
+    .mobile-view .track-content {
+      padding: 16px 12px; /* Tighter padding */
+      gap: 12px;
+    }
+  }
+  
+  @media (min-width: 481px) and (max-width: 768px) {
+    .mobile-view .track-title-mobile {
+      font-size: 19px; /* Larger title on medium screens */
+    }
+    
+    .mobile-view .track-content {
+      padding: 20px 18px; /* More spacious */
+      gap: 18px;
+    }
+  }
+}

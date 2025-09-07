@@ -3,8 +3,8 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: auto; /* allow horizontal scrolling when columns exceed viewport */
-  /* Prevent horizontal layout shift when scrollbar appears/disappears */
-  scrollbar-gutter: stable both-edges;
+  /* Use stable scrollbar gutter to prevent layout shift when scrollbar appears/disappears */
+  scrollbar-gutter: stable;
   position: relative;
   width: 100%;
   margin-left: 0;
@@ -52,7 +52,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0 16px 0 var(--first-col-left, 30px);
+  padding: 0 16px 0 var(--first-col-left, 16px); /* consistent left padding */
   box-sizing: border-box;
   min-width: 0;
   flex: 1 1 0;
@@ -110,12 +110,7 @@
 .track-year, .track-genre { justify-content: center; }
 .track-bitrate { justify-content: flex-end; text-align: right; }
 
-.col-bitrate {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: left;
-}
+/* Bitrate column header alignment is handled in musictable.css - don't override here */
 
 /* Actions column */
 .col-actions, .track-actions {

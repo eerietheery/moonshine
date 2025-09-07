@@ -1,7 +1,7 @@
 // Player UI logic: progress bar, volume, and UI event listeners
 import { formatTime } from '../ui/ui.js';
 import { togglePlay, playPrevious, playNext, toggleShuffle, toggleLoop } from './playerCore.js';
-import { updateFilters } from '../shared/state.js';
+import { updateFilters, state } from '../shared/state.js';
 import { updateSidebarFilters } from '../sidebar/sidebar.js';
 import * as dom from '../../dom.js';
 import { renderList, renderGrid } from '../shared/view.js';
@@ -52,10 +52,126 @@ export function setupPlayerUI(audio, playBtn, prevBtn, nextBtn, progressBar, pro
     }
     playNext(audio, renderListFn);
   });
-  progressBar.addEventListener('click', (e) => {
+  
+  // Enhanced progress bar interaction with smooth dragging
+  let isDraggingProgress = false;
+  let wasPlayingBeforeDrag = false;
+  let dragStartTime = 0;
+  
+  const updateProgressFromEvent = (e) => {
+    if (!audio.duration) return 0;
     const rect = progressBar.getBoundingClientRect();
-    const percent = (e.clientX - rect.left) / rect.width;
-    audio.currentTime = percent * audio.duration;
+    const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const newTime = percent * audio.duration;
+    
+    // Update visual feedback immediately
+    progressFill.style.width = `${percent * 100}%`;
+    progressHandle.style.left = `${percent * 100}%`;
+    currentTime.textContent = formatTime(newTime);
+    
+    return newTime;
+  };
+  
+  const startProgressDrag = (e) => {
+    isDraggingProgress = true;
+    wasPlayingBeforeDrag = state.isPlaying;
+    dragStartTime = Date.now();
+    
+    // Pause audio while dragging for smoother experience
+    if (state.isPlaying) {
+      audio.pause();
+    }
+    
+    // Add visual feedback classes
+    progressBar.classList.add('dragging');
+    progressHandle.classList.add('dragging');
+    progressHandle.style.opacity = '1';
+    
+    // Update to initial position
+    updateProgressFromEvent(e);
+    
+    // Prevent text selection during drag
+    e.preventDefault();
+    document.body.style.userSelect = 'none';
+  };
+  
+  const continueProgressDrag = (e) => {
+    if (!isDraggingProgress) return;
+    updateProgressFromEvent(e);
+  };
+  
+  const endProgressDrag = (e) => {
+    if (!isDraggingProgress) return;
+    
+    isDraggingProgress = false;
+    
+    // Remove visual feedback classes
+    progressBar.classList.remove('dragging');
+    progressHandle.classList.remove('dragging');
+    document.body.style.userSelect = '';
+    
+    // Set the actual audio time
+    const newTime = updateProgressFromEvent(e);
+    audio.currentTime = newTime;
+    
+    // Resume playing if it was playing before drag
+    if (wasPlayingBeforeDrag) {
+      audio.play();
+    }
+    
+    // Hide handle after a brief delay unless hovering
+    setTimeout(() => {
+      if (!progressBar.matches(':hover')) {
+        progressHandle.style.opacity = '0';
+      }
+    }, 200);
+  };
+  
+  // Mouse events for progress bar
+  progressBar.addEventListener('mousedown', startProgressDrag);
+  document.addEventListener('mousemove', continueProgressDrag);
+  document.addEventListener('mouseup', endProgressDrag);
+  
+  // Touch events for mobile support
+  progressBar.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    startProgressDrag({ clientX: touch.clientX, preventDefault: () => e.preventDefault() });
+  });
+  
+  document.addEventListener('touchmove', (e) => {
+    if (!isDraggingProgress) return;
+    e.preventDefault(); // Prevent scrolling while dragging
+    const touch = e.touches[0];
+    continueProgressDrag({ clientX: touch.clientX });
+  }, { passive: false });
+  
+  document.addEventListener('touchend', (e) => {
+    if (!isDraggingProgress) return;
+    // Use the last touch position or current mouse position
+    const touch = e.changedTouches[0];
+    endProgressDrag({ clientX: touch.clientX });
+  });
+  
+  // Enhanced hover effects
+  progressBar.addEventListener('mouseenter', () => {
+    progressHandle.style.opacity = '1';
+  });
+  
+  progressBar.addEventListener('mouseleave', () => {
+    if (!isDraggingProgress) {
+      progressHandle.style.opacity = '0';
+    }
+  });
+  
+  // Prevent the old click handler conflicts by detecting quick vs drag actions
+  progressBar.addEventListener('click', (e) => {
+    // Only handle click if we're not in the middle of a drag operation
+    // and it was a quick click (not a drag that ended recently)
+    const timeSinceLastDrag = Date.now() - dragStartTime;
+    if (!isDraggingProgress && timeSinceLastDrag > 200) {
+      const newTime = updateProgressFromEvent(e);
+      audio.currentTime = newTime;
+    }
   });
   volume.addEventListener('input', (e) => {
     audio.volume = e.target.value / 100;

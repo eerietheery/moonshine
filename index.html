@@ -8,9 +8,14 @@
   <link rel="stylesheet" href="assets/styles/main-content.css">
   <link rel="stylesheet" href="assets/styles/player.css">
   <link rel="stylesheet" href="assets/styles/responsive.css">
+  <link rel="stylesheet" href="assets/styles/mobile-components.css">
+  <link rel="stylesheet" href="assets/styles/mobile-tracks.css">
 
     <!-- Theme CSS: new themes -->
     <link rel="stylesheet" href="assets/styles/theme/neumorphic_dark.css">
+    <!-- Mobile specific stylesheet (device-width gated) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="assets/styles/mobile.css" media="(max-width:720px)">
 </head>
 <body>
   <div id="app">
@@ -144,6 +149,45 @@
     </div>
     
     <audio id="audio"></audio>
+  </div>
+  
+  <!-- ===== MOBILE UI ELEMENTS ===== -->
+  
+  <!-- Mobile Mini Player -->
+  <div id="mobile-mini-player" class="mobile-mini-player" style="display: none;">
+    <img id="mini-player-art" class="mini-player-art" src="assets/images/default-art.png" alt="Album Art">
+    <div class="mini-player-info">
+      <div id="mini-player-title" class="mini-player-title">No track selected</div>
+      <div id="mini-player-artist" class="mini-player-artist">Unknown artist</div>
+    </div>
+    <div class="mini-player-controls">
+      <button id="mini-play-btn" class="mini-play-btn" title="Play/Pause">
+        <img src="assets/images/play-centered.svg" alt="Play" style="width:16px;height:16px;filter:invert(1);" />
+      </button>
+    </div>
+  </div>
+  
+  <!-- Mobile Bottom Navigation -->
+  <div id="mobile-bottom-nav" class="mobile-bottom-nav" style="display: none;">
+    <button class="mobile-nav-item active" data-view="tracks" title="All Tracks">
+      <img class="mobile-nav-icon" src="assets/images/song-ico.svg" alt="Tracks" style="filter:var(--queue-icon-filter, invert(1) brightness(1));" />
+      <span class="mobile-nav-label">Tracks</span>
+    </button>
+    
+    <button class="mobile-nav-item" data-view="artists" title="Artists">
+      <img class="mobile-nav-icon" src="assets/images/artist-ico.svg" alt="Artists" style="filter:var(--queue-icon-filter, invert(1) brightness(1));" />
+      <span class="mobile-nav-label">Artists</span>
+    </button>
+    
+    <button class="mobile-nav-item" data-view="albums" title="Albums">
+      <img class="mobile-nav-icon" src="assets/images/album-ico.svg" alt="Albums" style="filter:var(--queue-icon-filter, invert(1) brightness(1));" />
+      <span class="mobile-nav-label">Albums</span>
+    </button>
+    
+    <button class="mobile-nav-item" data-view="search" title="Search">
+      <img class="mobile-nav-icon" src="assets/images/search.svg" alt="Search" style="filter:var(--queue-icon-filter, invert(1) brightness(1));" />
+      <span class="mobile-nav-label">Search</span>
+    </button>
   </div>
   
   <script type="module" src="src/renderer.js"></script>

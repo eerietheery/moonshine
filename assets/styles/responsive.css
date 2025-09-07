@@ -1,4 +1,6 @@
-/* ===== RESPONSIVE DESIGN ===== */
+/* ===== RESPONSIVE DESIGN - MOBILE REDESIGN ===== */
+
+/* Tablet and smaller desktop adjustments */
 @media (max-width: 1024px) {
   #sidebar {
     width: 200px;
@@ -8,7 +10,7 @@
   }
 }
 
-/* Custom virtual-list scrollbar (overlay) */
+/* Custom virtual-list scrollbar (overlay) - applies to all screen sizes */
 .vscroll-track {
   pointer-events: none; /* track only accepts clicks on thumb */
 }
@@ -21,119 +23,95 @@
   transform: scaleX(1.02);
 }
 
-
+/* ===== MOBILE REDESIGN - COMPLETE UI OVERHAUL ===== */
 @media (max-width: 768px) {
+  
+  /* ===== MOBILE LAYOUT STRUCTURE ===== */
+  
+  /* Hide desktop elements completely */
+  #sidebar {
+    display: none !important;
+  }
+  
+  .table-header {
+    display: none !important;
+  }
+  
+  /* Reconfigure main app layout for mobile */
   #app {
     flex-direction: column;
-  }
-  #sidebar {
-    width: 100%;
-    height: 200px;
-    border-right: none;
-    border-bottom: 1px solid #333;
-  }
-  .table-header {
-    grid-template-columns: 2fr 1fr 1fr 100px; /* Smaller actions column on mobile */
-  }
-  .track {
-    grid-template-columns: 2fr 1fr 1fr 100px; /* Smaller actions column on mobile */
-  }
-  .col-year, .col-genre, .track-year, .track-genre {
-    display: none;
+    height: 100vh;
+    overflow: hidden;
   }
   
-  .col-actions {
-    width: 100px;
-    min-width: 100px;
-    max-width: 100px;
+  /* ===== MOBILE HEADER ===== */
+  #toolbar {
+    height: 50px;
+    min-height: 50px;
+    padding: 8px 16px;
+    background: var(--surface-1);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1000;
   }
   
-  .track-actions {
-    justify-content: flex-end;
-    padding: 0 8px;
-    width: 100px; /* Match mobile grid column */
-    min-width: 100px;
-    max-width: 100px;
-    gap: 4px; /* Reduce gap on mobile */
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
   
-  /* Make buttons slightly smaller on mobile */
-  .track-actions button {
-    min-width: 24px;
-    max-width: 24px;
-    height: 24px;
+  .toolbar-center {
+    flex: 1;
+    text-align: center;
   }
   
-  .track-actions button img {
-    width: 18px !important;
-    height: 18px !important;
+  .mobile-view-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-strong);
   }
   
-  .player-left {
-    flex: 0 0 150px;
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-  .player-right {
-    flex: 0 0 100px;
+  
+  /* ===== MAIN CONTENT AREA ===== */
+  #main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-bottom: 120px; /* Space for mini player + bottom nav */
+    position: relative;
   }
-  #volume {
-    width: 60px;
-  }
-
-  /* Center the main list/grid and give horizontal breathing room so rows don't stick to the left */
+  
+  /* ===== MOBILE MUSIC LIST ===== */
   #music-table {
-    padding: 0 12px; /* outer padding for small screens */
-    box-sizing: border-box;
-  }
-
-  /* Constrain rows and header to a sensible max-width and center them */
-  .table-header,
-  .track {
-    max-width: 980px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 8px;
-    padding-right: 8px;
-    box-sizing: border-box;
-    width: 100%;
-  }
-
-  /* Slightly increase grid padding so album cards have breathing room */
-  #music-list.grid {
-    padding: 12px 16px;
-  }
-}
-
-/* Medium-small screens: keep header/rows padded and ensure action column retains space
-   This fixes cases where dynamic grid templates push action buttons left around ~800-900px */
-@media (max-width: 920px) {
-  .table-header,
-  .track {
-    padding-left: 12px;
-    padding-right: 12px;
-    box-sizing: border-box;
-  }
-
-  /* Ensure actions column keeps enough room and aligns to the right */
-  .col-actions, .track-actions {
-    min-width: 140px;
-    max-width: 140px; /* Prevent expansion */
-    padding-right: 12px;
-    justify-content: flex-end;
-    flex-shrink: 0; /* Critical: prevent shrinking */
-  }
-
-  /* Force grid to respect fixed action column width */
-  .table-header {
-    grid-template-columns: auto auto auto 140px !important;
+    flex: 1;
+    padding: 0;
+    overflow: hidden;
+    display: flex !important; /* Ensure table is visible in mobile */
+    flex-direction: column;
   }
   
-  .track {
-    grid-template-columns: auto auto auto 140px !important;
-  }
-
-  /* Allow horizontal overflow on the header row if needed rather than collapsing items */
-  .table-header {
-    overflow-x: auto;
+  #music-list {
+    height: 100%;
+    padding: 0;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    display: block !important; /* Ensure list is visible in mobile */
   }
+  
+  /* Mobile track styling moved to mobile-tracks.css for better organization */
+  
+  /* ===== MOBILE COMPONENTS ===== */
+  /* Mini Player, Bottom Navigation, and Mobile States moved to mobile-components.css */
+  /* This keeps the main responsive.css focused on layout and list styling */
+
 }
