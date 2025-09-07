@@ -1,5 +1,6 @@
 import { formatBitrate } from './formatters.js';
 import { showToast } from './toast.js';
+import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
 
 export function createTrackElement(track, onClick, headers = ['title','artist','album','year','genre','bitrate']) {
   const div = document.createElement('div');
@@ -10,7 +11,7 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
       div.dataset.filePath = track.filePath;
     }
   } catch(_) {}
-  const art = track.albumArtDataUrl || 'assets/images/default-art.png';
+  const art = getAlbumArtUrl(track);
   const titleText = (track.tags?.title) || track.file;
   const artistText = (track.tags?.artist) || 'Unknown';
   const albumText = (track.tags?.album) || 'Unknown';
@@ -228,5 +229,20 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
       showContextMenu(e, items);
     });
   });
+  
+  // Update for mobile view if needed
+  try {
+    // Use dynamic import to avoid circular dependencies
+    import('../mobile/mobileUI.js').then(({ isMobile, updateMobileTrackElement }) => {
+      if (isMobile && updateMobileTrackElement) {
+        setTimeout(() => updateMobileTrackElement(div), 0);
+      }
+    }).catch(() => {
+      // Mobile module not available or error - safe to ignore
+    });
+  } catch (_) {
+    // Safe to ignore
+  }
+  
   return div;
 }

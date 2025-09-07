@@ -1,0 +1,187 @@
+/* ===== MOBILE COMPONENTS - MINI PLAYER & NAVIGATION ===== */
+
+/* Imported from responsive.css for better organization */
+@media (max-width: 768px) {
+  
+  /* ===== MOBILE MINI PLAYER ===== */
+  .mobile-mini-player {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 60px; /* Above bottom nav */
+    height: 60px;
+    background: var(--surface-1);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    z-index: 900;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .mobile-mini-player:active {
+    transform: scale(0.98);
+  }
+  
+  .mini-player-art {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    margin-right: 12px;
+    flex-shrink: 0;
+    object-fit: cover;
+    background: var(--surface-2);
+  }
+  
+  .mini-player-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .mini-player-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-strong);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .mini-player-artist {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .mini-player-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 12px;
+  }
+  
+  .mini-play-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+  
+  .mini-play-btn:active {
+    transform: scale(0.95);
+  }
+  
+  /* ===== MOBILE BOTTOM NAVIGATION ===== */
+  .mobile-bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 60px;
+    background: var(--surface-1);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s ease;
+    flex: 1;
+    min-height: 44px;
+  }
+  
+  .mobile-nav-item.active {
+    color: var(--accent);
+  }
+  
+  .mobile-nav-item:hover {
+    color: var(--text-strong);
+  }
+  
+  .mobile-nav-item.active:hover {
+    color: var(--accent);
+  }
+  
+  .mobile-nav-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  
+  .mobile-nav-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+  
+  /* ===== MOBILE SAFE AREA SUPPORT ===== */
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .mobile-bottom-nav {
+      padding-bottom: env(safe-area-inset-bottom);
+      height: calc(60px + env(safe-area-inset-bottom));
+    }
+    
+    .mobile-mini-player {
+      bottom: calc(60px + env(safe-area-inset-bottom));
+    }
+    
+    #main-content {
+      padding-bottom: calc(120px + env(safe-area-inset-bottom));
+    }
+  }
+  
+  /* ===== MOBILE STATES ===== */
+  
+  /* Hide desktop player completely */
+  #player {
+    display: none !important;
+  }
+  
+  /* Ensure full height usage */
+  body, html {
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  /* Disable desktop grid view on mobile */
+  #music-list.grid {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+  }
+  
+  /* Playlist header mobile styling */
+  #playlist-header {
+    display: none; /* Simplify for mobile - integrate into toolbar */
+  }
+}

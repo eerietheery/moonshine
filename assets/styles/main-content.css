@@ -15,10 +15,15 @@
 
 /* Prevent layout nudge when switching to Playlists mode by reserving scrollbar space */
 #playlist-header,
-#music-list,
 .grid {
   scrollbar-gutter: stable both-edges;
   /* Keep natural scrollbars without forcing them on non-scrolling elements */
+  overflow-y: auto;
+}
+
+/* Music list uses stable (not both-edges) to avoid left-side spacing that misaligns with header */
+#music-list {
+  scrollbar-gutter: stable;
   overflow-y: auto;
 }
 
@@ -54,7 +59,7 @@
   display: none;
   background: var(--surface-header);
   border-bottom: 1px solid var(--border-strong);
-  padding: 0 0 0 var(--first-col-left, 30px); /* match header left padding */
+  padding: 0; /* Remove left padding - let inner content handle its own padding */
   margin-left: 0;
   position: sticky;
   top: 0;
@@ -85,8 +90,8 @@
   align-items: center;
   gap: 12px;
   max-width: 100%;
-  /* keep internal horizontal padding similar to previous outer padding */
-  padding: 16px 20px 16px 30px;
+  /* consistent internal horizontal padding with first column */
+  padding: 16px 20px 16px var(--first-col-left, 16px);
   grid-column: 1 / -2; /* span all but last actions column */
 }
 

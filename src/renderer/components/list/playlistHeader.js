@@ -5,13 +5,14 @@ import { showToast } from '../ui/ui.js';
 import * as dom from '../../dom.js';
 import { playTrack } from '../player/playerCore.js';
 import { getGridTemplate } from '../shared/layout.js';
+import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
 
 export function renderPlaylistHeader(container, source, renderListCallback) {
   const tracks = getPlaylistTracks(source);
   const title = source.type === 'user' ? (source.name || 'Playlist') : (source.genre || 'Playlist');
   const count = tracks.length;
   container.innerHTML = '';
-  const artUrl = tracks[0]?.albumArtDataUrl || 'assets/images/default-art.png';
+  const artUrl = getAlbumArtUrl(tracks[0]) || 'assets/images/default-art.png';
 
   // Create inner wrapper for grid layout (use .table-header-inner for perfect alignment)
   const innerWrapper = document.createElement('div');
