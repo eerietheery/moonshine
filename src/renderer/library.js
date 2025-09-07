@@ -2,6 +2,7 @@ import { state, updateFilters, resetSidebarFilters } from './components/shared/s
 import { updateSidebarFilters } from './components/sidebar/sidebar.js';
 import { renderList, renderGrid } from './components/shared/view.js';
 import * as dom from './dom.js';
+import { initializeAlbumArtCache, getAlbumArtStats } from './utils/albumArtCache.js';
 
 function showSpinner(show = true) {
   let spinner = document.getElementById('center-spinner');
@@ -62,6 +63,17 @@ async function addMusic(userPath) {
     // Append new tracks, avoiding duplicates by filePath
     const existingPaths = new Set(state.tracks.map(t => t.filePath));
     const newTracks = validTracks.filter(t => !existingPaths.has(t.filePath));
+    
+    // Initialize album art cache for new tracks
+    if (newTracks.length > 0) {
+      console.log(`🎨 Initializing album art cache for ${newTracks.length} new tracks...`);
+      initializeAlbumArtCache(newTracks);
+      
+      // Log cache stats
+      const stats = getAlbumArtStats();
+      console.log(`📊 Album art cache stats:`, stats);
+    }
+    
     state.tracks = state.tracks.concat(newTracks);
     // Track the folder added
     if (userPath && !state.libraryDirs.includes(userPath)) {
@@ -92,6 +104,17 @@ async function loadMusic(dirPath) {
       const isUnknown = [tags.artist, tags.album, tags.title].every(v => v === 'Unknown');
       return !isUnknown;
     });
+    
+    // Initialize album art cache
+    if (state.tracks.length > 0) {
+      console.log(`🎨 Initializing album art cache for ${state.tracks.length} tracks...`);
+      initializeAlbumArtCache(state.tracks);
+      
+      // Log cache stats
+      const stats = getAlbumArtStats();
+      console.log(`📊 Album art cache stats:`, stats);
+    }
+    
     // Set favorite property on loaded tracks
     if (Array.isArray(state.favorites) && state.favorites.length) {
       state.tracks.forEach(t => {
@@ -128,6 +151,17 @@ async function initialScan() {
         const isUnknown = [tags.artist, tags.album, tags.title].every(v => v === 'Unknown');
         return !isUnknown;
       });
+      
+      // Initialize album art cache
+      if (state.tracks.length > 0) {
+        console.log(`🎨 Initializing album art cache for ${state.tracks.length} tracks from initial scan...`);
+        initializeAlbumArtCache(state.tracks);
+        
+        // Log cache stats
+        const stats = getAlbumArtStats();
+        console.log(`📊 Album art cache stats:`, stats);
+      }
+      
       // Set favorite property on loaded tracks
       if (Array.isArray(state.favorites) && state.favorites.length) {
         state.tracks.forEach(t => {
