@@ -1,0 +1,42 @@
+/* ===== MOBILE TRACK RESPONSIVE BREAKPOINTS ===== */
+
+/* ===== RESPONSIVE TYPOGRAPHY ADJUSTMENTS ===== */
+@media (max-width: 480px) {
+  .mobile-view .track-title-mobile {
+    font-size: 15px; /* Even smaller on tiny screens */
+  }
+  
+  .mobile-view .track-content {
+    padding: 12px 10px; /* Very tight padding */
+    gap: 10px;
+    min-height: 58px; /* Compact on small screens */
+  }
+  
+  .mobile-view .track {
+    min-height: 58px; /* Match content height */
+  }
+  
+  .mobile-view .track::before {
+    width: 90px; /* Smaller album art mask on tiny screens */
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .mobile-view .track-title-mobile {
+    font-size: 17px; /* Slightly larger on medium screens */
+  }
+  
+  .mobile-view .track-content {
+    padding: 16px 14px; /* Moderate padding */
+    gap: 14px;
+    min-height: 68px; /* More space on larger mobile */
+  }
+  
+  .mobile-view .track {
+    min-height: 68px; /* Match content height */
+  }
+  
+  .mobile-view .track::before {
+    width: 130px; /* Slightly larger on medium mobile screens */
+  }
+}

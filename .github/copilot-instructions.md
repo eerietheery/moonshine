@@ -57,17 +57,10 @@ Moonshine is an offline, local music library player and viewer built with Electr
 - `assets/styles/` — CSS for grid, table, player, sidebar, themes
 - `README.md` — Project overview and build instructions
 
-## Example: Table Header Pattern
-- Always reuse `.table-header` and `.table-header-inner` for all views.
-- Set grid template via CSS variable, e.g.:
-  ```js
-  musicTable.style.setProperty('--music-grid-template', tpl);
-  ```
-- Playlist browse uses:
-  ```js
-  tpl = '3fr 1.5fr 1fr 140px';
-  ```
-- Main views use dynamic templates from `getGridTemplate()`.
+## Other Notes
+- Keep files relatively modular and don't let them exceed ~300 lines.
+- Follow existing patterns for state management and event handling.
+- 
 
 ---
 

@@ -5,7 +5,7 @@
   --first-col-left: 16px;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   :root {
     --first-col-left: 8px; /* Smaller left padding on mobile */
   }

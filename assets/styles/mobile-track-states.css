@@ -1,0 +1,43 @@
+/* ===== MOBILE TRACK STATES & INTERACTIONS ===== */
+
+@media (max-width: 768px) {
+  
+  /* ===== TRACK STATES ===== */
+  .mobile-view .track.selected {
+    background: var(--surface-1);
+  }
+  
+  .mobile-view .track.loading {
+    opacity: 0.6;
+  }
+  
+  .mobile-view .track.loading .track-content {
+    pointer-events: none;
+  }
+  
+  .mobile-view .track.playing {
+    background: var(--surface-1);
+    border-left: 3px solid var(--accent);
+  }
+  
+  .mobile-view .track:hover {
+    background: var(--surface-05);
+  }
+  
+  /* ===== HIDE DESKTOP ELEMENTS ===== */
+  .mobile-view .track .track-title,
+  .mobile-view .track .track-artist,
+  .mobile-view .track .track-album,
+  .mobile-view .track .track-year,
+  .mobile-view .track .track-genre,
+  .mobile-view .track .track-bitrate,
+  .mobile-view .track .track-actions {
+    display: none !important;
+  }
+  
+  /* ===== BUTTON STATES ===== */
+  .mobile-view .mobile-track-menu:hover {
+    background: var(--surface-1);
+    color: var(--text-strong);
+  }
+}

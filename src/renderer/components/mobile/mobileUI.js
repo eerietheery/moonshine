@@ -9,6 +9,8 @@ import { updateMobileTrackList, restoreDesktopTrackList } from './mobileTrackLis
 
 let isMobileView = false;
 let currentMobileView = 'tracks';
+let resizeTimeout = null;
+let isResizing = false; // Prevent multiple simultaneous resize operations
 
 /**
  * Initialize mobile UI components
@@ -19,8 +21,8 @@ export function initMobile() {
   // Check if we're in mobile view
   checkMobileView();
   
-  // Set up responsive listeners
-  window.addEventListener('resize', handleResize);
+  // Set up debounced responsive listeners with abort control
+  window.addEventListener('resize', debouncedHandleResize, { passive: true });
   
   // Initialize mobile components
   initializeMobileNavigation();
@@ -40,16 +42,55 @@ function checkMobileView() {
   const wasMobile = isMobileView;
   isMobileView = window.innerWidth <= 768;
   
+  // Only proceed if there's an actual change
   if (isMobileView !== wasMobile) {
-    toggleMobileView(isMobileView);
+    console.log(`📱 Mobile view changed: ${wasMobile} → ${isMobileView}`);
+    
+    // Use requestAnimationFrame to ensure smooth transition
+    requestAnimationFrame(() => {
+      toggleMobileView(isMobileView);
+    });
+  } else {
+    console.log('📱 Mobile view unchanged, skipping toggle');
   }
+}
+
+/**
+ * Debounced resize handler to prevent rapid firing
+ */
+function debouncedHandleResize() {
+  // Prevent overlapping resize operations
+  if (isResizing) {
+    console.log('📱 Resize operation in progress, skipping...');
+    return;
+  }
+  
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    handleResize();
+  }, 250); // Increased debounce for stability
 }
 
 /**
  * Handle window resize events
  */
 function handleResize() {
-  checkMobileView();
+  if (isResizing) return; // Double-check to prevent race conditions
+  
+  isResizing = true;
+  console.log('📱 Handling resize event...');
+  
+  try {
+    checkMobileView();
+  } catch (error) {
+    console.error('Error during resize handling:', error);
+  } finally {
+    // Reset flag after a short delay to ensure operations complete
+    setTimeout(() => {
+      isResizing = false;
+      console.log('📱 Resize operation completed');
+    }, 100);
+  }
 }
 
 /**
@@ -79,6 +120,7 @@ function toggleMobileView(mobile) {
       musicTable.style.display = 'flex';
       console.log('📱 Music table display set to flex');
     }
+    
     if (musicList) {
       musicList.style.display = 'block';
       console.log('📱 Music list display set to block');
@@ -87,11 +129,17 @@ function toggleMobileView(mobile) {
     // Update toolbar for mobile
     updateMobileToolbar(currentMobileView);
     
-    // Update track display
-    updateMobileTrackList(true);
-    
-    // Sync mini player with current track
-    syncMiniPlayer();
+    // Wait a frame before updating tracks to ensure DOM is ready
+    requestAnimationFrame(() => {
+      try {
+        updateMobileTrackList(true);
+        
+        // Sync mini player with current track
+        syncMiniPlayer();
+      } catch (error) {
+        console.error('Error updating mobile track list:', error);
+      }
+    });
     
   } else {
     console.log('💻 Switching to desktop view');
@@ -110,9 +158,43 @@ function toggleMobileView(mobile) {
     // Restore desktop toolbar
     restoreDesktopToolbar();
     
-    // Restore desktop track list
-    restoreDesktopTrackList();
+    // Restore desktop track list with error handling
+    try {
+      restoreDesktopTrackList();
+    } catch (error) {
+      console.error('Error restoring desktop track list:', error);
+    }
   }
+}
+
+/**
+ * Clean up mobile UI when needed
+ */
+export function cleanupMobileUI() {
+  console.log('🧹 Cleaning up mobile UI...');
+  
+  // Clear resize timeout
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = null;
+  }
+  
+  // Reset resize flag
+  isResizing = false;
+  
+  // Remove event listeners
+  window.removeEventListener('resize', debouncedHandleResize);
+  
+  // Clean up track observers
+  try {
+    import('./mobileTrackPerformance.js').then(module => {
+      module.cleanupTrackObserver();
+    });
+  } catch (error) {
+    console.warn('Could not cleanup track observer:', error);
+  }
+  
+  console.log('🧹 Mobile UI cleanup completed');
 }
 
 /**

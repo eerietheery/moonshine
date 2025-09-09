@@ -1,7 +1,7 @@
 // Mobile helpers: device guard and utilities
 export function isMobile() {
   try {
-    return window.matchMedia && window.matchMedia('(max-width: 720px)').matches;
+    return window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
   } catch (e) { return false; }
 }
 

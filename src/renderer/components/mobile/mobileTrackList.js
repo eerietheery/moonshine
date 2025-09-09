@@ -16,6 +16,12 @@ export function updateMobileTrackList(isMobileView) {
     const tracks = document.querySelectorAll('.track');
     console.log(`📱 Updating ${tracks.length} tracks for mobile view`);
     
+    // Debug: log first few tracks to see their structure
+    if (tracks.length > 0) {
+      console.log('📱 Sample track structure:', tracks[0]);
+      console.log('📱 Track HTML sample:', tracks[0].innerHTML.substring(0, 200));
+    }
+    
     // Initialize intersection observer for performance
     initTrackObserver();
     
@@ -41,9 +47,27 @@ export function updateMobileTrack(track) {
   if (!track) return;
   
   try {
-    // Get track data
+    // Skip if already converted to mobile
+    if (track.classList.contains('mobile-track')) {
+      console.log('📱 Track already in mobile format, skipping');
+      return;
+    }
+    
+    // IMPORTANT: Extract track data BEFORE clearing innerHTML
     const trackData = track.__track || extractTrackDataFromElement(track);
-    if (!trackData) return;
+    if (!trackData) {
+      console.warn('📱 Failed to extract track data, skipping track');
+      return;
+    }
+    
+    // Even if it's a fallback, proceed to show something
+    console.log('📱 Converting track to mobile:', trackData.title, trackData.isFallback ? '(fallback)' : '');
+    
+    // Store extracted data for future reference
+    track.__track = trackData;
+    
+    // Preserve original onclick handler before modifications
+    const originalOnClick = track.onclick;
     
     // Create mobile track structure
     const mobileContent = createMobileTrackContent(trackData);
@@ -56,18 +80,19 @@ export function updateMobileTrack(track) {
     // Set album art as CSS background for the mask effect
     setTrackAlbumArtBackground(track, trackData.albumArt);
     
-    // Add click handler for playback (preserve original functionality)
-    const originalOnClick = track.onclick;
+    // Restore click handler for playback (preserve original functionality)
     track.addEventListener('click', (e) => {
       // Prevent triggering if clicking the menu button
       if (e.target.closest('.mobile-track-menu')) return;
+      
+      e.stopPropagation(); // Prevent event bubbling issues
       
       if (originalOnClick) {
         originalOnClick.call(track, e);
       } else if (trackData.onClick) {
         trackData.onClick(trackData);
       }
-    });
+    }, { once: false }); // Allow multiple clicks
     
     // Add long press support
     addLongPressToElement(track);
@@ -75,6 +100,20 @@ export function updateMobileTrack(track) {
   } catch (error) {
     console.error('Error updating mobile track:', error);
     console.log('Track element:', track);
+    
+    // Create emergency fallback content
+    const fallbackContent = document.createElement('div');
+    fallbackContent.className = 'track-content track-error';
+    fallbackContent.innerHTML = `
+      <div class="track-info">
+        <div class="track-title-mobile">Track Unavailable</div>
+        <div class="track-meta-mobile">Error loading track data</div>
+      </div>
+    `;
+    
+    track.innerHTML = '';
+    track.appendChild(fallbackContent);
+    track.classList.add('mobile-track', 'track-error');
   }
 }
 
@@ -90,30 +129,56 @@ export function restoreDesktopTrackList() {
     
     // Get all mobile tracks and restore them to desktop format
     const mobileTracks = document.querySelectorAll('.track.mobile-track');
+    console.log(`💻 Restoring ${mobileTracks.length} mobile tracks to desktop format`);
     
-    mobileTracks.forEach(track => {
-      track.classList.remove('mobile-track', 'mobile-track-lazy', 'mobile-track-rendered');
-      
-      // Remove mobile-specific styling
-      track.style.removeProperty('--track-album-art');
-      
-      // Remove mobile-specific event listeners by cloning the element
-      const newTrack = track.cloneNode(false);
-      newTrack.className = track.className;
-      
-      // Copy data attributes
-      if (track.dataset.filePath) {
-        newTrack.dataset.filePath = track.dataset.filePath;
+    mobileTracks.forEach((track, index) => {
+      try {
+        // Remove mobile classes
+        track.classList.remove('mobile-track', 'mobile-track-lazy', 'mobile-track-rendered', 'track-error');
+        
+        // Remove mobile-specific styling
+        track.style.removeProperty('--track-album-art');
+        
+        // Restore original HTML if available
+        if (track.__originalHTML) {
+          track.innerHTML = track.__originalHTML;
+          console.log(`💻 Restored original HTML for track ${index}`);
+        } else {
+          // Fallback: clear mobile content and let the app re-render
+          track.innerHTML = '';
+          console.log(`💻 Cleared mobile content for track ${index} (no original HTML)`);
+        }
+        
+        // Clean up mobile-specific data but preserve essential data
+        delete track.__track;
+        
+        // Remove all mobile-specific event listeners by cloning (safer approach)
+        const newTrack = track.cloneNode(true);
+        newTrack.className = track.className.replace(/mobile-track|mobile-track-lazy|mobile-track-rendered|track-error/g, '').trim();
+        
+        // Preserve essential data attributes
+        if (track.dataset.filePath) {
+          newTrack.dataset.filePath = track.dataset.filePath;
+        }
+        if (track.__filePath) {
+          newTrack.__filePath = track.__filePath;
+        }
+        
+        track.parentNode.replaceChild(newTrack, track);
+        
+      } catch (error) {
+        console.error(`Error restoring track ${index}:`, error);
+        
+        // Emergency cleanup
+        track.classList.remove('mobile-track', 'mobile-track-lazy', 'mobile-track-rendered', 'track-error');
+        track.innerHTML = '<div>Track restoration error</div>';
       }
-      if (track.__filePath) {
-        newTrack.__filePath = track.__filePath;
-      }
-      
-      track.parentNode.replaceChild(newTrack, track);
     });
     
     // Force re-render of the track list to restore desktop layout
     dispatchTrackListRefresh();
+    
+    console.log('💻 Desktop track list restoration completed');
     
   } catch (error) {
     console.error('Error restoring desktop track list:', error);
