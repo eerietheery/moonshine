@@ -1,0 +1,68 @@
+/* ===== MOBILE TRACK ANIMATIONS & EFFECTS ===== */
+
+@media (max-width: 768px) {
+  
+  /* ===== ENHANCED VISUAL EFFECTS ===== */
+  .mobile-view .track.playing::before {
+    opacity: 0.25;
+    animation: pulseAlbumArt 3s ease-in-out infinite;
+  }
+  
+  /* ===== LOADING PLACEHOLDER ===== */
+  .mobile-view .track-placeholder {
+    height: 64px;
+    background: var(--surface-0);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    color: var(--text-muted);
+    font-size: 14px;
+    opacity: 0.7;
+    
+    /* Subtle loading animation */
+    background: linear-gradient(
+      90deg,
+      var(--surface-0) 25%,
+      var(--surface-1) 50%,
+      var(--surface-0) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  
+  /* ===== TOUCH FEEDBACK ===== */
+  .mobile-view .track {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  .mobile-view .track:active {
+    background: var(--surface-1);
+    transform: scale(0.995);
+  }
+  
+  .mobile-view .track:active .album-art {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .mobile-view .mobile-track-menu:active {
+    background: var(--surface-2);
+    color: var(--text-strong);
+    transform: scale(0.95);
+  }
+}
+
+/* ===== KEYFRAME ANIMATIONS ===== */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulseAlbumArt {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.35; }
+}

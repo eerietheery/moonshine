@@ -9,41 +9,123 @@ import { addLongPressToElement } from './gestures.js';
  */
 export function extractTrackDataFromElement(trackElement) {
   try {
-    // Try multiple selectors to find track elements
-    const titleElement = trackElement.querySelector('.track-name, .track-title') || 
-                        trackElement.querySelector('[data-title]') ||
-                        trackElement.querySelector('.title');
+    // Skip if already processed as mobile track and has cached data
+    if (trackElement.classList.contains('mobile-track') && trackElement.__track) {
+      console.log('📱 Using cached track data');
+      return trackElement.__track;
+    }
     
-    const artistElement = trackElement.querySelector('.track-artist .linkish, .track-artist') || 
-                         trackElement.querySelector('[data-artist]') ||
-                         trackElement.querySelector('.artist');
+    // Store original HTML before any modifications for fallback
+    if (!trackElement.__originalHTML) {
+      trackElement.__originalHTML = trackElement.innerHTML;
+    }
     
-    const albumElement = trackElement.querySelector('.track-album .linkish, .track-album') || 
-                        trackElement.querySelector('[data-album]') ||
-                        trackElement.querySelector('.album');
+    // Multiple strategies for finding track data
+    let title = null;
+    let artist = null;
+    let album = null;
     
-    const albumArt = trackElement.querySelector('.album-art, img[src*="album"], img[alt*="album"]');
+    // Strategy 1: Check cached data attributes first
+    if (trackElement.dataset.title) {
+      title = trackElement.dataset.title;
+      artist = trackElement.dataset.artist || 'Unknown Artist';
+      album = trackElement.dataset.album || 'Unknown Album';
+    }
     
-    // Log what we found for debugging
-    console.log('📱 Extracting track data:', {
-      titleElement: titleElement?.textContent,
-      artistElement: artistElement?.textContent,
-      albumElement: albumElement?.textContent,
-      albumArt: albumArt?.src,
-      trackElement
+    // Strategy 2: Try DOM selectors if no cached data
+    if (!title) {
+      const titleElement = trackElement.querySelector('.track-title .track-name') || 
+                          trackElement.querySelector('.track-name') ||
+                          trackElement.querySelector('[data-title]') ||
+                          trackElement.querySelector('.track-title');
+      
+      const artistElement = trackElement.querySelector('.track-artist .linkish[data-artist]') || 
+                           trackElement.querySelector('.track-artist') ||
+                           trackElement.querySelector('[data-artist]');
+      
+      const albumElement = trackElement.querySelector('.track-album .linkish[data-album]') || 
+                          trackElement.querySelector('.track-album') ||
+                          trackElement.querySelector('[data-album]');
+      
+      // Extract text content with proper trimming
+      title = titleElement?.textContent?.trim() || titleElement?.title?.trim();
+      artist = artistElement?.textContent?.trim() || artistElement?.title?.trim();
+      album = albumElement?.textContent?.trim() || albumElement?.title?.trim();
+    }
+    
+    // Strategy 3: Fallback to any text content in track
+    if (!title) {
+      const textContent = trackElement.textContent?.trim();
+      if (textContent && textContent.length > 0 && textContent !== 'Loading...') {
+        // Try to parse as "Title - Artist" format
+        const parts = textContent.split(' - ');
+        if (parts.length >= 2) {
+          title = parts[0]?.trim();
+          artist = parts[1]?.trim();
+        } else {
+          title = textContent.substring(0, 50); // Use first 50 chars as title
+        }
+      }
+    }
+    
+    // Final validation - reject if still no meaningful title
+    if (!title || title.length === 0 || title === 'Loading...' || title === 'Unknown Track') {
+      console.warn('📱 No valid title found for track, using fallback');
+      return {
+        title: 'Unknown Track',
+        artist: 'Unknown Artist',
+        album: 'Unknown Album',
+        albumArt: 'assets/images/default-art.png',
+        filePath: trackElement.dataset.filePath || trackElement.__filePath,
+        originalElement: trackElement,
+        isFallback: true
+      };
+    }
+    
+    // Find album art
+    const albumArt = trackElement.querySelector('.track-title .album-art') ||
+                    trackElement.querySelector('.album-art') ||
+                    trackElement.querySelector('img[src*="album"]');
+    
+    const albumArtSrc = albumArt?.src || 'assets/images/default-art.png';
+    
+    const trackData = {
+      title: title || 'Unknown Track',
+      artist: artist || 'Unknown Artist', 
+      album: album || 'Unknown Album',
+      albumArt: albumArtSrc,
+      filePath: trackElement.dataset.filePath || trackElement.__filePath,
+      originalElement: trackElement,
+      isFallback: false
+    };
+    
+    // Cache the data for future use
+    trackElement.__track = trackData;
+    
+    // Enhanced logging for debugging
+    console.log('📱 Successfully extracted track data:', {
+      title: trackData.title,
+      artist: trackData.artist,
+      album: trackData.album,
+      hasAlbumArt: !!albumArt,
+      isFallback: trackData.isFallback
     });
     
-    return {
-      title: titleElement?.textContent || trackElement.dataset.title || 'Unknown Track',
-      artist: artistElement?.textContent || trackElement.dataset.artist || 'Unknown Artist',
-      album: albumElement?.textContent || trackElement.dataset.album || 'Unknown Album',
-      albumArt: albumArt?.src || 'assets/images/default-art.png',
-      filePath: trackElement.dataset.filePath || trackElement.__filePath,
-      originalElement: trackElement
-    };
+    return trackData;
   } catch (error) {
     console.error('Error extracting track data:', error);
-    return null;
+    
+    // Emergency fallback
+    return {
+      title: 'Unknown Track',
+      artist: 'Unknown Artist',
+      album: 'Unknown Album',
+      albumArt: 'assets/images/default-art.png',
+      filePath: trackElement.dataset.filePath || trackElement.__filePath,
+      originalElement: trackElement,
+      isFallback: true,
+      error: error.message
+    };
   }
 }
 
@@ -77,37 +159,14 @@ export function createMobileTrackContent(trackData) {
     title.style.fontSize = '16px'; // Slightly smaller for very long titles
   }
   
-  // Track meta (artist • album) - improved formatting
+  // Track meta (artist • album) - simplified as single text string
   const meta = document.createElement('div');
   meta.className = 'track-meta-mobile';
   
-  // Create separate spans for better text control and hierarchy
-  const artistSpan = document.createElement('span');
-  artistSpan.className = 'track-artist-mobile';
-  artistSpan.textContent = trackData.artist;
-  artistSpan.title = trackData.artist;
-  
-  const separator = document.createElement('span');
-  separator.className = 'separator';
-  separator.textContent = '•';
-  separator.setAttribute('aria-hidden', 'true'); // Hide from screen readers
-  
-  const albumSpan = document.createElement('span');
-  albumSpan.className = 'track-album-mobile';
-  albumSpan.textContent = trackData.album;
-  albumSpan.title = trackData.album;
-  
-  // Smart truncation for very long artist/album names
-  if (trackData.artist.length > 20) {
-    artistSpan.style.maxWidth = '60%';
-  }
-  if (trackData.album.length > 25) {
-    albumSpan.style.maxWidth = '40%';
-  }
-  
-  meta.appendChild(artistSpan);
-  meta.appendChild(separator);
-  meta.appendChild(albumSpan);
+  // Create a simple text string instead of complex spans
+  const metaText = `${trackData.artist} • ${trackData.album}`;
+  meta.textContent = metaText;
+  meta.title = metaText; // Full text on hover
   
   trackInfo.appendChild(title);
   trackInfo.appendChild(meta);

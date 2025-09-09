@@ -6,7 +6,7 @@
      - Slight layout adjustments to main content for narrow screens
 */
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   /* Make the app stack vertically and hide desktop sidebar by default */
   #sidebar { display: none !important; }
   #main-content { margin-left: 0 !important; padding-bottom: 72px; /* room for bottom nav */ }
@@ -16,12 +16,9 @@
   #toolbar .view-controls { display:flex; gap:8px; }
   #toolbar .sort-controls { display:none; }
 
-  /* Music table tweaks for mobile: allow simpler single-column rows in list mode */
+  /* Music table tweaks for mobile: let mobile-tracks.css handle track styling */
   #music-table .table-header { display:none; } /* hide the desktop header on tiny screens */
-  #music-list .track { display:flex; align-items:center; gap:8px; padding:8px 10px; border-bottom:1px solid rgba(0,0,0,0.06); }
-  #music-list .track .album-art { width:44px; height:44px; border-radius:6px; }
-  #music-list .track .track-name { display:block; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  #music-list .track .track-artist { display:none; }
+  /* Note: individual track styling is handled by mobile-tracks.css and related files */
 
   /* Small mobile player area sits above the nav bar */
   .mobile-player {
