@@ -9,38 +9,71 @@ import { addLongPressToElement } from './gestures.js';
  */
 export function extractTrackDataFromElement(trackElement) {
   try {
-    // Try multiple selectors to find track elements
-    const titleElement = trackElement.querySelector('.track-name, .track-title') || 
-                        trackElement.querySelector('[data-title]') ||
-                        trackElement.querySelector('.title');
+    // Skip if already processed as mobile track
+    if (trackElement.classList.contains('mobile-track') && trackElement.__track) {
+      return trackElement.__track;
+    }
     
-    const artistElement = trackElement.querySelector('.track-artist .linkish, .track-artist') || 
-                         trackElement.querySelector('[data-artist]') ||
-                         trackElement.querySelector('.artist');
+    // Use the correct selectors based on the actual track structure
+    const titleElement = trackElement.querySelector('.track-title .track-name') || 
+                        trackElement.querySelector('.track-name') ||
+                        trackElement.querySelector('[data-title]');
     
-    const albumElement = trackElement.querySelector('.track-album .linkish, .track-album') || 
-                        trackElement.querySelector('[data-album]') ||
-                        trackElement.querySelector('.album');
+    const artistElement = trackElement.querySelector('.track-artist .linkish[data-artist]') || 
+                         trackElement.querySelector('.track-artist') ||
+                         trackElement.querySelector('[data-artist]');
     
-    const albumArt = trackElement.querySelector('.album-art, img[src*="album"], img[alt*="album"]');
+    const albumElement = trackElement.querySelector('.track-album .linkish[data-album]') || 
+                        trackElement.querySelector('.track-album') ||
+                        trackElement.querySelector('[data-album]');
     
-    // Log what we found for debugging
-    console.log('📱 Extracting track data:', {
-      titleElement: titleElement?.textContent,
-      artistElement: artistElement?.textContent,
-      albumElement: albumElement?.textContent,
-      albumArt: albumArt?.src,
-      trackElement
-    });
+    const albumArt = trackElement.querySelector('.track-title .album-art') ||
+                    trackElement.querySelector('.album-art') ||
+                    trackElement.querySelector('img[src*="album"]');
     
-    return {
-      title: titleElement?.textContent || trackElement.dataset.title || 'Unknown Track',
-      artist: artistElement?.textContent || trackElement.dataset.artist || 'Unknown Artist',
-      album: albumElement?.textContent || trackElement.dataset.album || 'Unknown Album',
-      albumArt: albumArt?.src || 'assets/images/default-art.png',
+    // Extract text content with proper trimming
+    const title = titleElement?.textContent?.trim() || 
+                 titleElement?.title?.trim() || 
+                 trackElement.dataset.title || 
+                 null; // Return null instead of 'Unknown Track'
+                 
+    const artist = artistElement?.textContent?.trim() || 
+                  artistElement?.title?.trim() || 
+                  trackElement.dataset.artist || 
+                  null; // Return null instead of 'Unknown Artist'
+                  
+    const album = albumElement?.textContent?.trim() || 
+                 albumElement?.title?.trim() || 
+                 trackElement.dataset.album || 
+                 null; // Return null instead of 'Unknown Album'
+    
+    // Only return data if we have at least a title
+    if (!title) {
+      console.warn('📱 No title found for track, skipping extraction');
+      return null;
+    }
+    
+    const albumArtSrc = albumArt?.src || 'assets/images/default-art.png';
+    
+    const trackData = {
+      title: title || 'Unknown Track',
+      artist: artist || 'Unknown Artist', 
+      album: album || 'Unknown Album',
+      albumArt: albumArtSrc,
       filePath: trackElement.dataset.filePath || trackElement.__filePath,
       originalElement: trackElement
     };
+    
+    // Enhanced logging for debugging
+    console.log('📱 Extracting track data:', {
+      title: trackData.title,
+      artist: trackData.artist,
+      album: trackData.album,
+      hasAlbumArt: !!albumArt,
+      trackElement
+    });
+    
+    return trackData;
   } catch (error) {
     console.error('Error extracting track data:', error);
     return null;
@@ -77,37 +110,14 @@ export function createMobileTrackContent(trackData) {
     title.style.fontSize = '16px'; // Slightly smaller for very long titles
   }
   
-  // Track meta (artist • album) - improved formatting
+  // Track meta (artist • album) - simplified as single text string
   const meta = document.createElement('div');
   meta.className = 'track-meta-mobile';
   
-  // Create separate spans for better text control and hierarchy
-  const artistSpan = document.createElement('span');
-  artistSpan.className = 'track-artist-mobile';
-  artistSpan.textContent = trackData.artist;
-  artistSpan.title = trackData.artist;
-  
-  const separator = document.createElement('span');
-  separator.className = 'separator';
-  separator.textContent = '•';
-  separator.setAttribute('aria-hidden', 'true'); // Hide from screen readers
-  
-  const albumSpan = document.createElement('span');
-  albumSpan.className = 'track-album-mobile';
-  albumSpan.textContent = trackData.album;
-  albumSpan.title = trackData.album;
-  
-  // Smart truncation for very long artist/album names
-  if (trackData.artist.length > 20) {
-    artistSpan.style.maxWidth = '60%';
-  }
-  if (trackData.album.length > 25) {
-    albumSpan.style.maxWidth = '40%';
-  }
-  
-  meta.appendChild(artistSpan);
-  meta.appendChild(separator);
-  meta.appendChild(albumSpan);
+  // Create a simple text string instead of complex spans
+  const metaText = `${trackData.artist} • ${trackData.album}`;
+  meta.textContent = metaText;
+  meta.title = metaText; // Full text on hover
   
   trackInfo.appendChild(title);
   trackInfo.appendChild(meta);

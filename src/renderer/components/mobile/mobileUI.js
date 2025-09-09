@@ -9,6 +9,7 @@ import { updateMobileTrackList, restoreDesktopTrackList } from './mobileTrackLis
 
 let isMobileView = false;
 let currentMobileView = 'tracks';
+let resizeTimeout = null;
 
 /**
  * Initialize mobile UI components
@@ -19,8 +20,8 @@ export function initMobile() {
   // Check if we're in mobile view
   checkMobileView();
   
-  // Set up responsive listeners
-  window.addEventListener('resize', handleResize);
+  // Set up debounced responsive listeners
+  window.addEventListener('resize', debouncedHandleResize);
   
   // Initialize mobile components
   initializeMobileNavigation();
@@ -41,8 +42,19 @@ function checkMobileView() {
   isMobileView = window.innerWidth <= 768;
   
   if (isMobileView !== wasMobile) {
+    console.log(`📱 Mobile view changed: ${wasMobile} → ${isMobileView}`);
     toggleMobileView(isMobileView);
   }
+}
+
+/**
+ * Debounced resize handler to prevent rapid firing
+ */
+function debouncedHandleResize() {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    handleResize();
+  }, 150); // 150ms debounce
 }
 
 /**
@@ -79,6 +91,11 @@ function toggleMobileView(mobile) {
       musicTable.style.display = 'flex';
       console.log('📱 Music table display set to flex');
     }
+    
+    // Wait a frame before updating tracks to ensure DOM is ready
+    requestAnimationFrame(() => {
+      updateMobileTrackList(true);
+    });
     if (musicList) {
       musicList.style.display = 'block';
       console.log('📱 Music list display set to block');

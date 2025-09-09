@@ -30,27 +30,13 @@
     padding: 0;
     cursor: pointer;
     transition: background-color 0.15s ease, transform 0.1s ease;
-    min-height: 76px;
+    min-height: 64px; /* Much smaller minimum height */
     position: relative;
     overflow: hidden;
     
     /* Performance optimizations */
     contain: layout style paint;
     will-change: transform;
-  }
-  
-  .mobile-view .track:active {
-    background: var(--surface-1);
-    transform: scale(0.995);
-  }
-  
-  .mobile-view .track:hover {
-    background: var(--surface-05);
-  }
-  
-  .mobile-view .track.playing {
-    background: var(--surface-1);
-    border-left: 3px solid var(--accent);
   }
   
   /* ===== ALBUM ART BACKGROUND WITH MASK ===== */
@@ -85,42 +71,32 @@
     pointer-events: none;
   }
   
-  /* Responsive album art masking for different screen sizes */
-  @media (max-width: 480px) {
-    .mobile-view .track::before {
-      width: 100px; /* Smaller on very small screens */
-    }
-  }
-  
-  @media (min-width: 481px) and (max-width: 768px) {
-    .mobile-view .track::before {
-      width: 130px; /* Slightly larger on medium mobile screens */
-    }
-  }
-  
   /* ===== MOBILE TRACK CONTENT LAYER ===== */
   .mobile-view .track-content {
     position: relative;
     z-index: 2;
     display: flex;
-    align-items: center;
-    padding: 18px 16px;
-    gap: 16px;
-    min-height: 76px;
+    align-items: flex-start; /* Align to top to prevent cutoff */
+    padding: 14px 16px; /* Reduced padding */
+    gap: 12px; /* Reduced gap */
+    min-height: 64px; /* Much smaller minimum height */
     background: transparent;
     transition: transform 0.1s ease;
   }
   
   /* ===== SMALL ALBUM ART THUMBNAIL ===== */
   .mobile-view .track .album-art {
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 6px;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 4px;
     flex-shrink: 0;
     object-fit: cover;
     background: var(--surface-2);
     z-index: 3;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    /* Fix cutoff and alignment issues */
+    display: block;
+    align-self: flex-start; /* Align to top of flex container */
   }
   
   .mobile-view .track:active .album-art {
@@ -128,75 +104,74 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
   
-  /* ===== TRACK INFO - ENHANCED TYPOGRAPHY HIERARCHY ===== */
+  /* ===== TRACK INFO - REDESIGNED FOR BETTER TEXT DISPLAY ===== */
   .mobile-view .track-info {
     flex: 1;
     min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    display: block; /* Changed to block for simpler text flow */
     z-index: 3;
-    /* Better text spacing for hierarchy */
-    padding: 2px 0;
+    /* Simple padding for clean text display */
+    padding: 0;
+    /* Slight top margin to align with album art center */
+    margin-top: 2px;
+    /* Let text flow naturally */
   }
   
   .mobile-view .track-title-mobile {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 16px; /* Reduced from 18px for better fit */
+    font-weight: 600; /* Slightly lighter for better readability */
     color: var(--text-strong);
-    line-height: 1.2;
+    line-height: 1.3; /* Natural line height */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin: 0 0 4px 0; /* Simple bottom margin */
+    letter-spacing: -0.01em;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    /* Remove complex flexbox - let text flow naturally */
+    display: block;
+  }
+  
+  .mobile-view .track-meta-mobile {
+    font-size: 12px; /* Reduced from 13px */
+    color: var(--text-muted);
+    line-height: 1.2; /* Tighter line height */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     margin: 0;
-    letter-spacing: -0.02em;
-    /* Enhanced typography for large song titles */
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  }
-  
-  .mobile-view .track-meta-mobile {
-    font-size: 13px;
-    color: var(--text-muted);
-    line-height: 1.3;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: flex;
-    gap: 6px;
-    align-items: center;
+    /* Simplified layout */
+    display: block;
   }
   
   .mobile-view .track-artist-mobile,
   .mobile-view .track-album-mobile {
-    flex-shrink: 1;
-    min-width: 0;
-    overflow: hidden;
+    /* Simplified to inline text */
+    display: inline;
+    overflow: visible; /* Allow natural text flow */
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   
   .mobile-view .track-artist-mobile {
     font-weight: 500;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-muted);
-    letter-spacing: 0.01em;
   }
   
   .mobile-view .track-album-mobile {
     font-weight: 400;
-    font-size: 12px;
+    font-size: 11px; /* Smaller album text */
     color: var(--text-faint);
-    opacity: 0.8;
+    opacity: 0.9;
   }
   
   .mobile-view .track-meta-mobile .separator {
     color: var(--text-faint);
     font-weight: normal;
-    flex-shrink: 0;
-    padding: 0 4px;
     opacity: 0.6;
-    font-size: 11px;
-    line-height: 1;
+    font-size: 10px;
+    margin: 0 4px; /* Use margin instead of padding */
   }
   
   /* ===== MOBILE TRACK ACTIONS ===== */
@@ -204,7 +179,7 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px; /* Reduced gap */
     z-index: 3;
   }
   
@@ -212,121 +187,22 @@
     background: none;
     border: none;
     color: var(--text-muted);
-    font-size: 18px;
+    font-size: 16px; /* Reduced from 18px */
     font-weight: bold;
-    padding: 8px;
+    padding: 6px; /* Reduced padding */
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 3px;
     transition: all 0.15s ease;
-    min-width: 32px;
-    min-height: 32px;
+    min-width: 28px; /* Reduced from 32px */
+    min-height: 28px; /* Reduced from 32px */
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  
-  .mobile-view .mobile-track-menu:hover {
-    background: var(--surface-1);
-    color: var(--text-strong);
-  }
-  
-  .mobile-view .mobile-track-menu:active {
-    background: var(--surface-2);
-    color: var(--text-strong);
-    transform: scale(0.95);
-  }
-  
-  /* ===== HIDE DESKTOP TRACK ELEMENTS IN MOBILE ===== */
-  .mobile-view .track .track-title,
-  .mobile-view .track .track-artist,
-  .mobile-view .track .track-album,
-  .mobile-view .track .track-year,
-  .mobile-view .track .track-genre,
-  .mobile-view .track .track-bitrate,
-  .mobile-view .track .track-actions {
-    display: none !important;
-  }
-  
-  /* ===== MOBILE TRACK STATES ===== */
-  .mobile-view .track.selected {
-    background: var(--surface-1);
-  }
-  
-  .mobile-view .track.loading {
-    opacity: 0.6;
-  }
-  
-  .mobile-view .track.loading .track-content {
-    pointer-events: none;
-  }
-  
-  /* ===== MOBILE TRACK TOUCH FEEDBACK ===== */
-  .mobile-view .track {
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-  
-  /* ===== ENHANCED VISUAL EFFECTS ===== */
-  .mobile-view .track.playing::before {
-    opacity: 0.25;
-    animation: pulseAlbumArt 3s ease-in-out infinite;
-  }
-  
-  /* ===== LOADING PLACEHOLDER ===== */
-  .mobile-view .track-placeholder {
-    height: 72px;
-    background: var(--surface-0);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    padding: 16px;
-    color: var(--text-muted);
-    font-size: 14px;
-    opacity: 0.7;
-    
-    /* Subtle loading animation */
-    background: linear-gradient(
-      90deg,
-      var(--surface-0) 25%,
-      var(--surface-1) 50%,
-      var(--surface-0) 75%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-  }
-  
-  @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-  }
-  
-  @keyframes pulseAlbumArt {
-    0%, 100% { opacity: 0.25; }
-    50% { opacity: 0.35; }
-  }
-  
-  /* ===== RESPONSIVE TYPOGRAPHY ADJUSTMENTS ===== */
-  @media (max-width: 480px) {
-    .mobile-view .track-title-mobile {
-      font-size: 16px; /* Smaller title on very small screens */
-    }
-    
-    .mobile-view .track-content {
-      padding: 16px 12px; /* Tighter padding */
-      gap: 12px;
-    }
-  }
-  
-  @media (min-width: 481px) and (max-width: 768px) {
-    .mobile-view .track-title-mobile {
-      font-size: 19px; /* Larger title on medium screens */
-    }
-    
-    .mobile-view .track-content {
-      padding: 20px 18px; /* More spacious */
-      gap: 18px;
-    }
-  }
 }
+
+/* Note: Additional styles split into separate files:
+ * - mobile-track-states.css (states, interactions, desktop element hiding)
+ * - mobile-track-animations.css (animations, effects, touch feedback)  
+ * - mobile-track-responsive.css (responsive breakpoints and typography)
+ */
