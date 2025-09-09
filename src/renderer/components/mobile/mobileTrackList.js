@@ -16,6 +16,12 @@ export function updateMobileTrackList(isMobileView) {
     const tracks = document.querySelectorAll('.track');
     console.log(`📱 Updating ${tracks.length} tracks for mobile view`);
     
+    // Debug: log first few tracks to see their structure
+    if (tracks.length > 0) {
+      console.log('📱 Sample track structure:', tracks[0]);
+      console.log('📱 Track HTML sample:', tracks[0].innerHTML.substring(0, 200));
+    }
+    
     // Initialize intersection observer for performance
     initTrackObserver();
     
@@ -41,9 +47,23 @@ export function updateMobileTrack(track) {
   if (!track) return;
   
   try {
-    // Get track data
+    // Skip if already converted to mobile
+    if (track.classList.contains('mobile-track')) {
+      console.log('📱 Track already in mobile format, skipping');
+      return;
+    }
+    
+    // IMPORTANT: Extract track data BEFORE clearing innerHTML
     const trackData = track.__track || extractTrackDataFromElement(track);
-    if (!trackData) return;
+    if (!trackData || !trackData.title || trackData.title === 'Unknown Track') {
+      console.warn('📱 Failed to extract valid track data, skipping track');
+      return;
+    }
+    
+    console.log('📱 Converting track to mobile:', trackData.title);
+    
+    // Store extracted data for future reference
+    track.__track = trackData;
     
     // Create mobile track structure
     const mobileContent = createMobileTrackContent(trackData);
