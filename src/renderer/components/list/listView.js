@@ -124,13 +124,23 @@ export function renderList(list) {
   // Reuse the `template` computed for the header so header and rows are identical.
   // If `template` is not present (header not rendered), fall back to computing one.
   const rowTemplate = (typeof template !== 'undefined' && template) ? template : getGridTemplate(state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre']);
-  // Render rows using original track element for styling and selection, but only selected headers
-  list.vlist = new VirtualList({
-    container: list,
-    rowHeight: 56,
-    total: sorted.length,
-    renderRow: (i) => {
-      const track = sorted[i];
+  
+  // Check if we're in mobile view to avoid VirtualList conflicts
+  const isMobileView = window.innerWidth <= 768 || document.body.classList.contains('mobile-view');
+  
+  if (isMobileView) {
+    // Mobile view: Use simple DOM rendering without VirtualList
+    // This prevents conflicts with mobile track lazy loading system
+    if (list.vlist) {
+      list.vlist.destroy();
+      list.vlist = null;
+    }
+    
+    // Simple mobile-friendly rendering
+    list.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    
+    sorted.forEach((track, i) => {
       const filteredIndex = state.filteredTracks.findIndex(t => t.filePath === track.filePath);
       const el = createTrackElement(
         track,
@@ -149,9 +159,45 @@ export function renderList(list) {
       if (state.currentTrack && state.currentTrack.filePath === track.filePath) {
         el.classList.add('playing');
       }
-      return el;
-    }
-  });
+      fragment.appendChild(el);
+    });
+    
+    list.appendChild(fragment);
+    
+  } else {
+    // Desktop view: Use VirtualList for performance
+    // Destroy any existing VirtualList first
+    if (list.vlist) list.vlist.destroy();
+    
+    // Render rows using original track element for styling and selection, but only selected headers
+    list.vlist = new VirtualList({
+      container: list,
+      rowHeight: 56,
+      total: sorted.length,
+      renderRow: (i) => {
+        const track = sorted[i];
+        const filteredIndex = state.filteredTracks.findIndex(t => t.filePath === track.filePath);
+        const el = createTrackElement(
+          track,
+          () => playTrack(
+            track,
+            filteredIndex,
+            document.getElementById('audio'),
+            document.getElementById('play-btn'),
+            document.getElementById('current-art'),
+            document.getElementById('current-title'),
+            document.getElementById('current-artist'),
+            () => renderList(list)
+          ),
+          state.listHeaders
+        );
+        if (state.currentTrack && state.currentTrack.filePath === track.filePath) {
+          el.classList.add('playing');
+        }
+        return el;
+      }
+    });
+  }
 
   // Setup list events (keyboard, sorting, etc.)
   setupListEvents(list);

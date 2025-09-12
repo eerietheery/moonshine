@@ -20,13 +20,20 @@ export function initTrackObserver() {
           import('./mobileTrackContent.js').then(module => {
             module.renderMobileTrackContent(track);
             track.classList.add('mobile-track-rendered');
+            
+            // Stop observing this track once it's rendered
+            trackObserver.unobserve(track);
+          }).catch(error => {
+            console.error('Error rendering mobile track content:', error);
+            // Remove the track from observation even if rendering failed
+            trackObserver.unobserve(track);
           });
         }
       }
     });
   }, {
-    rootMargin: '100px', // Start loading 100px before track enters view
-    threshold: 0.1
+    rootMargin: '200px', // Increased to start loading earlier (was 100px)
+    threshold: 0.01 // Lowered threshold for more responsive loading (was 0.1)
   });
 }
 
@@ -59,6 +66,9 @@ export function setupLazyTrack(track) {
   // Observe for intersection
   if (trackObserver) {
     trackObserver.observe(track);
+    console.log('📱 Added track to lazy loading observer');
+  } else {
+    console.warn('📱 Track observer not initialized, cannot set up lazy loading');
   }
 }
 
