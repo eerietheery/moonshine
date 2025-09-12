@@ -28,7 +28,8 @@ export function updateMobileTrackList(isMobileView) {
     // Use optimized track update
     optimizedTrackUpdate(tracks, (track, index) => {
       // For performance, only render visible tracks immediately
-      if (index < 20) { // Render first 20 tracks immediately
+      // Increase immediate render count for better initial experience
+      if (index < 50) { // Render first 50 tracks immediately (up from 20)
         updateMobileTrack(track);
       } else {
         // Set up lazy loading for remaining tracks
@@ -127,58 +128,29 @@ export function restoreDesktopTrackList() {
     // Clean up performance optimizations
     cleanupTrackObserver();
     
-    // Get all mobile tracks and restore them to desktop format
-    const mobileTracks = document.querySelectorAll('.track.mobile-track');
-    console.log(`💻 Restoring ${mobileTracks.length} mobile tracks to desktop format`);
+    // Instead of trying to manually restore track elements, 
+    // trigger a complete re-render which will recreate proper event listeners
+    const musicList = document.getElementById('music-list');
+    if (musicList) {
+      // Clear the mobile tracks completely
+      const mobileTracks = document.querySelectorAll('.track.mobile-track');
+      console.log(`💻 Clearing ${mobileTracks.length} mobile tracks for complete re-render`);
+      
+      mobileTracks.forEach((track) => {
+        try {
+          track.classList.remove('mobile-track', 'mobile-track-lazy', 'mobile-track-rendered', 'track-error');
+          track.style.removeProperty('--track-album-art');
+          delete track.__track;
+        } catch (error) {
+          console.error('Error cleaning up mobile track:', error);
+        }
+      });
+    }
     
-    mobileTracks.forEach((track, index) => {
-      try {
-        // Remove mobile classes
-        track.classList.remove('mobile-track', 'mobile-track-lazy', 'mobile-track-rendered', 'track-error');
-        
-        // Remove mobile-specific styling
-        track.style.removeProperty('--track-album-art');
-        
-        // Restore original HTML if available
-        if (track.__originalHTML) {
-          track.innerHTML = track.__originalHTML;
-          console.log(`💻 Restored original HTML for track ${index}`);
-        } else {
-          // Fallback: clear mobile content and let the app re-render
-          track.innerHTML = '';
-          console.log(`💻 Cleared mobile content for track ${index} (no original HTML)`);
-        }
-        
-        // Clean up mobile-specific data but preserve essential data
-        delete track.__track;
-        
-        // Remove all mobile-specific event listeners by cloning (safer approach)
-        const newTrack = track.cloneNode(true);
-        newTrack.className = track.className.replace(/mobile-track|mobile-track-lazy|mobile-track-rendered|track-error/g, '').trim();
-        
-        // Preserve essential data attributes
-        if (track.dataset.filePath) {
-          newTrack.dataset.filePath = track.dataset.filePath;
-        }
-        if (track.__filePath) {
-          newTrack.__filePath = track.__filePath;
-        }
-        
-        track.parentNode.replaceChild(newTrack, track);
-        
-      } catch (error) {
-        console.error(`Error restoring track ${index}:`, error);
-        
-        // Emergency cleanup
-        track.classList.remove('mobile-track', 'mobile-track-lazy', 'mobile-track-rendered', 'track-error');
-        track.innerHTML = '<div>Track restoration error</div>';
-      }
-    });
-    
-    // Force re-render of the track list to restore desktop layout
+    // Force complete re-render of the track list
     dispatchTrackListRefresh();
     
-    console.log('💻 Desktop track list restoration completed');
+    console.log('💻 Desktop track list restoration completed - triggered re-render');
     
   } catch (error) {
     console.error('Error restoring desktop track list:', error);
@@ -190,8 +162,20 @@ export function restoreDesktopTrackList() {
  */
 function dispatchTrackListRefresh() {
   try {
-    const event = new CustomEvent('forceTrackListRefresh');
-    document.dispatchEvent(event);
+    // Trigger the main app to re-render the track list
+    import('../list/listView.js').then(({ renderList }) => {
+      const musicList = document.getElementById('music-list');
+      if (musicList) {
+        console.log('💻 Triggering complete track list re-render');
+        renderList(musicList);
+      }
+    }).catch(error => {
+      console.warn('Could not trigger track list re-render:', error);
+      
+      // Fallback: dispatch event for other listeners
+      const event = new CustomEvent('forceTrackListRefresh');
+      document.dispatchEvent(event);
+    });
   } catch (error) {
     console.warn('Could not trigger track list refresh:', error);
   }
