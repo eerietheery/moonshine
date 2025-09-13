@@ -45,6 +45,25 @@
   .mobile-player .mp-meta .mp-artist { font-size:0.85rem; opacity:0.85; }
   .mobile-player .mp-controls { display:flex; gap:8px; align-items:center; }
 
+  /* Mobile progress line between mini player and nav */
+  .mobile-progress-line {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 56px; /* above bottom nav */
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: 1199; /* below mini player */
+  }
+  
+  .mobile-progress-bar {
+    height: 100%;
+    background: var(--primary-color, #ff6b35);
+    width: 0%;
+    transition: width 0.1s ease;
+    border-radius: 0 2px 2px 0;
+  }
+
   /* Expanded player state (hidden by default) */
   .mobile-player.expanded {
     height: calc(100vh - 80px);

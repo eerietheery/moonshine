@@ -26,6 +26,8 @@
   - [x] Reset CSS classes and inline styles ✅
   - [x] Restore desktop track elements structure ✅
   - [x] Test resize edge cases ✅
+  - [x] **Fix track click events after mobile-to-desktop resize** ✅
+  - [x] **Fix mobile scrolling empty rows (VirtualList conflict)** ✅
 
 ### Mobile Track Table Redesign
 - [x] **New visual design** - Masked album art with gradient fade ✅
@@ -41,14 +43,14 @@
 - [x] CSS mask or gradient overlay for 45° fade effect ✅
 - [x] Position album art as background or masked element ✅
 - [x] Ensure proper aspect ratio and sizing ✅
-- [ ] Test across different screen sizes
+- [x] Test across different screen sizes ✅
 
 ### Typography Hierarchy
-- [ ] Large, bold song title (16-18px)
-- [ ] Small artist name (12-13px, muted color)
-- [ ] Album name with bullet separator
-- [ ] Proper line heights and spacing
-- [ ] Truncation for long titles
+- [x] Large, bold song title (16-18px) ✅
+- [x] Small artist name (12-13px, muted color) ✅
+- [x] Album name with bullet separator ✅
+- [x] Proper line heights and spacing ✅
+- [x] Truncation for long titles ✅
 
 ### Layout Structure
 - [x] Remove current `.track-content` approach ✅
@@ -65,13 +67,15 @@
 - [ ] Add proper TypeScript types (future)
 
 ### State Management
-- [ ] Fix mobile/desktop state transitions
-- [ ] Preserve user context during view switches
+- [x] **Fix mobile/desktop state transitions** ✅
+- [x] **Preserve user context during view switches** ✅
 - [ ] Handle orientation changes gracefully
 - [ ] Add mobile state persistence
 
 ### Performance
-- [ ] Optimize track list rendering for large libraries
+- [x] **Optimize track list rendering for large libraries** ✅
+- [x] **Fix mobile scrolling conflicts with VirtualList** ✅
+- [x] **Improved mobile lazy loading system** ✅
 - [ ] Implement virtual scrolling for mobile
 - [ ] Lazy load album art images
 - [ ] Reduce DOM manipulation overhead

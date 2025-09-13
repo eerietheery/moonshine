@@ -16,7 +16,7 @@
   width: 22px;
   height: 22px;
   display: none;
-  z-index: 2;
+  z-index: 999;
 }
 #clear-search-btn img {
   width: 18px;

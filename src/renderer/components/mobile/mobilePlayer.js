@@ -38,6 +38,7 @@ export function initMiniPlayer() {
  */
 export function toggleMiniPlayer(show, isMobile = true) {
   const miniPlayer = document.getElementById('mobile-mini-player');
+  const progressLine = document.getElementById('mobile-progress-line');
   
   if (miniPlayer) {
     const shouldShow = show && isMobile;
@@ -47,6 +48,11 @@ export function toggleMiniPlayer(show, isMobile = true) {
     if (shouldShow) {
       syncMiniPlayer();
     }
+  }
+  
+  if (progressLine) {
+    const shouldShow = show && isMobile;
+    progressLine.style.display = shouldShow ? 'block' : 'none';
   }
 }
 
@@ -81,6 +87,9 @@ export function syncMiniPlayer() {
   
   // Update play button state
   updatePlayButtonState(miniPlayBtn, audio);
+  
+  // Update progress line
+  updateMobileProgressLine();
 }
 
 /**
@@ -114,6 +123,28 @@ function togglePlayback() {
 }
 
 /**
+ * Update mobile progress line with current track progress
+ */
+function updateMobileProgressLine() {
+  if (!isMobilePlayerVisible) return;
+  
+  const progressBar = document.getElementById('mobile-progress-bar');
+  const audio = document.getElementById('audio');
+  
+  if (!progressBar || !audio) return;
+  
+  const currentTime = audio.currentTime || 0;
+  const duration = audio.duration || 0;
+  
+  if (duration > 0) {
+    const progress = (currentTime / duration) * 100;
+    progressBar.style.width = `${progress}%`;
+  } else {
+    progressBar.style.width = '0%';
+  }
+}
+
+/**
  * Set up event listeners for player state changes
  */
 function setupPlayerEventListeners() {
@@ -125,6 +156,7 @@ function setupPlayerEventListeners() {
     audio.addEventListener('pause', syncMiniPlayer);
     audio.addEventListener('ended', syncMiniPlayer);
     audio.addEventListener('loadstart', syncMiniPlayer);
+    audio.addEventListener('timeupdate', updateMobileProgressLine);
   }
   
   // Listen for custom track change events
@@ -144,4 +176,11 @@ export function isMiniPlayerVisible() {
  */
 export function updateMiniPlayerState() {
   syncMiniPlayer();
+}
+
+/**
+ * Update mobile progress line (external API)
+ */
+export function updateMobileProgress() {
+  updateMobileProgressLine();
 }
