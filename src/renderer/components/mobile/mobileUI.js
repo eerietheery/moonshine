@@ -9,14 +9,71 @@ import { updateMobileTrackList, restoreDesktopTrackList } from './mobileTrackLis
 
 let isMobileView = false;
 let currentMobileView = 'tracks';
+let desktopViewMode = 'list'; // Remember desktop view mode (list/grid)
 let resizeTimeout = null;
 let isResizing = false; // Prevent multiple simultaneous resize operations
+
+/**
+ * Store current desktop view mode before switching to mobile
+ */
+function storeDesktopViewMode() {
+  const gridBtn = document.getElementById('grid-view');
+  const listBtn = document.getElementById('list-view');
+  
+  if (gridBtn && gridBtn.classList.contains('active')) {
+    desktopViewMode = 'grid';
+  } else if (listBtn && listBtn.classList.contains('active')) {
+    desktopViewMode = 'list';
+  } else {
+    // Default fallback
+    desktopViewMode = 'list';
+  }
+  
+  console.log(`📱 Stored desktop view mode: ${desktopViewMode}`);
+}
+
+/**
+ * Force list view when switching to mobile
+ */
+function forceListViewForMobile() {
+  const gridBtn = document.getElementById('grid-view');
+  const listBtn = document.getElementById('list-view');
+  
+  if (gridBtn && listBtn) {
+    gridBtn.classList.remove('active');
+    listBtn.classList.add('active');
+    console.log('📱 Forced list view for mobile');
+  }
+}
+
+/**
+ * Restore desktop view mode when switching back from mobile
+ */
+function restoreDesktopViewMode() {
+  const gridBtn = document.getElementById('grid-view');
+  const listBtn = document.getElementById('list-view');
+  
+  if (gridBtn && listBtn) {
+    if (desktopViewMode === 'grid') {
+      listBtn.classList.remove('active');
+      gridBtn.classList.add('active');
+      console.log(`💻 Restored desktop view mode: grid`);
+    } else {
+      gridBtn.classList.remove('active');
+      listBtn.classList.add('active');
+      console.log(`💻 Restored desktop view mode: list`);
+    }
+  }
+}
 
 /**
  * Initialize mobile UI components
  */
 export function initMobile() {
   console.log('🔧 Initializing mobile UI...');
+  
+  // Initialize desktop view mode from current button states
+  storeDesktopViewMode();
   
   // Check if we're in mobile view
   checkMobileView();
@@ -108,12 +165,21 @@ function toggleMobileView(mobile) {
   if (mobile) {
     console.log('📱 Switching to mobile view');
     
+    // Store current desktop view mode before switching
+    storeDesktopViewMode();
+    
+    // Force list view for mobile (grid view not supported in mobile)
+    forceListViewForMobile();
+    
     // Add mobile class to body for CSS targeting
     body.classList.add('mobile-view');
     
     // Show mobile elements
     if (mobilePlayer) mobilePlayer.style.display = 'flex';
     if (mobileNav) mobileNav.style.display = 'flex';
+    
+    // Enable mini player functionality
+    toggleMiniPlayer(true, true);
     
     // Ensure music table and list are visible
     if (musicTable) {
@@ -134,8 +200,20 @@ function toggleMobileView(mobile) {
       try {
         updateMobileTrackList(true);
         
-        // Sync mini player with current track
-        syncMiniPlayer();
+        // Ensure list view is rendered (since we forced list mode)
+        const musicList = document.getElementById('music-list');
+        if (musicList) {
+          import('../list/listView.js').then(({ renderList }) => {
+            renderList(musicList);
+            // Sync mini player with current track after render
+            syncMiniPlayer();
+          }).catch(error => {
+            console.warn('Could not render list view for mobile:', error);
+            syncMiniPlayer();
+          });
+        } else {
+          syncMiniPlayer();
+        }
       } catch (error) {
         console.error('Error updating mobile track list:', error);
       }
@@ -147,9 +225,15 @@ function toggleMobileView(mobile) {
     // Remove mobile class from body
     body.classList.remove('mobile-view');
     
+    // Restore original desktop view mode
+    restoreDesktopViewMode();
+    
     // Hide mobile elements
     if (mobilePlayer) mobilePlayer.style.display = 'none';
     if (mobileNav) mobileNav.style.display = 'none';
+    
+    // Disable mini player functionality
+    toggleMiniPlayer(false, false);
     
     // Reset music table/list display (let CSS handle it)
     if (musicTable) musicTable.style.removeProperty('display');
@@ -158,11 +242,35 @@ function toggleMobileView(mobile) {
     // Restore desktop toolbar
     restoreDesktopToolbar();
     
-    // Restore desktop track list with error handling
+    // Restore desktop track list with error handling (skip auto-render to avoid conflicts)
     try {
-      restoreDesktopTrackList();
+      restoreDesktopTrackList(false);
     } catch (error) {
       console.error('Error restoring desktop track list:', error);
+    }
+    
+    // Re-render with the correct view mode (grid or list)
+    const musicListEl = document.getElementById('music-list');
+    if (musicListEl && desktopViewMode === 'grid') {
+      // Import and render grid view
+      import('../grid/gridView.js').then(({ renderGrid }) => {
+        console.log('💻 Rendering grid view for desktop restoration');
+        renderGrid(musicListEl);
+      }).catch(error => {
+        console.warn('Could not render grid view:', error);
+        // Fallback to list view
+        import('../list/listView.js').then(({ renderList }) => {
+          renderList(musicListEl);
+        });
+      });
+    } else if (musicListEl) {
+      // Import and render list view (default)
+      import('../list/listView.js').then(({ renderList }) => {
+        console.log('💻 Rendering list view for desktop restoration');
+        renderList(musicListEl);
+      }).catch(error => {
+        console.warn('Could not render list view:', error);
+      });
     }
   }
 }
