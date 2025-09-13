@@ -121,7 +121,7 @@ export function updateMobileTrack(track) {
 /**
  * Restore desktop track list when switching back from mobile
  */
-export function restoreDesktopTrackList() {
+export function restoreDesktopTrackList(autoRender = true) {
   console.log('💻 Restoring desktop track list');
   
   try {
@@ -147,10 +147,13 @@ export function restoreDesktopTrackList() {
       });
     }
     
-    // Force complete re-render of the track list
-    dispatchTrackListRefresh();
-    
-    console.log('💻 Desktop track list restoration completed - triggered re-render');
+    // Only trigger re-render if requested (to avoid conflicts)
+    if (autoRender) {
+      dispatchTrackListRefresh();
+      console.log('💻 Desktop track list restoration completed - triggered re-render');
+    } else {
+      console.log('💻 Desktop track list restoration completed - skipped auto-render');
+    }
     
   } catch (error) {
     console.error('Error restoring desktop track list:', error);
