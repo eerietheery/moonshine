@@ -30,7 +30,8 @@
     padding: 0;
     cursor: pointer;
     transition: background-color 0.15s ease, transform 0.1s ease;
-    min-height: 64px; /* Much smaller minimum height */
+    min-height: 72px; /* Increased from 64px to prevent overlap */
+    height: auto; /* Allow natural height expansion */
     position: relative;
     overflow: hidden;
     
@@ -76,27 +77,27 @@
     position: relative;
     z-index: 2;
     display: flex;
-    align-items: flex-start; /* Align to top to prevent cutoff */
-    padding: 14px 16px; /* Reduced padding */
-    gap: 12px; /* Reduced gap */
-    min-height: 64px; /* Much smaller minimum height */
+    align-items: center; /* Center align for better text positioning */
+    padding: 16px 16px; /* Increased padding for better spacing */
+    gap: 9px;
+    min-height: 72px; /* Match container min-height */
     background: transparent;
     transition: transform 0.1s ease;
+    box-sizing: border-box; /* Ensure padding is included in height calculation */
   }
   
   /* ===== SMALL ALBUM ART THUMBNAIL ===== */
   .mobile-view .track .album-art {
-    width: 36px !important;
-    height: 36px !important;
+    width: 40px !important; /* Slightly larger for better proportion */
+    height: 40px !important;
     border-radius: 4px;
     flex-shrink: 0;
     object-fit: cover;
     background: var(--surface-2);
     z-index: 3;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    /* Fix cutoff and alignment issues */
     display: block;
-    align-self: flex-start; /* Align to top of flex container */
+    align-self: center; /* Center align with track content */
   }
   
   .mobile-view .track:active .album-art {
@@ -108,40 +109,42 @@
   .mobile-view .track-info {
     flex: 1;
     min-width: 0;
-    display: block; /* Changed to block for simpler text flow */
+    display: flex; /* Changed back to flex for better control */
+    flex-direction: column;
+    justify-content: center; /* Center the text vertically */
     z-index: 3;
-    /* Simple padding for clean text display */
     padding: 0;
-    /* Slight top margin to align with album art center */
-    margin-top: 2px;
-    /* Let text flow naturally */
+    /* Remove margin - let flex centering handle alignment */
+    margin: 0;
+    /* Ensure proper height for centering */
+    min-height: 40px;
   }
   
   .mobile-view .track-title-mobile {
-    font-size: 16px; /* Reduced from 18px for better fit */
-    font-weight: 600; /* Slightly lighter for better readability */
+    font-size: 15px; /* Slightly smaller for better fit */
+    font-weight: 600;
     color: var(--text-strong);
-    line-height: 1.3; /* Natural line height */
+    line-height: 1.2; /* Tighter line height to prevent overflow */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    margin: 0 0 4px 0; /* Simple bottom margin */
+    margin: 0 0 2px 0; /* Smaller margin */
     letter-spacing: -0.01em;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    /* Remove complex flexbox - let text flow naturally */
     display: block;
   }
   
   .mobile-view .track-meta-mobile {
-    font-size: 12px; /* Reduced from 13px */
+    font-size: 12px;
     color: var(--text-muted);
-    line-height: 1.2; /* Tighter line height */
+    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     margin: 0;
-    /* Simplified layout */
     display: block;
+    /* Ensure the meta text fits within the container */
+    max-height: 14px;
   }
   
   .mobile-view .track-artist-mobile,
@@ -179,8 +182,10 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 4px; /* Reduced gap */
+    align-self: center; /* Ensure actions are centered vertically */
+    gap: 4px;
     z-index: 3;
+    height: 40px; /* Fixed height to match album art */
   }
   
   .mobile-view .mobile-track-menu {
