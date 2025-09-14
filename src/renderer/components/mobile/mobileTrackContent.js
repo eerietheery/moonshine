@@ -9,10 +9,31 @@ import { addLongPressToElement } from './gestures.js';
  */
 export function extractTrackDataFromElement(trackElement) {
   try {
-    // Skip if already processed as mobile track and has cached data
-    if (trackElement.classList.contains('mobile-track') && trackElement.__track) {
-      console.log('📱 Using cached track data');
+    // Priority 1: Use cached track data if available and valid
+    if (trackElement.__track && trackElement.__track.title && trackElement.__track.title !== 'Unknown Track') {
+      console.log('📱 Using cached track data:', trackElement.__track.title);
       return trackElement.__track;
+    }
+    
+    // Priority 2: Check data attributes (set during track creation)
+    if (trackElement.dataset.title && trackElement.dataset.title !== 'Unknown Track') {
+      const trackData = {
+        title: trackElement.dataset.title,
+        artist: trackElement.dataset.artist || 'Unknown Artist',
+        album: trackElement.dataset.album || 'Unknown Album',
+        year: trackElement.dataset.year || '',
+        genre: trackElement.dataset.genre || '',
+        albumArt: trackElement.dataset.albumArt || 'assets/images/default-art.png',
+        filePath: trackElement.dataset.filePath || trackElement.__filePath,
+        favorite: trackElement.dataset.favorite === 'true',
+        originalElement: trackElement,
+        isFallback: false
+      };
+      
+      // Cache for future use
+      trackElement.__track = trackData;
+      console.log('📱 Extracted track data from attributes:', trackData.title);
+      return trackData;
     }
     
     // Store original HTML before any modifications for fallback
@@ -20,7 +41,7 @@ export function extractTrackDataFromElement(trackElement) {
       trackElement.__originalHTML = trackElement.innerHTML;
     }
     
-    // Multiple strategies for finding track data
+    // Priority 3: DOM extraction strategies (as before)
     let title = null;
     let artist = null;
     let album = null;

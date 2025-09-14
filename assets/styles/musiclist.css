@@ -182,3 +182,40 @@
   filter: drop-shadow(0 0 4px var(--accent)) saturate(2);
   color: var(--text-strong);
 }
+
+/* Enhanced action button styling with user color theming */
+.track-actions .favorite-btn img {
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+/* Heart icon - create outline effect for unfavorited state */
+.track-actions .favorite-btn img:not(.favorited) {
+  filter: brightness(0) saturate(100%) invert(72%) sepia(0%) saturate(1%) hue-rotate(220deg) brightness(96%) contrast(88%);
+  opacity: 0.6;
+}
+
+/* Heart icon - filled state with user color */
+.track-actions .favorite-btn img.favorited {
+  filter: drop-shadow(0 0 4px var(--accent, var(--primary-color, #8C40B8))) saturate(2) brightness(1.1);
+  opacity: 1;
+}
+
+/* Hover effects for all action buttons */
+.track-actions .favorite-btn:hover img {
+  filter: drop-shadow(0 0 4px var(--accent, var(--primary-color, #8C40B8))) saturate(2) brightness(1.1) !important;
+  opacity: 1 !important;
+}
+
+.track-actions .queue-add-btn:hover img,
+.track-actions .playlist-add-btn:hover img {
+  filter: drop-shadow(0 0 4px var(--accent, var(--primary-color, #8C40B8))) saturate(2) brightness(1.2) !important;
+  opacity: 1 !important;
+}
+
+/* Base styling for queue and playlist buttons */
+.track-actions .queue-add-btn img,
+.track-actions .playlist-add-btn img {
+  filter: brightness(0) saturate(100%) invert(72%) sepia(0%) saturate(1%) hue-rotate(220deg) brightness(96%) contrast(88%);
+  opacity: 0.6;
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}

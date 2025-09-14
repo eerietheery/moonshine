@@ -39,28 +39,8 @@ export function renderGrid(list) {
     
     // Set grid template with consistent actions column sizing via CSS variable
     const gridHeadersForTemplate = state.listHeaders && state.listHeaders.length ? state.listHeaders : ['title','artist','album','year','genre'];
-  const template = getGridTemplate(gridHeadersForTemplate);
-  setMusicGridTemplate(template);
-    gridHeaders.forEach(h => {
-      const cell = headerEl.querySelector(`[data-sort="${h}"]`);
-      if (!cell) return;
-      cell.onclick = () => {
-        if (state.sortBy === h) {
-          state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
-        } else {
-          state.sortBy = h;
-          state.sortOrder = 'asc';
-        }
-        console.log('grid header clicked ->', h, state.sortBy, state.sortOrder);
-        renderGrid(list);
-      };
-      cell.onkeydown = (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          cell.click();
-        }
-      };
-    });
+    const template = getGridTemplate(gridHeadersForTemplate);
+    setMusicGridTemplate(template);
   }
 
   // Tear down any list virtualization

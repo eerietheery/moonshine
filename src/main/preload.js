@@ -10,4 +10,7 @@ contextBridge.exposeInMainWorld('etune', {
   revealFile: (filePath) => ipcRenderer.invoke('reveal-file', filePath),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  saveAutoBackup: (userData) => ipcRenderer.invoke('save-auto-backup', userData),
+  checkAutoBackup: () => ipcRenderer.invoke('check-auto-backup'),
+  getDocumentsPath: () => ipcRenderer.invoke('get-documents-path'),
 });

@@ -149,5 +149,9 @@ export function renderListHeader(renderListCallback) {
 
   syncHeaderScroll(headerEl);
   setupColumnResizing(headerEl, headers);
-  setupSorting(headerEl, headers, renderListCallback);
+  // Note: Header sorting is now handled centrally in uiEvents.js via event delegation
+  // Only set up local sorting if a callback was provided (for legacy compatibility)
+  if (renderListCallback) {
+    setupSorting(headerEl, headers, renderListCallback);
+  }
 }

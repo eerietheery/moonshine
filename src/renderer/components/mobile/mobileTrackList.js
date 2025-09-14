@@ -26,14 +26,14 @@ export function updateMobileTrackList(isMobileView) {
     initTrackObserver();
     
     // Use optimized track update
-    optimizedTrackUpdate(tracks, (track, index) => {
+    optimizedTrackUpdate(tracks, async (track, index) => {
       // For performance, only render visible tracks immediately
       // Increase immediate render count for better initial experience
       if (index < 50) { // Render first 50 tracks immediately (up from 20)
         updateMobileTrack(track);
       } else {
         // Set up lazy loading for remaining tracks
-        setupLazyTrack(track);
+        await setupLazyTrack(track);
       }
     });
   } catch (error) {
@@ -54,21 +54,39 @@ export function updateMobileTrack(track) {
       return;
     }
     
-    // IMPORTANT: Extract track data BEFORE clearing innerHTML
-    const trackData = track.__track || extractTrackDataFromElement(track);
-    if (!trackData) {
-      console.warn('📱 Failed to extract track data, skipping track');
-      return;
+    // CRITICAL: Extract and preserve track data BEFORE any DOM modifications
+    let trackData = track.__track;
+    if (!trackData || !trackData.title || trackData.title === 'Unknown Track') {
+      trackData = extractTrackDataFromElement(track);
+      if (!trackData) {
+        console.warn('📱 Failed to extract track data, creating fallback');
+        trackData = {
+          title: 'Unknown Track',
+          artist: 'Unknown Artist',
+          album: 'Unknown Album',
+          albumArt: 'assets/images/default-art.png',
+          filePath: track.dataset.filePath || track.__filePath,
+          originalElement: track,
+          isFallback: true
+        };
+      }
     }
     
-    // Even if it's a fallback, proceed to show something
     console.log('📱 Converting track to mobile:', trackData.title, trackData.isFallback ? '(fallback)' : '');
     
-    // Store extracted data for future reference
+    // Store extracted data permanently on element
     track.__track = trackData;
     
     // Preserve original onclick handler before modifications
     const originalOnClick = track.onclick;
+    
+    // Store additional data attributes for future extraction
+    track.dataset.title = trackData.title;
+    track.dataset.artist = trackData.artist;
+    track.dataset.album = trackData.album;
+    if (trackData.albumArt && trackData.albumArt !== 'assets/images/default-art.png') {
+      track.dataset.albumArt = trackData.albumArt;
+    }
     
     // Create mobile track structure
     const mobileContent = createMobileTrackContent(trackData);

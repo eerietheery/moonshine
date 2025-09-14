@@ -110,13 +110,38 @@ export function setupUiEventListeners() {
   renderList(dom.list);
   });
 
-  dom.tableHeaders.forEach((header, idx) => {
-    header.onclick = () => {
-      const keys = ['title', 'artist', 'album', 'year', 'genre'];
-      state.sortBy = keys[idx];
-      renderList(dom.list);
-    };
-  });
+  // Header sorting - handle both grid and list views with unified event delegation
+  const musicTable = document.getElementById('music-table');
+  if (musicTable) {
+    musicTable.addEventListener('click', (e) => {
+      const sortHeader = e.target.closest('.sort-header[data-sort]');
+      if (!sortHeader) return;
+      
+      const sortBy = sortHeader.getAttribute('data-sort');
+      if (!sortBy) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Update sort state
+      if (state.sortBy === sortBy) {
+        state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        state.sortBy = sortBy;
+        state.sortOrder = 'asc';
+      }
+      
+      // Render appropriate view based on current active view
+      const isGridView = dom.gridViewBtn.classList.contains('active');
+      if (isGridView) {
+        import('../components/grid/gridView.js').then(({ renderGrid }) => {
+          renderGrid(dom.list);
+        });
+      } else {
+        renderList(dom.list);
+      }
+    });
+  }
 
   // Favorites view toggle in toolbar
   const favToggle = document.getElementById('favorite-toggle');

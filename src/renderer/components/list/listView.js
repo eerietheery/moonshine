@@ -117,7 +117,7 @@ export function renderList(list) {
 
   // Only populate/show main headers when NOT browsing playlists
   if (!(state.viewMode === 'playlist' && !state.activePlaylist) && headerEl && state.tracks && state.tracks.length) {
-    renderListHeader(() => renderList(list));
+    renderListHeader(); // No callback needed - sorting handled centrally in uiEvents.js
   }
 
   // Precompute grid template for rows (headers + actions)

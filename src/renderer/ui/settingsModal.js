@@ -8,6 +8,7 @@ import { createUpdaterSection } from './settings/updaterSection.js';
 import { createFilterSection } from './settings/filterSection.js';
 import { createArtistSection } from './settings/artistSection.js';
 import { createThemeSection } from './settings/themeSection.js';
+import { createDataBackupSection } from './settings/dataBackupSection.js';
 
 function showSettingsModal() {
   console.log('[settingsModal] showSettingsModal invoked');
@@ -127,6 +128,8 @@ function showSettingsModal() {
   const { element: filterSection, teardown: filterTeardown } = createFilterSection(state);
   // --- Theme Section (extracted) ---
   const { element: themeSection, teardown: themeTeardown } = createThemeSection(showColorModal, modal, teardown);
+  // --- Data Backup Section (extracted) ---
+  const { element: dataBackupSection, teardown: dataBackupTeardown } = createDataBackupSection(state);
   // aggregate teardown handlers (library section provides its own)
   if (typeof libTeardown === 'function') teardownHandlers.push(libTeardown);
   if (typeof headersTeardown === 'function') teardownHandlers.push(headersTeardown);
@@ -134,9 +137,11 @@ function showSettingsModal() {
   if (typeof filterTeardown === 'function') teardownHandlers.push(filterTeardown);
   if (typeof artistTeardown === 'function') teardownHandlers.push(artistTeardown);
   if (typeof themeTeardown === 'function') teardownHandlers.push(themeTeardown);
+  if (typeof dataBackupTeardown === 'function') teardownHandlers.push(dataBackupTeardown);
 
   // --- Assemble Modal Body ---
   body.appendChild(libSection);
+  body.appendChild(dataBackupSection);
   body.appendChild(importSection);
   body.appendChild(headersSection);
   body.appendChild(filterSection);

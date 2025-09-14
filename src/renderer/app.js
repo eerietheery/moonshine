@@ -11,6 +11,7 @@ import { state } from './components/shared/state.js';
 import { loadPlaylists, buildSmartPlaylists, renderPlaylistsSidebar, createPlaylist, getPlaylistTracks } from './components/playlist/playlists.js';
 import { playlists } from './components/playlist/playlists.js';
 import { initMobile } from './components/mobile/mobileUI.js';
+import autoBackupService from './utils/autoBackupService.js';
 
 function playlistsName(source) {
   if (source?.type !== 'user') return null;
@@ -170,6 +171,15 @@ export function initializeApp() {
     
     // Initialize mobile UI
     initMobile();
+
+    // Initialize auto backup service
+    console.log('[App] Initializing auto backup service...');
+    // Service initializes itself, just ensure it's loaded
+    
+    // Make import function available globally for auto backup service
+    import('./ui/settings/dataBackupSection.js').then(module => {
+      window.importUserDataFromBackup = module.importUserDataFromBackup;
+    });
   });
 }
 

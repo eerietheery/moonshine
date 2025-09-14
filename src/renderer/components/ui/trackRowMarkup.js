@@ -9,6 +9,26 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
     if (track && track.filePath) {
       div.__filePath = track.filePath;
       div.dataset.filePath = track.filePath;
+      
+      // Store track data directly on element for mobile use
+      div.__track = {
+        title: (track.tags?.title) || track.file || 'Unknown Track',
+        artist: (track.tags?.artist) || 'Unknown Artist',
+        album: (track.tags?.album) || 'Unknown Album',
+        year: (track.tags?.year) || '',
+        genre: (track.tags?.genre) || '',
+        albumArt: getAlbumArtUrl(track),
+        filePath: track.filePath,
+        favorite: track.favorite,
+        bitrate: track.bitrate,
+        originalTrack: track,
+        isFallback: false
+      };
+      
+      // Store essential data as data attributes for mobile extraction
+      div.dataset.title = div.__track.title;
+      div.dataset.artist = div.__track.artist;
+      div.dataset.album = div.__track.album;
     }
   } catch(_) {}
   const art = getAlbumArtUrl(track);
@@ -50,11 +70,11 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
     }
   });
   rowHtml += `<div class="track-actions"><button class="favorite-btn" title="Toggle Favorite" style="background:none;border:none;cursor:pointer;padding:0;vertical-align:middle;">
-  <img src="assets/images/heart.svg" alt="Favorite" style="width:22px;height:22px;filter:${track.favorite ? `drop-shadow(0 0 4px ${userColor}) saturate(2)`:'grayscale(1) opacity(0.5)'};transition:filter .2s;" /></button>
+  <img src="assets/images/heart.svg" alt="Favorite" class="${track.favorite ? 'favorited' : ''}" style="width:22px;height:22px;transition:filter .2s;" /></button>
     <button class="queue-add-btn" title="Add to Queue" style="background:none;border:none;cursor:pointer;padding:0;vertical-align:middle;">
-      <img src="assets/images/addtoqueue.svg" alt="Add to Queue" style="width:22px;height:22px;filter:grayscale(1) opacity:0.7;transition:filter .2s;" /></button>
+      <img src="assets/images/addtoqueue.svg" alt="Add to Queue" style="width:22px;height:22px;transition:filter .2s;" /></button>
       <button class="playlist-add-btn" title="Add to Playlist" style="background:none;border:none;cursor:pointer;padding:0;vertical-align:middle;">
-        <img src="assets/images/queue.svg" alt="Add to Playlist" style="width:20px;height:20px;filter:grayscale(1) opacity:0.7;transition:filter .2s;" />
+        <img src="assets/images/queue.svg" alt="Add to Playlist" style="width:20px;height:20px;transition:filter .2s;" />
       </button>
       </div>`;
   div.innerHTML = rowHtml;
@@ -66,8 +86,12 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
       e.stopPropagation();
       import('../shared/state.js').then(({ toggleFavorite }) => {
         toggleFavorite(track);
-        const color = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#8C40B8';
-        favImg.style.filter = track.favorite ? `drop-shadow(0 0 4px ${color}) saturate(2)` : 'grayscale(1) opacity(0.5)';
+        // Update favorite state and CSS class
+        if (track.favorite) {
+          favImg.classList.add('favorited');
+        } else {
+          favImg.classList.remove('favorited');
+        }
         favImg.title = track.favorite ? 'Unfavorite' : 'Favorite';
       });
     });

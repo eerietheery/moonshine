@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { scanMusic } = require('../music');
 const { loadConfig, getConfig, updateConfig } = require('./config'); // Corrected path
 
@@ -122,6 +123,56 @@ ipcMain.handle('open-external', async (event, url) => {
   } catch (e) {
     return false;
   }
+});
+
+// Automatic backup functionality
+ipcMain.handle('save-auto-backup', async (event, userData) => {
+  try {
+    const documentsPath = app.getPath('documents');
+    const backupDir = path.join(documentsPath, 'Moonshine');
+    
+    // Ensure backup directory exists
+    if (!fs.existsSync(backupDir)) {
+      fs.mkdirSync(backupDir, { recursive: true });
+    }
+    
+    const backupFile = path.join(backupDir, 'moonshine-auto-backup.json');
+    fs.writeFileSync(backupFile, JSON.stringify(userData, null, 2), 'utf8');
+    
+    return { success: true, path: backupFile };
+  } catch (error) {
+    console.error('Failed to save auto backup:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('check-auto-backup', async () => {
+  try {
+    const documentsPath = app.getPath('documents');
+    const backupFile = path.join(documentsPath, 'Moonshine', 'moonshine-auto-backup.json');
+    
+    if (fs.existsSync(backupFile)) {
+      const stats = fs.statSync(backupFile);
+      const content = fs.readFileSync(backupFile, 'utf8');
+      const userData = JSON.parse(content);
+      
+      return {
+        exists: true,
+        path: backupFile,
+        lastModified: stats.mtime.toISOString(),
+        data: userData
+      };
+    }
+    
+    return { exists: false };
+  } catch (error) {
+    console.error('Failed to check auto backup:', error);
+    return { exists: false, error: error.message };
+  }
+});
+
+ipcMain.handle('get-documents-path', () => {
+  return app.getPath('documents');
 });
 
 app.on('window-all-closed', () => {

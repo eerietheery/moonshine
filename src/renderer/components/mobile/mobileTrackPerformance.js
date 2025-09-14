@@ -40,13 +40,32 @@ export function initTrackObserver() {
 /**
  * Set up track for lazy loading
  */
-export function setupLazyTrack(track) {
+export async function setupLazyTrack(track) {
   track.classList.add('mobile-track-lazy');
+  
+  // CRITICAL: Extract and preserve track data BEFORE creating placeholder
+  let trackData = track.__track;
+  if (!trackData) {
+    // Try to extract data from the original track element
+    try {
+      const { extractTrackDataFromElement } = await import('./mobileTrackContent.js');
+      trackData = extractTrackDataFromElement(track);
+      if (trackData) {
+        track.__track = trackData;
+        // Store as data attributes for persistence
+        track.dataset.title = trackData.title;
+        track.dataset.artist = trackData.artist;
+        track.dataset.album = trackData.album;
+      }
+    } catch (error) {
+      console.warn('Failed to extract track data for lazy track:', error);
+    }
+  }
   
   // Add basic mobile track class and structure placeholder
   track.classList.add('mobile-track');
   
-  // Create minimal placeholder content
+  // Create minimal placeholder content with track info if available
   const placeholder = document.createElement('div');
   placeholder.className = 'track-placeholder';
   placeholder.style.cssText = `
@@ -58,7 +77,19 @@ export function setupLazyTrack(track) {
     padding: 16px;
     color: var(--text-muted);
   `;
-  placeholder.textContent = 'Loading...';
+  
+  if (trackData && trackData.title && trackData.title !== 'Unknown Track') {
+    // Show track info while loading
+    placeholder.innerHTML = `
+      <div style="flex: 1; display: flex; flex-direction: column;">
+        <div style="font-weight: 500; margin-bottom: 4px; color: var(--text-primary);">${trackData.title}</div>
+        <div style="font-size: 13px; color: var(--text-muted);">${trackData.artist} • ${trackData.album}</div>
+      </div>
+      <div style="color: var(--text-muted); font-size: 12px;">Loading...</div>
+    `;
+  } else {
+    placeholder.textContent = 'Loading...';
+  }
   
   track.innerHTML = '';
   track.appendChild(placeholder);
