@@ -6,3 +6,20 @@ docs/old/
 package.json
 package.json/
 encyclopedia.md
+build/
+
+# Security - Certificate files
+*.pfx
+*.p12
+*.pem
+*.key
+*.crt
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Build artifacts
+*.log
+npm-debug.log*
