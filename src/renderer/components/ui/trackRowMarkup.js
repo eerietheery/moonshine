@@ -221,37 +221,57 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
 
   div.addEventListener('click', () => onClick(track));
 
-  div.addEventListener('contextmenu', (e) => {
+  div.addEventListener('contextmenu', async (e) => {
     e.preventDefault(); e.stopPropagation();
-    import('../shared/contextMenu.js').then(({ showContextMenu }) => {
-      const items = [];
-      items.push({ label: track.favorite ? 'Unfavorite' : 'Favorite', onClick: () => import('../shared/state.js').then(({ toggleFavorite }) => toggleFavorite(track)) });
-      items.push({ label: 'Add to playlist…', onClick: () => {
-        const btn = div.querySelector('.playlist-add-btn');
-        if (btn) {
-          btn.click();
-        } else {
-          import('../playlist/playlists.js')
-            .then(({ playlists }) => import(new URL('../shared/playlistPopup.js', import.meta.url).href).then(({ showPlaylistPopup }) => showPlaylistPopup(e, [track], { playlists })))
-            .catch(async (err) => {
-              console.error('Failed to open playlist popup from context menu', err);
-              try { showToast('Could not open playlist menu'); } catch (_) {}
-            });
-        }
+    
+    const { showContextMenu } = await import('../shared/contextMenu.js');
+    const { state } = await import('../shared/state.js');
+    
+    const items = [];
+    items.push({ label: track.favorite ? 'Unfavorite' : 'Favorite', onClick: () => import('../shared/state.js').then(({ toggleFavorite }) => toggleFavorite(track)) });
+    items.push({ label: 'Add to playlist…', onClick: () => {
+      const btn = div.querySelector('.playlist-add-btn');
+      if (btn) {
+        btn.click();
+      } else {
+        import('../playlist/playlists.js')
+          .then(({ playlists }) => import(new URL('../shared/playlistPopup.js', import.meta.url).href).then(({ showPlaylistPopup }) => showPlaylistPopup(e, [track], { playlists })))
+          .catch(async (err) => {
+            console.error('Failed to open playlist popup from context menu', err);
+            try { showToast('Could not open playlist menu'); } catch (_) {}
+          });
+      }
+    }});
+    
+    // Add "Remove from Playlist" option when viewing a user playlist
+    if (state.viewMode === 'playlist' && state.activePlaylist && state.activePlaylist.type === 'user') {
+      items.push({ label: 'Remove from Playlist', onClick: async () => {
+        const { removeFromPlaylist } = await import('../playlist/playlists.js');
+        removeFromPlaylist(state.activePlaylist.id, track.filePath);
+        // Re-render the list to reflect the change
+        const { renderList } = await import('../shared/view.js');
+        const listEl = document.getElementById('music-list');
+        if (listEl) renderList(listEl);
+        // Show confirmation toast
+        try {
+          const trackName = track.tags?.title || track.file || 'track';
+          showToast(`Removed "${trackName}" from ${state.activePlaylist.name}`);
+        } catch (_) {}
       }});
-      items.push({ label: 'Queue', onClick: () => import('../shared/state.js').then(({ addToQueue }) => addToQueue(track)) });
-      items.push({ label: 'Reveal in Explorer', onClick: () => {
-        const path = track.filePath || track.file || null;
-        if (!path) { showToast('No file path available'); return; }
-        if (window.etune && typeof window.etune.revealFile === 'function') window.etune.revealFile(path);
-        else if (window.etune && typeof window.etune.revealInFolder === 'function') window.etune.revealInFolder(path);
-        else if (window.require) { try { const { shell } = window.require('electron'); shell.showItemInFolder(path); } catch (err) { showToast('Reveal not available'); } }
-        else showToast('Reveal not supported');
-      }});
-      items.push({ label: 'Copy file path', onClick: () => { navigator.clipboard?.writeText(track.filePath || track.file || '').catch(() => {}); } });
+    }
+    
+    items.push({ label: 'Queue', onClick: () => import('../shared/state.js').then(({ addToQueue }) => addToQueue(track)) });
+    items.push({ label: 'Reveal in Explorer', onClick: () => {
+      const path = track.filePath || track.file || null;
+      if (!path) { showToast('No file path available'); return; }
+      if (window.etune && typeof window.etune.revealFile === 'function') window.etune.revealFile(path);
+      else if (window.etune && typeof window.etune.revealInFolder === 'function') window.etune.revealInFolder(path);
+      else if (window.require) { try { const { shell } = window.require('electron'); shell.showItemInFolder(path); } catch (err) { showToast('Reveal not available'); } }
+      else showToast('Reveal not supported');
+    }});
+    items.push({ label: 'Copy file path', onClick: () => { navigator.clipboard?.writeText(track.filePath || track.file || '').catch(() => {}); } });
 
-      showContextMenu(e, items);
-    });
+    showContextMenu(e, items);
   });
   
   // Update for mobile view if needed

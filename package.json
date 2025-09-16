@@ -7,7 +7,7 @@
     "scripts": {
     "start": "electron .",
     "build": "electron-builder",
-    "postbuild": "signtool sign /f dist\\moonshine-dev.pfx /p \"password\" /tr http://timestamp.digicert.com /td sha256 /fd sha256 \"C:\\Users\\Eerie\\Desktop\\_code\\moonshine\\dist\\Moonshine 1.1.7.exe\""
+    "postbuild": "signtool sign /f dist\\moonshine-dev.pfx /p \"%MOONSHINE_CERT_PASSWORD%\" /tr http://timestamp.digicert.com /td sha256 /fd sha256 \"dist\\Moonshine %npm_package_version%.exe\""
   },
   "keywords": [],
   "author": "",
@@ -55,7 +55,7 @@
       "createStartMenuShortcut": true
     },
     "directories": {
-      "output": "C:\\Users\\Eerie\\Desktop\\_code\\moonshine\\dist"
+      "output": "dist"
     },
     "files": [
       "!docs/**"
