@@ -1,6 +1,25 @@
 // Playlist system: user playlists and smart (genre) playlists
 import { state } from '../shared/state.js';
 import { createFilterItem } from '../ui/ui.js';
+import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
+
+/**
+ * Get representative album art for a playlist (from its first track)
+ */
+function getPlaylistAlbumArt(playlist) {
+  if (!playlist.trackPaths || !playlist.trackPaths.length) return null;
+  const firstTrackPath = playlist.trackPaths[0];
+  const track = state.tracks.find(t => t.filePath === firstTrackPath);
+  return track ? getAlbumArtUrl(track) : null;
+}
+
+/**
+ * Get representative album art for a genre (from first track of that genre)
+ */
+function getGenreAlbumArt(genre) {
+  const track = state.tracks.find(t => (t.tags && t.tags.genre || 'Unknown') === genre);
+  return track ? getAlbumArtUrl(track) : null;
+}
 
 // Data model (renderer-side cache). Persisted in main config under `playlists`.
 // User playlist shape: { id, name, trackPaths: string[], createdAt, updatedAt }
@@ -219,7 +238,8 @@ export function renderPlaylistsSidebar(sectionUser, sectionSmart, onSelect) {
   playlists.user.forEach(pl => {
     const count = Array.isArray(pl.trackPaths) ? pl.trackPaths.length : 0;
     const isActive = state.activePlaylist && state.activePlaylist.type === 'user' && state.activePlaylist.id === pl.id;
-    const item = createFilterItem(pl.name, count, !!isActive);
+    const albumArt = getPlaylistAlbumArt(pl);
+    const item = createFilterItem(pl.name, count, !!isActive, albumArt);
     // attach handlers similar to other filter-items
     item.onclick = (e) => { e.stopPropagation(); onSelect({ type: 'user', id: pl.id }); };
     item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); } };
@@ -234,7 +254,8 @@ export function renderPlaylistsSidebar(sectionUser, sectionSmart, onSelect) {
   Object.keys(playlists.smart).sort((a,b) => a.localeCompare(b)).forEach(genre => {
     const cnt = Array.isArray(playlists.smart[genre]) ? playlists.smart[genre].length : 0;
     const isActive = state.activePlaylist && state.activePlaylist.type === 'smart' && state.activePlaylist.genre === genre;
-    const item = createFilterItem(genre, cnt, !!isActive);
+    const albumArt = getGenreAlbumArt(genre);
+    const item = createFilterItem(genre, cnt, !!isActive, albumArt);
     item.onclick = (e) => { e.stopPropagation(); onSelect({ type: 'smart', genre }); };
     item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); } };
     item.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); showPlaylistContextMenu(e, item, { type: 'smart', genre }, genre); };

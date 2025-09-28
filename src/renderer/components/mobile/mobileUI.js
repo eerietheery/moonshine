@@ -14,6 +14,14 @@ let resizeTimeout = null;
 let isResizing = false; // Prevent multiple simultaneous resize operations
 
 /**
+
+    // Remove any mobile overlay/grid containers that might persist
+    try {
+      const overlays = document.querySelectorAll(
+        '.mobile-view-container, .mobile-artist-grid-container, .mobile-album-grid-container, .mobile-coming-soon'
+      );
+      overlays.forEach(el => el.remove());
+    } catch (_) {}
  * Store current desktop view mode before switching to mobile
  */
 function storeDesktopViewMode() {
@@ -29,7 +37,7 @@ function storeDesktopViewMode() {
     desktopViewMode = 'list';
   }
   
-  console.log(`📱 Stored desktop view mode: ${desktopViewMode}`);
+  console.log(`Stored desktop view mode: ${desktopViewMode}`);
 }
 
 /**
@@ -89,7 +97,7 @@ export function initMobile() {
   // Update track list for mobile
   updateMobileTrackList(isMobileView);
   
-  console.log('📱 Mobile UI initialized');
+  console.log('Mobile UI initialized');
 }
 
 /**
@@ -135,7 +143,7 @@ function handleResize() {
   if (isResizing) return; // Double-check to prevent race conditions
   
   isResizing = true;
-  console.log('📱 Handling resize event...');
+  console.log(' Handling resize event...');
   
   try {
     checkMobileView();
@@ -145,7 +153,7 @@ function handleResize() {
     // Reset flag after a short delay to ensure operations complete
     setTimeout(() => {
       isResizing = false;
-      console.log('📱 Resize operation completed');
+      console.log('Resize operation completed');
     }, 100);
   }
 }
@@ -160,10 +168,10 @@ function toggleMobileView(mobile) {
   const musicTable = document.getElementById('music-table');
   const musicList = document.getElementById('music-list');
   
-  console.log(`📱 Toggling mobile view: ${mobile}`, { musicTable: !!musicTable, musicList: !!musicList });
+  console.log(`Toggling mobile view: ${mobile}`, { musicTable: !!musicTable, musicList: !!musicList });
   
   if (mobile) {
-    console.log('📱 Switching to mobile view');
+    console.log('Switching to mobile view');
     
     // Store current desktop view mode before switching
     storeDesktopViewMode();
@@ -171,8 +179,10 @@ function toggleMobileView(mobile) {
     // Force list view for mobile (grid view not supported in mobile)
     forceListViewForMobile();
     
-    // Add mobile class to body for CSS targeting
-    body.classList.add('mobile-view');
+  // Add mobile class to body for CSS targeting
+  body.classList.add('mobile-view');
+  // Ensure data-mobile-view reflects track view initially
+  body.setAttribute('data-mobile-view', 'tracks');
     
     // Show mobile elements
     if (mobilePlayer) mobilePlayer.style.display = 'flex';
@@ -220,10 +230,11 @@ function toggleMobileView(mobile) {
     });
     
   } else {
-    console.log('💻 Switching to desktop view');
+    console.log('Switching to desktop view');
     
-    // Remove mobile class from body
-    body.classList.remove('mobile-view');
+  // Remove mobile class from body
+  body.classList.remove('mobile-view');
+  body.removeAttribute('data-mobile-view');
     
     // Restore original desktop view mode
     restoreDesktopViewMode();
@@ -231,6 +242,9 @@ function toggleMobileView(mobile) {
     // Hide mobile elements
     if (mobilePlayer) mobilePlayer.style.display = 'none';
     if (mobileNav) mobileNav.style.display = 'none';
+  // Remove any stray mobile back button
+  const backButton = document.querySelector('.mobile-back-button');
+  if (backButton) backButton.remove();
     
     // Disable mini player functionality
     toggleMiniPlayer(false, false);
@@ -254,7 +268,7 @@ function toggleMobileView(mobile) {
     if (musicListEl && desktopViewMode === 'grid') {
       // Import and render grid view
       import('../grid/gridView.js').then(({ renderGrid }) => {
-        console.log('💻 Rendering grid view for desktop restoration');
+        console.log('Rendering grid view for desktop restoration');
         renderGrid(musicListEl);
       }).catch(error => {
         console.warn('Could not render grid view:', error);
@@ -266,7 +280,7 @@ function toggleMobileView(mobile) {
     } else if (musicListEl) {
       // Import and render list view (default)
       import('../list/listView.js').then(({ renderList }) => {
-        console.log('💻 Rendering list view for desktop restoration');
+        console.log('Rendering list view for desktop restoration');
         renderList(musicListEl);
       }).catch(error => {
         console.warn('Could not render list view:', error);

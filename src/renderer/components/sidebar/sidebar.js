@@ -2,6 +2,31 @@ import { state, updateFilters } from '../shared/state.js';
 import { createFilterItem } from '../ui/ui.js';
 // Import from shared location after reorganization
 import { normalizeArtist } from '../shared/filter.js';
+import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
+
+/**
+ * Get representative album art for an artist (from their first track)
+ */
+function getArtistAlbumArt(artistKey) {
+    const track = state.tracks.find(t => {
+        const rawArtist = (t.tags && t.tags.artist) || 'Unknown';
+        if (state.explicitArtistNames) {
+            return rawArtist === artistKey;
+        } else {
+            const norm = normalizeArtist(rawArtist);
+            return norm === artistKey || rawArtist === artistKey;
+        }
+    });
+    return track ? getAlbumArtUrl(track) : null;
+}
+
+/**
+ * Get album art for a specific album (from any track in that album)
+ */
+function getAlbumArt(albumName) {
+    const track = state.tracks.find(t => (t.tags && t.tags.album || 'Unknown') === albumName);
+    return track ? getAlbumArtUrl(track) : null;
+}
 
 export function updateSidebarFilters(filterInput, artistList, albumList, renderList, sidebarFilteringEnabled = false) {
     const searchFilter = (filterInput && filterInput.value) ? filterInput.value.trim().toLowerCase() : '';
@@ -98,7 +123,8 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
         if (cnt > 0) {
             const display = artistDisplay.get(key) || key;
             const active = state.activeArtist === display || state.activeArtist === key;
-            aFrag.appendChild(createFilterItem(display, cnt, active));
+            const albumArt = getArtistAlbumArt(key);
+            aFrag.appendChild(createFilterItem(display, cnt, active, albumArt));
         }
     }
     artistList.appendChild(aFrag);
@@ -111,7 +137,8 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
     for (const album of albumsList) {
         const cnt = albumCounts.get(album) || 0;
         if (cnt > 0) {
-            alFrag.appendChild(createFilterItem(album, cnt, state.activeAlbum === album));
+            const albumArt = getAlbumArt(album);
+            alFrag.appendChild(createFilterItem(album, cnt, state.activeAlbum === album, albumArt));
         }
     }
     albumList.appendChild(alFrag);

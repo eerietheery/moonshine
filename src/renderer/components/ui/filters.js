@@ -1,11 +1,18 @@
-export function createFilterItem(name, count, isActive) {
+export function createFilterItem(name, count, isActive, albumArtUrl = null) {
   const div = document.createElement('div');
   div.className = `filter-item ${isActive ? 'active' : ''}`;
   div.setAttribute('role', 'button');
   div.setAttribute('tabindex', '0');
   div.dataset.value = name;
 
+  // Set album art background if provided
+  if (albumArtUrl && albumArtUrl !== 'assets/images/default-art.png') {
+    div.style.setProperty('--filter-album-art', `url('${albumArtUrl}')`);
+    div.classList.add('has-album-art');
+  }
+
   const nameSpan = document.createElement('span');
+  nameSpan.className = 'filter-name';
   nameSpan.textContent = name;
   const countSpan = document.createElement('span');
   countSpan.className = 'filter-count';

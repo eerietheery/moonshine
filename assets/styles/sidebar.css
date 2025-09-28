@@ -186,6 +186,47 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Album art background for filter items */
+.filter-item.has-album-art::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 100%;
+  background-image: var(--filter-album-art, url('../images/default-art.png'));
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.12;
+  
+  /* 45-degree fade mask similar to mobile tracks */
+  mask: linear-gradient(135deg, 
+    rgba(0,0,0,1) 0%, 
+    rgba(0,0,0,1) 30%, 
+    rgba(0,0,0,0.6) 50%, 
+    rgba(0,0,0,0) 100%
+  );
+  -webkit-mask: linear-gradient(135deg, 
+    rgba(0,0,0,1) 0%, 
+    rgba(0,0,0,1) 30%, 
+    rgba(0,0,0,0.6) 50%, 
+    rgba(0,0,0,0) 100%
+  );
+  
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Ensure filter text content is above the background */
+.filter-item .filter-name,
+.filter-item .filter-count {
+  position: relative;
+  z-index: 1;
 }
 
 .filter-item:hover {

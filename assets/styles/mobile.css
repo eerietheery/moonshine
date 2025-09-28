@@ -1,3 +1,52 @@
+/* Ensure the mobile overlay anchors to the main content area */
+#main-content {
+  position: relative;
+}
+
+/* Unified mobile overlay container */
+.mobile-view-container {
+  position: absolute;
+  inset: 0; /* top:0; right:0; bottom:0; left:0 */
+  z-index: 50; /* above music table */
+  background: var(--bg-color, #111);
+}
+
+/* When overlay is active, hard-hide the music table regardless of inline styles */
+body[data-mobile-view="overlay"] #music-table {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Mobile back button styling */
+.mobile-back-button {
+  position: fixed !important;
+  top: 10px !important;
+  left: 10px !important;
+  z-index: 1000 !important; /* Above everything */
+  background: var(--bg-color, #111) !important;
+  border: 1px solid var(--border-color, #333) !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  color: var(--text-color, #fff) !important;
+  font-size: 0.9rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  white-space: nowrap !important;
+}
+
+.mobile-back-button:hover {
+  background: var(--primary-color, #007acc) !important;
+  transform: translateX(-2px);
+}
+
+.mobile-back-button:active {
+  transform: translateX(-2px) scale(0.98);
+}
 /* Minimal mobile stylesheet for narrow viewports.
    Non-invasive: rules are limited to max-width media so desktop CSS is untouched.
    Adds:
@@ -6,97 +55,167 @@
      - Slight layout adjustments to main content for narrow screens
 */
 
-@media (max-width: 768px) {
-  /* Make the app stack vertically and hide desktop sidebar by default */
-  #sidebar { display: none !important; }
-  #main-content { margin-left: 0 !important; padding-bottom: 72px; /* room for bottom nav */ }
+/* Mobile styles applied when body has mobile-view class */
+body.mobile-view #sidebar { display: none !important; }
+body.mobile-view #main-content { margin-left: 0 !important; padding-bottom: 72px; /* room for bottom nav */ }
 
-  /* Compact the toolbar */
-  #toolbar { padding: 8px; display:flex; align-items:center; justify-content:space-between; }
-  #toolbar .view-controls { display:flex; gap:8px; }
-  #toolbar .sort-controls { display:none; }
+/* Compact the toolbar */
+body.mobile-view #toolbar { padding: 8px; display:flex; align-items:center; justify-content:space-between; }
+body.mobile-view #toolbar .view-controls { display:flex; gap:8px; }
+body.mobile-view #toolbar .sort-controls { display:none; }
 
-  /* Music table tweaks for mobile: let mobile-tracks.css handle track styling */
-  #music-table .table-header { display:none; } /* hide the desktop header on tiny screens */
+/* Music table tweaks for mobile: let mobile-tracks.css handle track styling */
+body.mobile-view #music-table .table-header { display:none; } /* hide the desktop header on tiny screens */
   /* Note: individual track styling is handled by mobile-tracks.css and related files */
 
-  /* Small mobile player area sits above the nav bar */
-  .mobile-player {
-    position:fixed;
-    left:8px;
-    right:8px;
-    bottom:64px; /* above the bottom nav */
-    height:56px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:8px 12px;
-    background:var(--surface, #111);
-    color:var(--text-color, #fff);
-    border-radius:10px;
-    box-shadow:0 8px 18px rgba(0,0,0,0.35);
+/* Small mobile player area sits above the nav bar */
+/* Align selectors to actual DOM: #mobile-mini-player and its children */
+body.mobile-view .mobile-mini-player {
+  position:fixed;
+  left:8px;
+  right:8px;
+  bottom:64px; /* above the bottom nav */
+  height:56px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 12px;
+  background:var(--surface, #111);
+  color:var(--text-color, #fff);
+  border-radius:10px;
+  box-shadow:0 8px 18px rgba(0,0,0,0.35);
   z-index:1200;
   transition: transform 320ms cubic-bezier(.2,.9,.2,1), height 200ms ease, opacity 160ms ease;
   transform: translateY(0);
-  }
-  .mobile-player .mp-art { width:48px; height:48px; border-radius:6px; }
-  .mobile-player .mp-meta { flex:1; overflow:hidden; }
-  .mobile-player .mp-meta .mp-title { font-weight:600; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .mobile-player .mp-meta .mp-artist { font-size:0.85rem; opacity:0.85; }
-  .mobile-player .mp-controls { display:flex; gap:8px; align-items:center; }
+}
+body.mobile-view #mini-player-art,
+body.mobile-view .mini-player-art { width:48px; height:48px; border-radius:6px; object-fit:cover; }
+body.mobile-view .mini-player-info { flex:1; overflow:hidden; }
+body.mobile-view .mini-player-title { font-weight:600; font-size:0.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+body.mobile-view .mini-player-artist { font-size:0.85rem; opacity:0.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+body.mobile-view .mini-player-controls { display:flex; gap:8px; align-items:center; }
 
-  /* Mobile progress line between mini player and nav */
-  .mobile-progress-line {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 56px; /* above bottom nav */
-    height: 3px;
-    background: rgba(255, 255, 255, 0.1);
-    z-index: 1199; /* below mini player */
-  }
-  
-  .mobile-progress-bar {
-    height: 100%;
-    background: var(--primary-color, #ff6b35);
-    width: 0%;
-    transition: width 0.1s ease;
-    border-radius: 0 2px 2px 0;
-  }
+/* Mobile progress line between mini player and nav */
+body.mobile-view .mobile-progress-line {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 56px; /* above bottom nav */
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 1199; /* below mini player */
+}
 
-  /* Expanded player state (hidden by default) */
-  .mobile-player.expanded {
-    height: calc(100vh - 80px);
-    left:0; right:0; bottom:56px; /* keep above nav */
-    border-radius: 12px 12px 0 0;
-    padding:16px;
-    transform: translateY(-6px);
-    display:block;
-  }
-  .mobile-player .mp-expanded { display:block; margin-top:12px; }
-  .mobile-player .mp-mini { cursor: pointer; }
+body.mobile-view .mobile-progress-bar {
+  height: 100%;
+  background: var(--primary-color, #ff6b35);
+  width: 0%;
+  transition: width 0.1s ease;
+  border-radius: 0 2px 2px 0;
+}
 
-  /* Respect reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .mobile-player { transition: none; }
-  }
+/* Expanded player state (hidden by default) */
+/* Expanded state placeholder if we later support an expanded mini player */
+body.mobile-view .mobile-mini-player.expanded {
+  height: calc(100vh - 80px);
+  left:0; right:0; bottom:56px; /* keep above nav */
+  border-radius: 12px 12px 0 0;
+  padding:16px;
+  transform: translateY(-6px);
+  display:block;
+}
+body.mobile-view .mobile-mini-player .mp-expanded { display:block; margin-top:12px; }
+body.mobile-view .mobile-mini-player .mp-mini { cursor: pointer; }
 
-  /* Bottom navigation bar */
-  .mobile-bottom-nav {
-    position:fixed;
-    left:0; right:0; bottom:0;
-    height:56px;
-    display:flex;
-    justify-content:space-around;
-    align-items:center;
-    background:var(--surface-elevated, #0f0f0f);
-    border-top:1px solid rgba(255,255,255,0.04);
-    z-index:1300;
-  }
-  .mobile-bottom-nav button { background:none; border:none; color:var(--text-color, #fff); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:0.7rem; padding:6px 8px; }
-  .mobile-bottom-nav button .nav-icon { width:22px; height:22px; display:block; }
-  .mobile-bottom-nav button.active { color:var(--primary-color); }
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  body.mobile-view .mobile-player { transition: none; }
+}
 
-  /* Keep desktop player-bar hidden (we use mobile-player) */
-  #player-bar { display:none !important; }
+/* Bottom navigation bar */
+body.mobile-view .mobile-bottom-nav {
+  position:fixed;
+  left:0; right:0; bottom:0;
+  height:56px;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  background:var(--surface-elevated, #0f0f0f);
+  border-top:1px solid rgba(255,255,255,0.04);
+  z-index:1300;
+}
+body.mobile-view .mobile-bottom-nav .mobile-nav-item { background:none; border:none; color:var(--text-color, #fff); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-size:0.7rem; padding:6px 8px; }
+body.mobile-view .mobile-bottom-nav .mobile-nav-icon { width:22px; height:22px; display:block; }
+body.mobile-view .mobile-bottom-nav .mobile-nav-item.active { color:var(--primary-color); }
+
+/* Keep desktop player-bar hidden (we use mobile-player) */
+body.mobile-view #player-bar { display:none !important; }
+
+/* Mobile Artist Grid */
+body.mobile-view .mobile-artist-grid-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-color);
+  z-index: 10;
+  padding-top: 60px; /* Account for toolbar */
+}
+
+body.mobile-view .mobile-artist-card {
+  border-radius: 8px;
+  padding: 8px;
+  transition: all 0.2s ease;
+}
+
+body.mobile-view .mobile-artist-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.mobile-view .mobile-artist-card .artist-thumbnail {
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.mobile-view .mobile-artist-card:hover .artist-thumbnail {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+body.mobile-view .mobile-artist-card .artist-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mobile Album Grid */
+body.mobile-view .mobile-album-grid-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-color);
+  z-index: 10;
+  padding-top: 60px; /* Account for toolbar */
+}
+
+body.mobile-view .mobile-album-card {
+  transition: all 0.2s ease;
+}
+
+body.mobile-view .mobile-album-card .album-thumbnail {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.mobile-view .mobile-album-card:hover .album-thumbnail {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+body.mobile-view .mobile-album-info {
+  padding: 4px 0;
 }

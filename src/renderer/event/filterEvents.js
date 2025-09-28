@@ -16,6 +16,8 @@ export function setupFilterEventListeners() {
     console.warn('filterInput not found in DOM');
   }
 
+  // Re-enable sidebar filtering click handlers
+  // Artist and album filtering should work as normal
   const handleFilterClick = (container, type) => {
     container.addEventListener('click', (e) => {
       const item = e.target.closest('.filter-item');

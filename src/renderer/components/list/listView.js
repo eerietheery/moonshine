@@ -127,43 +127,77 @@ export function renderList(list) {
   
   // Check if we're in mobile view to avoid VirtualList conflicts
   const isMobileView = window.innerWidth <= 768 || document.body.classList.contains('mobile-view');
-  
+
+  // When mobile, we normally render the full DOM for compatibility with mobile UI.
+  // However for very large lists this causes jank — use VirtualList when over threshold.
+  const MOBILE_VLIST_THRESHOLD = 400; // rows; tuneable
+
   if (isMobileView) {
-    // Mobile view: Use simple DOM rendering without VirtualList
-    // This prevents conflicts with mobile track lazy loading system
-    if (list.vlist) {
-      list.vlist.destroy();
-      list.vlist = null;
-    }
-    
-    // Simple mobile-friendly rendering
-    list.innerHTML = '';
-    const fragment = document.createDocumentFragment();
-    
-    sorted.forEach((track, i) => {
-      const filteredIndex = state.filteredTracks.findIndex(t => t.filePath === track.filePath);
-      const el = createTrackElement(
-        track,
-        () => playTrack(
-          track,
-          filteredIndex,
-          document.getElementById('audio'),
-          document.getElementById('play-btn'),
-          document.getElementById('current-art'),
-          document.getElementById('current-title'),
-          document.getElementById('current-artist'),
-          () => renderList(list)
-        ),
-        state.listHeaders
-      );
-      if (state.currentTrack && state.currentTrack.filePath === track.filePath) {
-        el.classList.add('playing');
+    // If large list on mobile, use VirtualList to avoid creating thousands of DOM nodes.
+    if (sorted.length > MOBILE_VLIST_THRESHOLD) {
+      // Switch to virtualized rendering on mobile for large lists
+      if (list.vlist) list.vlist.destroy();
+      list.vlist = new VirtualList({
+        container: list,
+        rowHeight: 56,
+        total: sorted.length,
+        renderRow: (i) => {
+          const track = sorted[i];
+          const filteredIndex = state.filteredTracks.findIndex(t => t.filePath === track.filePath);
+          const el = createTrackElement(
+            track,
+            () => playTrack(
+              track,
+              filteredIndex,
+              document.getElementById('audio'),
+              document.getElementById('play-btn'),
+              document.getElementById('current-art'),
+              document.getElementById('current-title'),
+              document.getElementById('current-artist'),
+              () => renderList(list)
+            ),
+            state.listHeaders
+          );
+          if (state.currentTrack && state.currentTrack.filePath === track.filePath) el.classList.add('playing');
+          return el;
+        }
+      });
+    } else {
+      // Mobile view: Use simple DOM rendering without VirtualList
+      // This prevents conflicts with mobile track lazy loading system
+      if (list.vlist) {
+        list.vlist.destroy();
+        list.vlist = null;
       }
-      fragment.appendChild(el);
-    });
-    
-    list.appendChild(fragment);
-    
+
+      // Simple mobile-friendly rendering
+      list.innerHTML = '';
+      const fragment = document.createDocumentFragment();
+
+      sorted.forEach((track, i) => {
+        const filteredIndex = state.filteredTracks.findIndex(t => t.filePath === track.filePath);
+        const el = createTrackElement(
+          track,
+          () => playTrack(
+            track,
+            filteredIndex,
+            document.getElementById('audio'),
+            document.getElementById('play-btn'),
+            document.getElementById('current-art'),
+            document.getElementById('current-title'),
+            document.getElementById('current-artist'),
+            () => renderList(list)
+          ),
+          state.listHeaders
+        );
+        if (state.currentTrack && state.currentTrack.filePath === track.filePath) {
+          el.classList.add('playing');
+        }
+        fragment.appendChild(el);
+      });
+
+      list.appendChild(fragment);
+    }
   } else {
     // Desktop view: Use VirtualList for performance
     // Destroy any existing VirtualList first
