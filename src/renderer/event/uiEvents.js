@@ -117,6 +117,10 @@ export function setupUiEventListeners() {
       const sortHeader = e.target.closest('.sort-header[data-sort]');
       if (!sortHeader) return;
       
+      // Check if this is a click immediately after column resize - if so, ignore it
+      const headerEl = document.querySelector('#music-table .table-header');
+      try { if (headerEl && headerEl._isResizing) return; } catch(_) {}
+      
       const sortBy = sortHeader.getAttribute('data-sort');
       if (!sortBy) return;
       

@@ -23,24 +23,48 @@ function setupColumnResizing(headerEl, headers) {
     const handles = headerEl.querySelectorAll('.col-resizer[data-resize]');
     let dragging = null;
     const minWidths = { title: 240, artist: 160, album: 160, year: 80, genre: 80, bitrate: 80 };
+    let _rafPending = false;
+    // Buffer updates to once per animation frame to reduce reflow/layout thrash
+    const scheduleTemplateUpdate = () => {
+      if (_rafPending) return;
+      _rafPending = true;
+      requestAnimationFrame(() => {
+        try {
+          const tpl = getGridTemplate(headers);
+          setMusicGridTemplate(tpl);
+          headerEl.style.gridTemplateColumns = tpl;
+        } catch (_) {}
+        _rafPending = false;
+      });
+    };
+
     const onMove = (e) => {
       if (!dragging) return;
-      const dx = (e.touches ? e.touches[0].clientX : e.clientX) - dragging.startX;
+      const clientX = (e.touches ? e.touches[0].clientX : e.clientX);
+      const dx = clientX - dragging.startX;
       const next = Math.max(minWidths[dragging.key] || 80, Math.round(dragging.startW + dx));
       state.columnWidths = state.columnWidths || {};
       state.columnWidths[dragging.key] = next;
-  const tpl = getGridTemplate(headers);
-  setMusicGridTemplate(tpl);
-  headerEl.style.gridTemplateColumns = tpl;
+      // Schedule a single template update per animation frame
+      scheduleTemplateUpdate();
     };
     const onUp = () => {
       if (!dragging) return;
-      dragging = null;
+      // mark dragging finished, but keep a short-lived resizing flag to block the
+      // subsequent click event that would otherwise trigger sorting on the header.
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend', onUp);
+      dragging = null;
       try { window.etune?.updateConfig && window.etune.updateConfig({ columnWidths: state.columnWidths }); } catch (_) {}
+      try {
+        // Set a short-lived flag on the header element. Click handlers will check this.
+        if (headerEl) {
+          headerEl._isResizing = true;
+          setTimeout(() => { try { headerEl._isResizing = false; } catch(_) {} }, 120);
+        }
+      } catch (_) {}
     };
     handles.forEach(h => {
       const key = h.getAttribute('data-resize');
@@ -48,6 +72,8 @@ function setupColumnResizing(headerEl, headers) {
         e.preventDefault(); e.stopPropagation();
         const rect = h.parentElement.getBoundingClientRect();
         const startW = rect.width;
+        // mark header as resizing immediately so click handlers can detect it
+        try { if (headerEl) headerEl._isResizing = true; } catch(_) {}
         dragging = { key, startX: e.clientX, startW };
         document.addEventListener('mousemove', onMove, { passive: false });
         document.addEventListener('mouseup', onUp, { passive: true });
@@ -56,6 +82,7 @@ function setupColumnResizing(headerEl, headers) {
         const t = e.touches[0];
         const rect = h.parentElement.getBoundingClientRect();
         const startW = rect.width;
+        try { if (headerEl) headerEl._isResizing = true; } catch(_) {}
         dragging = { key, startX: t.clientX, startW };
         document.addEventListener('touchmove', onMove, { passive: false });
         document.addEventListener('touchend', onUp, { passive: true });
@@ -68,7 +95,10 @@ function setupSorting(headerEl, headers, renderListCallback) {
   headers.forEach(h => {
     const cell = headerEl.querySelector(`[data-sort="${h}"]`);
     if (!cell) return;
-    cell.addEventListener('click', () => {
+    cell.addEventListener('click', (e) => {
+      // Ignore clicks that happen as a result of a column resize end; headerEl._isResizing
+      // is set briefly when resize completes.
+      try { if (headerEl && headerEl._isResizing) { e.stopImmediatePropagation(); return; } } catch(_) {}
       if (state.sortBy === h) {
         state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc';
       } else {

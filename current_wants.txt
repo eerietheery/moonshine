@@ -5,13 +5,13 @@ Skin 2.0 - draw album art to edge of card for fuller look, list mode draw art be
 
 organize settings
 
-organize fat files into smaller files
-
-Reduce RAM usage
-
-PACK PLAYLIST FEATURE - create zip file of songs in playlist 
+Reduce RAM usage, analyze for performance holes, anything against usual practice.
 
 new sort in the toolbar in the app next to List and Grid we're going to add Browse. 
 Browse will load a grid of random Artists (displayed by circles) and albums (displayed by rounded squares) in scrollable side-scrolling categories, make plan to implement cleanly and with the same moldular style as the rest of the app. 
 
 Event Handler library? Implement Sustrand? 
+
+Scroller that moves the sidebar list should be wider/easier to grab, combine with sidebar width scroller, unify all into one big ol' sidebar with decent handling 
+
+make a plan to add 

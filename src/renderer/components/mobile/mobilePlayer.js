@@ -2,6 +2,8 @@
  * Mobile Player - Mini player functionality and controls
  */
 
+import { togglePlay as coreTogglePlay } from '../player/playerCore.js';
+
 let isMobilePlayerVisible = false;
 
 /**
@@ -113,13 +115,34 @@ function updatePlayButtonState(playBtn, audio) {
  * Toggle playback (for mini player)
  */
 function togglePlayback() {
+  const audio = document.getElementById('audio');
   const mainPlayBtn = document.getElementById('play-btn');
-  
-  if (mainPlayBtn) {
-    mainPlayBtn.click(); // Reuse existing play/pause logic
-  } else {
-    console.warn('Main play button not found');
+  if (!audio) {
+    console.warn('Audio element not found');
+    return;
   }
+  try {
+    if (typeof coreTogglePlay === 'function' && mainPlayBtn) {
+      coreTogglePlay(audio, mainPlayBtn);
+    } else {
+      // Fallback: toggle audio directly
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    }
+  } catch (e) {
+    console.warn('Mini player togglePlayback fallback due to error:', e);
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
+  }
+  // Update mini player button state immediately
+  const miniPlayBtn = document.getElementById('mini-play-btn');
+  updatePlayButtonState(miniPlayBtn, audio);
 }
 
 /**
