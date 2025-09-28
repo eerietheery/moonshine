@@ -27,7 +27,12 @@ let isResizing = false; // Prevent multiple simultaneous resize operations
 function storeDesktopViewMode() {
   const gridBtn = document.getElementById('grid-view');
   const listBtn = document.getElementById('list-view');
-  
+    if (musicTable) {
+      musicTable.style.removeProperty('display');
+      musicTable.style.removeProperty('visibility');
+      musicTable.style.removeProperty('pointer-events');
+      musicTable.removeAttribute('aria-hidden');
+    }
   if (gridBtn && gridBtn.classList.contains('active')) {
     desktopViewMode = 'grid';
   } else if (listBtn && listBtn.classList.contains('active')) {
