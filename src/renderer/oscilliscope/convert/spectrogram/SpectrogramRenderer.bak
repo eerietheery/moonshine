@@ -1,0 +1,201 @@
+import { FrequencyDataProvider } from '../../types/AudioTypes';
+import { ColorPalette, intensityToColor } from '../../utils/ColorUtils';
+
+type SpectrogramMode = 'linear' | 'circular';
+/**
+ * High-performance SpectrogramRenderer for real-time audio visualization.
+ * Linear spectrogram + new circular radar-style mode.
+ */
+export class SpectrogramRenderer {
+    private canvas: HTMLCanvasElement;
+    private ctx: CanvasRenderingContext2D;
+    private colorMap: Uint8ClampedArray;
+    private currentPalette: ColorPalette = 'classic';
+    private mode: SpectrogramMode = 'linear';
+    private getFrequencyData: FrequencyDataProvider | null = null;
+    private animationFrame: number | null = null;
+    private isActive: boolean = false;
+    
+    // Circular radar mode properties
+    private centerX: number = 0;
+    private centerY: number = 0;
+    private radius: number = 0;
+    private currentAngle: number = 0;
+    private angleStep: number = 0.02; // Much smaller angle increment per frame
+    private imageData: ImageData | null = null;
+
+    constructor(canvas: HTMLCanvasElement) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d')!;
+        this.colorMap = this.generateColorMap(this.currentPalette);
+        this.updateCircularDimensions();
+    }
+
+    static generateColorMap(): Uint8ClampedArray {
+        // This method is deprecated - use generateColorMapForPalette instead
+        return SpectrogramRenderer.generateColorMapForPalette('classic');
+    }
+
+    static generateColorMapForPalette(palette: ColorPalette): Uint8ClampedArray {
+        const map = new Uint8ClampedArray(256 * 4);
+        for (let i = 0; i < 256; i++) {
+            const intensity = i / 255;
+            const color = intensityToColor(intensity, palette);
+            map[i * 4 + 0] = color.r; // R
+            map[i * 4 + 1] = color.g; // G
+            map[i * 4 + 2] = color.b; // B
+            map[i * 4 + 3] = 255;     // A
+        }
+        return map;
+    }
+
+    private generateColorMap(palette: ColorPalette): Uint8ClampedArray {
+        return SpectrogramRenderer.generateColorMapForPalette(palette);
+    }
+
+    start(getFrequencyData: FrequencyDataProvider): void {
+        this.getFrequencyData = getFrequencyData;
+        this.isActive = true;
+        this.currentAngle = 0; // Reset sweep angle
+        this.loop();
+    }
+
+    stop(): void {
+        this.isActive = false;
+        if (this.animationFrame !== null) {
+            cancelAnimationFrame(this.animationFrame);
+            this.animationFrame = null;
+        }
+    }
+
+    setMode(mode: SpectrogramMode): void {
+        this.mode = mode;
+        if (mode === 'circular') {
+            this.updateCircularDimensions();
+            // Clear canvas when switching to circular mode
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.currentAngle = 0;
+        }
+    }
+
+    private updateCircularDimensions(): void {
+        this.centerX = this.canvas.width / 2;
+        this.centerY = this.canvas.height / 2;
+        this.radius = Math.min(this.centerX, this.centerY) * 0.8;
+        
+        // Initialize circular image data buffer
+        this.imageData = this.ctx.createImageData(this.canvas.width, this.canvas.height);
+        // Fill with black initially
+        for (let i = 0; i < this.imageData.data.length; i += 4) {
+            this.imageData.data[i + 3] = 255; // Alpha channel
+        }
+    }
+
+    setColorPalette(palette: ColorPalette): void {
+        this.currentPalette = palette;
+        this.colorMap = this.generateColorMap(palette);
+    }
+
+    resize(): void {
+        if (this.mode === 'circular') {
+            this.updateCircularDimensions();
+        }
+    }
+
+    private loop = (): void => {
+        if (!this.isActive) return;
+        this.render();
+        this.animationFrame = requestAnimationFrame(this.loop);
+    };
+
+    private render(): void {
+        if (!this.getFrequencyData) return;
+        const spectrum = this.getFrequencyData();
+        if (!spectrum) return;
+        
+        if (this.mode === 'circular') {
+            this.renderCircularRadar(spectrum);
+        } else {
+            this.renderLinear(spectrum);
+        }
+    }
+
+    private renderLinear(spectrum: Uint8Array): void {
+        const { width, height } = this.canvas;
+        
+        // Scroll the entire canvas content left by 1 pixel
+        this.ctx.drawImage(this.canvas, 1, 0, width - 1, height, 0, 0, width - 1, height);
+        
+        // Create a new column imageData for the rightmost edge
+        const columnData = this.ctx.createImageData(1, height);
+        
+        // Fill the new column with frequency data
+        for (let y = 0; y < height; y++) {
+            // Map y position to frequency bin (inverted so low frequencies are at bottom)
+            const bin = Math.floor(((height - 1 - y) / height) * spectrum.length);
+            const value = Math.min(255, spectrum[bin]);
+            const idx = y * 4;
+            
+            columnData.data[idx + 0] = this.colorMap[value * 4 + 0]; // R
+            columnData.data[idx + 1] = this.colorMap[value * 4 + 1]; // G
+            columnData.data[idx + 2] = this.colorMap[value * 4 + 2]; // B
+            columnData.data[idx + 3] = 255; // A
+        }
+        
+        // Draw the new column at the right edge
+        this.ctx.putImageData(columnData, width - 1, 0);
+    }
+
+    private renderCircularRadar(spectrum: Uint8Array): void {
+        if (!this.imageData) return;
+        
+        // Advance the current angle (like moving right in linear mode)
+        this.currentAngle += this.angleStep;
+        if (this.currentAngle >= Math.PI * 2) {
+            this.currentAngle = 0; // Reset after full rotation
+        }
+
+        // Calculate all pixel positions for this radial line once
+        const radialPixels: Array<{x: number, y: number, distance: number}> = [];
+        for (let distance = 0; distance <= this.radius; distance++) {
+            const x = Math.round(this.centerX + Math.cos(this.currentAngle) * distance);
+            const y = Math.round(this.centerY + Math.sin(this.currentAngle) * distance);
+            
+            if (x >= 0 && x < this.canvas.width && y >= 0 && y < this.canvas.height) {
+                radialPixels.push({x, y, distance});
+            }
+        }
+
+        // Update the entire radial line at once with interpolated frequency data
+        for (const pixel of radialPixels) {
+            // Map distance to frequency bin with power curve for better frequency distribution
+            const normalizedDistance = pixel.distance / this.radius;
+            const freqPosition = Math.pow(normalizedDistance, 2); // Square for better high-freq resolution
+            const freqBin = Math.floor(freqPosition * (spectrum.length - 1));
+            
+            // Get intensity for this frequency bin, with interpolation for smoother gradients
+            let intensity = 0;
+            if (freqBin < spectrum.length) {
+                if (freqBin === spectrum.length - 1) {
+                    intensity = spectrum[freqBin];
+                } else {
+                    // Linear interpolation between adjacent frequency bins
+                    const t = (freqPosition * (spectrum.length - 1)) - freqBin;
+                    intensity = spectrum[freqBin] * (1 - t) + spectrum[freqBin + 1] * t;
+                }
+            }
+            
+            // Set pixel color based on intensity
+            const colorIndex = Math.min(255, Math.floor(intensity));
+            const pixelIndex = (pixel.y * this.canvas.width + pixel.x) * 4;
+            
+            this.imageData.data[pixelIndex + 0] = this.colorMap[colorIndex * 4 + 0]; // R
+            this.imageData.data[pixelIndex + 1] = this.colorMap[colorIndex * 4 + 1]; // G
+            this.imageData.data[pixelIndex + 2] = this.colorMap[colorIndex * 4 + 2]; // B
+            this.imageData.data[pixelIndex + 3] = 255; // A
+        }
+
+        // Draw the updated image data to canvas
+        this.ctx.putImageData(this.imageData, 0, 0);
+    }
+}

@@ -31,7 +31,7 @@
   background: var(--surface-1);
   border-right: 1px solid var(--border);
   padding: 20px 10px;
-  overflow-y: scroll;
+  overflow-y: hidden;
   box-sizing: border-box;
   min-height: 0;
   position: relative;
@@ -53,30 +53,10 @@
   background: color-mix(in srgb, var(--primary-color) 20%, #222);
 }
 
-/* Sidebar scrollbar styling - slightly more visible but still subtle */
-/* Chromium/Electron */
-#sidebar::-webkit-scrollbar {
-  width: 12px;
-}
-#sidebar::-webkit-scrollbar-track {
-  background: transparent;
-}
-#sidebar::-webkit-scrollbar-thumb {
-  /* use primary color with low alpha via color-mix so theme controls scrollbar hue */
-  background: color-mix(in srgb, var(--primary-color) 16%, transparent);
-  border-radius: 8px;
-  border: 3px solid transparent; /* create padding so thumb doesn't touch edges */
-  background-clip: padding-box;
-}
-#sidebar::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--primary-color) 32%, transparent);
-}
 /* Firefox */
 #sidebar {
-  scrollbar-color: color-mix(in srgb, var(--primary-color) 16%, transparent) transparent;
-  scrollbar-width: thin;
+  scrollbar-width: none;
 }
-
 
 .sidebar-logo {
   display: flex;
@@ -253,16 +233,17 @@
   color: #000;
 }
 
-/* filter-list scrollbar: slightly slimmer but visible */
+/* filter-list scrollbar: slightly wider and easier to grab */
 .filter-list::-webkit-scrollbar {
-  width: 10px;
+  width: 14px;
 }
 .filter-list::-webkit-scrollbar-track { background: transparent; }
 .filter-list::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
-  border-radius:6px;
+  background: color-mix(in srgb, var(--primary-color) 16%, transparent);
+  border-radius: 7px;
   border: 2px solid transparent;
   background-clip: padding-box;
+  min-height: 20px; /* ensure thumb has minimum height for easier grabbing */
 }
-.filter-list::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--primary-color) 24%, transparent); }
-.filter-list { scrollbar-color: color-mix(in srgb, var(--primary-color) 12%, transparent) transparent; scrollbar-width: thin; }
+.filter-list::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--primary-color) 32%, transparent); }
+.filter-list { scrollbar-color: color-mix(in srgb, var(--primary-color) 16%, transparent) transparent; scrollbar-width: auto; }

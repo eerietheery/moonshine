@@ -200,15 +200,52 @@ if (oscCanvas) {
     analyser.connect(audioCtx.destination);
     analyser.fftSize = 512;
     dataArray = new Uint8Array(analyser.fftSize);
+    
+    // Expose globally for dashboard
+    window.audioCtx = audioCtx;
+    window.analyser = analyser;
+    
     sizeCanvas();
     if (gl) {
       if (initGL(dataArray.length)) drawGL(); else { gl = null; draw2D(); }
     } else {
       draw2D();
     }
+    
+    // Setup dashboard button
+    setupDashboardButton();
+  }
+
+  // Dashboard button setup
+  function setupDashboardButton() {
+    const dashboardBtn = document.getElementById('dashboard-btn');
+    if (!dashboardBtn) {
+      console.warn('Dashboard button not found');
+      return;
+    }
+    
+    console.log('Setting up dashboard button');
+    
+    dashboardBtn.addEventListener('click', (e) => {
+      console.log('Dashboard button clicked! Loading dashboard...');
+      
+      // Load and show dashboard
+      import('../components/ui/dashboardCore.js').then(module => {
+        console.log('Dashboard core loaded successfully');
+        module.showDashboard();
+      }).catch(err => {
+        console.error('Failed to load dashboard core:', err);
+      });
+      
+      e.preventDefault();
+    });
+    
+    console.log('Dashboard button event listener attached successfully');
   }
 
   window.addEventListener('resize', () => sizeCanvas(), { passive: true });
-  window.addEventListener('DOMContentLoaded', () => { setTimeout(setupOscilloscope, 400); });
+  window.addEventListener('DOMContentLoaded', () => { 
+    setTimeout(setupOscilloscope, 400);
+  });
 }
 
