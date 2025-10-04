@@ -3,6 +3,7 @@ import { updateSidebarFilters } from './components/sidebar/sidebar.js';
 import { renderList, renderGrid } from './components/shared/view.js';
 import * as dom from './dom.js';
 import { initializeAlbumArtCache, getAlbumArtStats } from './utils/albumArtCache.js';
+import { scanMusicCached } from './utils/cachedMusicScanner.js';
 
 function showSpinner(show = true) {
   let spinner = document.getElementById('center-spinner');
@@ -51,7 +52,15 @@ async function addMusic(userPath) {
   showSpinner(true);
   dom.list.innerHTML = '';
   try {
-    const tracks = await window.etune.scanMusic(userPath);
+    // Use cached scanner with progress tracking
+    const tracks = await scanMusicCached(userPath, {
+      forceFull: false,
+      onProgress: (current, total, message) => {
+        console.log(`📦 Scan progress: ${message} (${current}/${total})`);
+        // TODO: Show progress in UI
+      }
+    });
+    
     // Filter out tracks with all Unknown fields and/or error
     const validTracks = tracks.filter(t => {
       if (!t || !t.filePath) return false;
@@ -96,7 +105,14 @@ async function loadMusic(dirPath) {
   showSpinner(true);
   dom.list.innerHTML = '';
   try {
-    const tracks = await window.etune.scanMusic(dirPath);
+    // Use cached scanner for faster startup
+    const tracks = await scanMusicCached(dirPath, {
+      forceFull: false,
+      onProgress: (current, total, message) => {
+        console.log(`📦 Load progress: ${message} (${current}/${total})`);
+      }
+    });
+    
     state.tracks = tracks.filter(t => {
       if (!t || !t.filePath) return false;
       if (t.error) return false;

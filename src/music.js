@@ -2,6 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const mm = require('music-metadata');
 
+// Note: IndexedDB cache is handled in renderer process, not main process
+// This file runs in Node.js (main process), so caching is deferred to renderer
+
 const AUDIO_EXTS = new Set(['.mp3', '.m4a', '.flac', '.wav', '.ogg', '.aac']);
 const CONCURRENCY = 8;
 
