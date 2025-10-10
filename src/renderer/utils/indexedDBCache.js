@@ -63,7 +63,8 @@ class IndexedDBCache {
       throw new Error('IndexedDB is not supported in this environment');
     }
 
-    if (this.db) {
+    if (this.db && this.isInitialized) {
+      console.log('📦 IndexedDB already open, reusing connection');
       return this.db; // Already open
     }
 
@@ -80,6 +81,18 @@ class IndexedDBCache {
         this.db = request.result;
         this.isInitialized = true;
         console.log('✅ IndexedDB opened successfully');
+        
+        // Add error handler for database
+        this.db.onerror = (event) => {
+          console.error('❌ Database error:', event.target.error);
+        };
+        
+        // Handle unexpected close
+        this.db.onclose = () => {
+          console.warn('⚠️ Database connection closed unexpectedly');
+          this.db = null;
+          this.isInitialized = false;
+        };
         
         // Load stats
         this.loadStats().catch(err => console.warn('Failed to load stats:', err));
@@ -282,17 +295,30 @@ class IndexedDBCache {
     if (!this.db) await this.open();
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([STORES.TRACKS], 'readonly');
-      const store = transaction.objectStore(STORES.TRACKS);
-      const request = store.getAll();
+      try {
+        const transaction = this.db.transaction([STORES.TRACKS], 'readonly');
+        const store = transaction.objectStore(STORES.TRACKS);
+        const request = store.getAll();
 
-      request.onsuccess = () => {
-        const tracks = request.result || [];
-        console.log(`📦 Loaded ${tracks.length} tracks from cache`);
-        resolve(tracks);
-      };
+        request.onsuccess = () => {
+          const tracks = request.result || [];
+          console.log(`📦 Retrieved ${tracks.length} tracks from cache`);
+          resolve(tracks);
+        };
 
-      request.onerror = () => reject(request.error);
+        request.onerror = () => {
+          console.error('❌ Failed to retrieve tracks:', request.error);
+          reject(request.error);
+        };
+        
+        transaction.onerror = () => {
+          console.error('❌ Transaction error while retrieving tracks:', transaction.error);
+          reject(transaction.error);
+        };
+      } catch (err) {
+        console.error('❌ Exception while retrieving tracks:', err);
+        resolve([]); // Return empty array on error
+      }
     });
   }
 
@@ -321,12 +347,27 @@ class IndexedDBCache {
     if (!this.db) await this.open();
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db.transaction([STORES.TRACKS], 'readonly');
-      const store = transaction.objectStore(STORES.TRACKS);
-      const request = store.count();
+      try {
+        const transaction = this.db.transaction([STORES.TRACKS], 'readonly');
+        const store = transaction.objectStore(STORES.TRACKS);
+        const request = store.count();
 
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          console.log(`📦 Cache count result: ${request.result}`);
+          resolve(request.result || 0);
+        };
+        request.onerror = () => {
+          console.error('❌ Cache count error:', request.error);
+          reject(request.error);
+        };
+        transaction.onerror = () => {
+          console.error('❌ Cache count transaction error:', transaction.error);
+          reject(transaction.error);
+        };
+      } catch (err) {
+        console.error('❌ Cache count exception:', err);
+        resolve(0); // Return 0 on error instead of rejecting
+      }
     });
   }
 

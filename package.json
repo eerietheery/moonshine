@@ -1,13 +1,12 @@
 {
   "name": "moonshine",
   "productName": "moonshine",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "",
   "main": "src/main/main.js",
     "scripts": {
     "start": "electron .",
-    "build": "electron-builder",
-    "postbuild": "signtool sign /f dist\\moonshine-dev.pfx /p \"%MOONSHINE_CERT_PASSWORD%\" /tr http://timestamp.digicert.com /td sha256 /fd sha256 \"dist\\Moonshine %npm_package_version%.exe\""
+    "build": "electron-builder"
   },
   "keywords": [],
   "author": "",
@@ -46,8 +45,7 @@
           ]
         }
       ],
-      "verifyUpdateCodeSignature": false,
-      "forceCodeSigning": false
+      "verifyUpdateCodeSignature": false
     },
     "nsis": {
       "oneClick": false,

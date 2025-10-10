@@ -119,6 +119,9 @@ export function restoreDesktopToolbar() {
   toolbar.style.removeProperty('grid-template-columns');
   toolbar.style.removeProperty('justify-content');
   
+  // Explicitly restore desktop display mode
+  toolbar.style.display = 'grid';
+  
   // Show hidden toolbar children
   const existingChildren = toolbar.children;
   for (let child of existingChildren) {

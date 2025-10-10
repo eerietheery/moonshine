@@ -40,9 +40,10 @@ export async function scanMusicCached(dirPath, options = {}) {
     await cache.open();
     
     // Check if we have cached data for this directory
-    const hasCachedData = await cache.hasData();
+    const cachedCount = await cache.count();
+    console.log(`📦 Cache check: Found ${cachedCount} cached tracks`);
     
-    if (hasCachedData && !forceFull) {
+    if (cachedCount > 0 && !forceFull) {
       console.log('📦 Cache hit! Loading tracks from IndexedDB...');
       onProgress(0, 100, 'Loading from cache...');
       
