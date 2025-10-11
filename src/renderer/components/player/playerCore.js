@@ -135,7 +135,7 @@ export function playNext(audio, renderList) {
     const curIdx = state.queue.findIndex(t => t.filePath === state.currentTrack?.filePath);
     if (curIdx === -1) {
       const next = state.queue.shift();
-      import('./queue.js').then(m => m.renderQueuePanel && m.renderQueuePanel()).catch(()=>{});
+      import('../queue/queue.js').then(m => m.renderQueuePanel && m.renderQueuePanel()).catch(()=>{});
       playTrack(
         next,
         0,
@@ -150,7 +150,7 @@ export function playNext(audio, renderList) {
     } else {
       // Remove the just-played track from the queue
       state.queue.splice(curIdx, 1);
-      import('./queue.js').then(m => m.renderQueuePanel && m.renderQueuePanel()).catch(()=>{});
+      import('../queue/queue.js').then(m => m.renderQueuePanel && m.renderQueuePanel()).catch(()=>{});
       // If there are more tracks in the queue, play the next one
       if (state.queue.length) {
         playTrack(

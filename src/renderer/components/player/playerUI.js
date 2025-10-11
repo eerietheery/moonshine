@@ -38,18 +38,13 @@ export function setupPlayerUI(audio, playBtn, prevBtn, nextBtn, progressBar, pro
     }
   });
   audio.addEventListener('ended', () => {
-    if (window.state.loopMode === 'one') {
+    // Handle loop-one mode: replay the same track
+    if (state.loopMode === 'one') {
       audio.currentTime = 0;
       audio.play();
       return;
     }
-    if (window.state.currentTrack) {
-      const qIdx = window.state.queue.findIndex(t => t.filePath === window.state.currentTrack.filePath);
-      if (qIdx !== -1) {
-        window.state.queue.splice(qIdx, 1);
-        import('../queue/queue.js').then(m => m.renderQueuePanel && m.renderQueuePanel()).catch(()=>{});
-      }
-    }
+    // Let playNext() handle all queue management and track progression
     playNext(audio, renderListFn);
   });
   
@@ -203,7 +198,7 @@ export function setupPlayerUI(audio, playBtn, prevBtn, nextBtn, progressBar, pro
 
   // Click handlers for now playing title/artist
   const enableSidebarFiltering = () => {
-    if (!window.state.sidebarFilteringEnabled) window.state.sidebarFilteringEnabled = true;
+    if (!state.sidebarFilteringEnabled) state.sidebarFilteringEnabled = true;
   };
   if (currentArtist) {
     const handleArtist = () => {
@@ -213,21 +208,21 @@ export function setupPlayerUI(audio, playBtn, prevBtn, nextBtn, progressBar, pro
       
       // Allow swapping between artist and album filters
       // Clear album filter to focus on artist, unless both filters would show valid results
-      if (window.state.activeAlbum && window.state.activeAlbum !== (window.state.currentTrack?.tags?.album || 'Unknown')) {
-        window.state.activeAlbum = null;
+      if (state.activeAlbum && state.activeAlbum !== (state.currentTrack?.tags?.album || 'Unknown')) {
+        state.activeAlbum = null;
       }
       
-      window.state.activeArtist = artist;
+      state.activeArtist = artist;
       const filterInput = document.getElementById('filter');
-      updateFilters(filterInput, window.state.sidebarFilteringEnabled);
+      updateFilters(filterInput, state.sidebarFilteringEnabled);
       // Choose renderer dynamically so we don't force-list when grid is active
       const renderer = (dom.gridViewBtn && dom.gridViewBtn.classList.contains('active')) ? renderGrid : renderList;
-      updateSidebarFilters(filterInput, document.getElementById('artist-list'), document.getElementById('album-list'), () => renderer(dom.list), window.state.sidebarFilteringEnabled);
+      updateSidebarFilters(filterInput, document.getElementById('artist-list'), document.getElementById('album-list'), () => renderer(dom.list), state.sidebarFilteringEnabled);
       renderer(dom.list);
       
       // Dispatch event for other components (mobile, etc.)
       document.dispatchEvent(new CustomEvent('filterChanged', { 
-        detail: { type: 'artist', value: artist, activeAlbum: window.state.activeAlbum } 
+        detail: { type: 'artist', value: artist, activeAlbum: state.activeAlbum } 
       }));
     };
     currentArtist.addEventListener('click', handleArtist);
@@ -241,21 +236,21 @@ export function setupPlayerUI(audio, playBtn, prevBtn, nextBtn, progressBar, pro
       
       // Allow swapping between album and artist filters  
       // Clear artist filter to focus on album, unless both filters would show valid results
-      if (window.state.activeArtist && window.state.activeArtist !== (window.state.currentTrack?.tags?.artist || 'Unknown')) {
-        window.state.activeArtist = null;
+      if (state.activeArtist && state.activeArtist !== (state.currentTrack?.tags?.artist || 'Unknown')) {
+        state.activeArtist = null;
       }
       
-      window.state.activeAlbum = album;
+      state.activeAlbum = album;
       const filterInput = document.getElementById('filter');
-      updateFilters(filterInput, window.state.sidebarFilteringEnabled);
+      updateFilters(filterInput, state.sidebarFilteringEnabled);
       // Choose renderer dynamically so we don't force-list when grid is active
       const renderer2 = (dom.gridViewBtn && dom.gridViewBtn.classList.contains('active')) ? renderGrid : renderList;
-      updateSidebarFilters(filterInput, document.getElementById('artist-list'), document.getElementById('album-list'), () => renderer2(dom.list), window.state.sidebarFilteringEnabled);
+      updateSidebarFilters(filterInput, document.getElementById('artist-list'), document.getElementById('album-list'), () => renderer2(dom.list), state.sidebarFilteringEnabled);
       renderer2(dom.list);
       
       // Dispatch event for other components (mobile, etc.)
       document.dispatchEvent(new CustomEvent('filterChanged', { 
-        detail: { type: 'album', value: album, activeArtist: window.state.activeArtist } 
+        detail: { type: 'album', value: album, activeArtist: state.activeArtist } 
       }));
     };
     currentTitle.addEventListener('click', handleAlbum);
