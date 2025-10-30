@@ -3,13 +3,6 @@ import { showToast } from '../../components/ui/ui.js';
 
 function createDataBackupSection(state) {
   const section = document.createElement('div');
-  section.style.marginTop = '18px';
-
-  const title = document.createElement('div');
-  title.textContent = 'Data Backup & Restore';
-  title.style.fontWeight = '600';
-  title.style.marginBottom = '12px';
-  title.style.color = '#fff';
 
   const description = document.createElement('div');
   description.textContent = 'Backup your playlists, favorites, and settings to preserve them during app uninstall/reinstall.';
@@ -189,7 +182,6 @@ function createDataBackupSection(state) {
   restoreRow.appendChild(restoreInfo);
   restoreRow.appendChild(fileInput);
 
-  section.appendChild(title);
   section.appendChild(description);
   section.appendChild(autoBackupRow);
   section.appendChild(backupRow);

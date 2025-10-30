@@ -4,6 +4,7 @@ import { filterTracks, normalizeArtist } from './filter.js';
 export const state = {
   tracks: [],
   filteredTracks: [],
+  sortedTracks: [], // The sorted and filtered tracks as displayed in the list (includes track number ordering)
   currentTrack: null,
   currentTrackIndex: -1,
   isPlaying: false,

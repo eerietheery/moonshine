@@ -10,6 +10,15 @@ const DEFAULT_DIR = app.getPath('music');
 
 function createWindow() {
   const cfg = getConfig();
+  
+  // Use persistent storage in Documents/Moonshine folder for IndexedDB
+  const userDataPath = path.join(app.getPath('documents'), 'Moonshine');
+  
+  // Ensure the directory exists
+  if (!fs.existsSync(userDataPath)) {
+    fs.mkdirSync(userDataPath, { recursive: true });
+  }
+  
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -19,8 +28,15 @@ function createWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'), // This path is correct
       contextIsolation: true,
+      // Use persistent partition to store IndexedDB in Documents/Moonshine
+      partition: `persist:moonshine`,
     },
   });
+  
+  // Set the session storage path to Documents/Moonshine
+  const session = win.webContents.session;
+  app.setPath('sessionData', userDataPath);
+  
   // Corrected path for index.html
   win.loadFile(path.join(__dirname, '../../index.html'));
   mainWindow = win;

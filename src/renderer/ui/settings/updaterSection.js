@@ -1,12 +1,5 @@
 function createUpdaterSection() {
   const updatesSection = document.createElement('div');
-  updatesSection.style.marginTop = '18px';
-
-  const updatesTitle = document.createElement('div');
-  updatesTitle.textContent = 'Updates';
-  updatesTitle.style.fontWeight = '600';
-  updatesTitle.style.margin = '8px 0';
-  updatesTitle.style.color = '#fff';
 
   const updateRow = document.createElement('div');
   updateRow.style.display = 'flex';
@@ -35,7 +28,6 @@ function createUpdaterSection() {
 
   updateRow.appendChild(currentSpan);
   updateRow.appendChild(updateBtn);
-  updatesSection.appendChild(updatesTitle);
   updatesSection.appendChild(updateRow);
 
   // Kick off version check (best-effort; no hard failure if network blocked)

@@ -1,15 +1,8 @@
 function createHeadersSection(state) {
   const headersSection = document.createElement('div');
-  headersSection.style.marginTop = '18px';
   headersSection.style.display = 'flex';
   headersSection.style.flexDirection = 'column';
   headersSection.style.gap = '10px';
-
-  const headersTitle = document.createElement('div');
-  headersTitle.textContent = 'List View Headers';
-  headersTitle.style.fontWeight = '600';
-  headersTitle.style.color = '#fff';
-  headersTitle.style.marginBottom = '8px';
 
   // Default headers for now
   const possibleHeaders = [
@@ -58,7 +51,6 @@ function createHeadersSection(state) {
     headerCheckboxes.appendChild(label);
   });
 
-  headersSection.appendChild(headersTitle);
   headersSection.appendChild(headerCheckboxes);
 
   const teardown = () => {

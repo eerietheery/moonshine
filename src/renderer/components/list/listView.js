@@ -75,6 +75,10 @@ export function renderList(list) {
   }
   // Use sortTracks from listSort.js
   const sorted = sortTracks(filtered, state.sortBy, state.sortOrder, state.activeAlbum);
+  
+  // Store the sorted tracks in state so playback can use the correct order
+  state.sortedTracks = sorted;
+  
   list.style.display = '';
   list.style.gridTemplateColumns = '';
   list.style.gap = '';

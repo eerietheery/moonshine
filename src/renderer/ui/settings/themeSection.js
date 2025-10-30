@@ -2,12 +2,6 @@ import { setTheme, themes } from '../../../theme.js';
 
 function createThemeSection(showColorModal, modal, teardown) {
   const themeSection = document.createElement('div');
-  const themeTitle = document.createElement('div');
-  themeTitle.textContent = 'Theme';
-  themeTitle.style.fontWeight = '600';
-  themeTitle.style.margin = '8px 0';
-  themeTitle.style.color = '#fff';
-  themeSection.appendChild(themeTitle);
 
   // Theme chooser (styled select)
   const themeRow = document.createElement('div');

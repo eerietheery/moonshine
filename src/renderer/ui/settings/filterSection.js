@@ -1,10 +1,5 @@
 function createFilterSection(state) {
   const filterSection = document.createElement('div');
-  const filterTitle = document.createElement('div');
-  filterTitle.textContent = 'Filtering';
-  filterTitle.style.fontWeight = '600';
-  filterTitle.style.margin = '8px 0';
-  filterTitle.style.color = '#fff';
 
   const filterToggle = document.createElement('label');
   filterToggle.style.display = 'flex';
@@ -49,7 +44,6 @@ function createFilterSection(state) {
   filterToggle.appendChild(filterCheckbox);
   filterToggle.appendChild(filterLabel);
 
-  filterSection.appendChild(filterTitle);
   filterSection.appendChild(filterToggle);
 
   const teardown = () => {

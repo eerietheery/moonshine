@@ -33,14 +33,38 @@ export function sortTracks(tracks, sortBy, sortOrder, activeAlbum) {
     });
   } else {
     sortedTracks.sort((a, b) => {
+      // Primary sort: user-selected field (artist, album, year, etc.)
       let aVal = (a.tags?.[sortBy] || '').toString().toLowerCase();
       let bVal = (b.tags?.[sortBy] || '').toString().toLowerCase();
       if (sortBy === 'year') {
         aVal = parseInt(aVal) || 0;
         bVal = parseInt(bVal) || 0;
       }
-      const result = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-      return sortOrder === 'asc' ? result : -result;
+      const primaryResult = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+      if (primaryResult !== 0) {
+        return sortOrder === 'asc' ? primaryResult : -primaryResult;
+      }
+
+      // Secondary sort: within the same primary value, sort by album to group tracks together
+      const aAlbum = (a.tags?.album || 'Unknown').toString().toLowerCase();
+      const bAlbum = (b.tags?.album || 'Unknown').toString().toLowerCase();
+      const albumCmp = aAlbum < bAlbum ? -1 : aAlbum > bAlbum ? 1 : 0;
+      if (albumCmp !== 0) {
+        return sortOrder === 'asc' ? albumCmp : -albumCmp;
+      }
+
+      // Tertiary sort: within the same album, sort by track number
+      const aNum = (typeof a.tags?.track === 'number' ? a.tags.track : parseInt(a.tags?.track)) || 0;
+      const bNum = (typeof b.tags?.track === 'number' ? b.tags.track : parseInt(b.tags?.track)) || 0;
+      if (aNum !== bNum) {
+        return aNum - bNum; // Always ascending for track numbers
+      }
+
+      // Quaternary sort: fallback to title for stable ordering
+      const aTitle = (a.tags?.title || a.file || '').toString().toLowerCase();
+      const bTitle = (b.tags?.title || b.file || '').toString().toLowerCase();
+      const titleCmp = aTitle < bTitle ? -1 : aTitle > bTitle ? 1 : 0;
+      return sortOrder === 'asc' ? titleCmp : -titleCmp;
     });
   }
 

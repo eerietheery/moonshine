@@ -5,7 +5,13 @@ export function playTrack(track, index, audio, playBtn, currentArt, currentTitle
   state.currentTrack = track;
   const filteredIdx = state.filteredTracks.findIndex(t => t.filePath === track.filePath);
   state.currentTrackIndex = filteredIdx !== -1 ? filteredIdx : index;
-  const fileUrl = `file:///${track.filePath.replace(/\\/g, '/')}`;
+  
+  // Properly encode file path for URL, handling special characters like #, %, spaces, etc.
+  const normalizedPath = track.filePath.replace(/\\/g, '/');
+  const pathParts = normalizedPath.split('/');
+  const encodedParts = pathParts.map(part => encodeURIComponent(part));
+  const fileUrl = `file:///${encodedParts.join('/')}`;
+  
   audio.src = fileUrl;
   audio.play();
   const titleText = track.tags.title || track.file;
@@ -90,9 +96,13 @@ export function playPrevious(audio, renderList) {
     // If at first queued track, do nothing
     return;
   }
-  // If queue is empty, use filteredTracks
-  if (!state.filteredTracks.length) return;
+  
+  // If queue is empty, use the displayed sorted tracks for sequential playback
+  const playbackList = state.sortedTracks.length > 0 ? state.sortedTracks : state.tracks;
+  if (!playbackList.length) return;
+  
   if (state.isShuffle && state.playOrder && state.playOrder.length) {
+    // Shuffle mode: use filteredTracks and playOrder
     const curIdx = state.currentTrackIndex;
     let pos = state.playOrder.indexOf(curIdx);
     if (pos === -1) {
@@ -113,10 +123,16 @@ export function playPrevious(audio, renderList) {
       );
     }
   } else {
-    if (state.currentTrackIndex > 0) {
+    // Sequential mode: use the sorted display order for consistent previous-track behavior
+    const currentIdx = state.currentTrack 
+      ? playbackList.findIndex(t => t.filePath === state.currentTrack.filePath)
+      : -1;
+    
+    if (currentIdx > 0) {
+      const prevTrack = playbackList[currentIdx - 1];
       playTrack(
-        state.filteredTracks[state.currentTrackIndex - 1],
-        state.currentTrackIndex - 1,
+        prevTrack,
+        currentIdx - 1,
         audio,
         document.getElementById('play-btn'),
         document.getElementById('current-art'),
@@ -165,12 +181,17 @@ export function playNext(audio, renderList) {
         );
         return;
       }
-      // If queue is now empty, fall back to filteredTracks
+      // If queue is now empty, fall back to full library
     }
   }
-  // If queue is empty, use filteredTracks
-  if (!state.filteredTracks.length) return;
+  
+  // If queue is empty, use the displayed sorted tracks for sequential playback
+  // This ensures next/previous follows exactly what the user sees in the list
+  const playbackList = state.sortedTracks.length > 0 ? state.sortedTracks : state.tracks;
+  if (!playbackList.length) return;
+  
   if (state.isShuffle && state.playOrder && state.playOrder.length) {
+    // Shuffle mode: use filteredTracks and playOrder for shuffle behavior
     const curIdx = state.currentTrackIndex;
     let pos = state.playOrder.indexOf(curIdx);
     if (pos === -1) {
@@ -204,10 +225,16 @@ export function playNext(audio, renderList) {
       );
     }
   } else {
-    if (state.currentTrackIndex < state.filteredTracks.length - 1) {
+    // Sequential mode: use the sorted display order for consistent next-track behavior
+    const currentIdx = state.currentTrack 
+      ? playbackList.findIndex(t => t.filePath === state.currentTrack.filePath)
+      : -1;
+    
+    if (currentIdx !== -1 && currentIdx < playbackList.length - 1) {
+      const nextTrack = playbackList[currentIdx + 1];
       playTrack(
-        state.filteredTracks[state.currentTrackIndex + 1],
-        state.currentTrackIndex + 1,
+        nextTrack,
+        currentIdx + 1,
         audio,
         document.getElementById('play-btn'),
         document.getElementById('current-art'),
@@ -217,7 +244,7 @@ export function playNext(audio, renderList) {
       );
     } else if (state.loopMode === 'all') {
       playTrack(
-        state.filteredTracks[0],
+        playbackList[0],
         0,
         audio,
         document.getElementById('play-btn'),

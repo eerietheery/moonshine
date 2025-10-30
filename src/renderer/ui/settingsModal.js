@@ -51,8 +51,7 @@ function showSettingsModal() {
 
   importSection.appendChild(importBtn);
   importSection.appendChild(fileInput);
-  // --- List View Headers Section (extracted) ---
-  const { element: headersSection, teardown: headersTeardown } = createHeadersSection(state);
+
   // --- Modal Backdrop ---
   const modal = document.createElement('div');
   modal.style.position = 'fixed';
@@ -116,46 +115,54 @@ function showSettingsModal() {
   body.style.padding = '16px';
   body.style.color = '#ddd';
   body.style.display = 'grid';
-  body.style.gap = '18px';
+  body.style.gap = '8px';
 
-  // --- Library Section (extracted) .\settings\librarySection.js ---
+  // Helper function to create section dividers
+  const createSectionDivider = (title) => {
+    const divider = document.createElement('div');
+    divider.style.marginTop = '20px';
+    divider.style.marginBottom = '12px';
+    divider.style.paddingBottom = '8px';
+    divider.style.borderBottom = '2px solid rgba(255,255,255,0.1)';
+    
+    const titleEl = document.createElement('div');
+    titleEl.textContent = title;
+    titleEl.style.fontSize = '15px';
+    titleEl.style.fontWeight = '700';
+    titleEl.style.color = 'var(--primary-color, #8C40B8)';
+    titleEl.style.textTransform = 'uppercase';
+    titleEl.style.letterSpacing = '0.5px';
+    
+    divider.appendChild(titleEl);
+    return divider;
+  };
+
+  // --- LIBRARY & DATA SECTION ---
+  body.appendChild(createSectionDivider('Library & Data'));
+  
   const { element: libSection, teardown: libTeardown } = createLibrarySection(state);
-  // --- Updates Section (extracted) ---
-  const { element: updatesSection, teardown: updatesTeardown } = createUpdaterSection();
-  // --- Artist Section (extracted) ---
-  const { element: artistSection, teardown: artistTeardown } = createArtistSection(state);
-  // --- Filtering Section (extracted) ---
-  const { element: filterSection, teardown: filterTeardown } = createFilterSection(state);
-  // --- Theme Section (extracted) ---
-  const { element: themeSection, teardown: themeTeardown } = createThemeSection(showColorModal, modal, teardown);
-  // --- Data Backup Section (extracted) ---
-  const { element: dataBackupSection, teardown: dataBackupTeardown } = createDataBackupSection(state);
-  // aggregate teardown handlers (library section provides its own)
-  if (typeof libTeardown === 'function') teardownHandlers.push(libTeardown);
-  if (typeof headersTeardown === 'function') teardownHandlers.push(headersTeardown);
-  if (typeof updatesTeardown === 'function') teardownHandlers.push(updatesTeardown);
-  if (typeof filterTeardown === 'function') teardownHandlers.push(filterTeardown);
-  if (typeof artistTeardown === 'function') teardownHandlers.push(artistTeardown);
-  if (typeof themeTeardown === 'function') teardownHandlers.push(themeTeardown);
-  if (typeof dataBackupTeardown === 'function') teardownHandlers.push(dataBackupTeardown);
-
-  // --- Assemble Modal Body ---
+  libSection.style.marginTop = '0';
   body.appendChild(libSection);
+
+  const { element: dataBackupSection, teardown: dataBackupTeardown } = createDataBackupSection(state);
+  dataBackupSection.style.marginTop = '16px';
   body.appendChild(dataBackupSection);
+
   body.appendChild(importSection);
-  body.appendChild(headersSection);
-  body.appendChild(filterSection);
-  body.appendChild(artistSection);
-  // --- Full Art Display Card Toggle ---
+
+  // --- APPEARANCE SECTION ---
+  body.appendChild(createSectionDivider('Appearance'));
+
+  const { element: themeSection, teardown: themeTeardown } = createThemeSection(showColorModal, modal, teardown);
+  themeSection.style.marginTop = '0';
+  body.appendChild(themeSection);
+
+  // Full Art Display Card Toggle
   const fullArtSection = document.createElement('div');
-  fullArtSection.style.margin = '12px 0';
+  fullArtSection.style.marginTop = '12px';
   fullArtSection.style.display = 'flex';
   fullArtSection.style.alignItems = 'center';
   fullArtSection.style.gap = '12px';
-  const fullArtLabel = document.createElement('label');
-  fullArtLabel.textContent = 'Full Art Display Card';
-  fullArtLabel.style.fontWeight = '600';
-  fullArtLabel.style.color = '#fff';
   const fullArtToggle = document.createElement('input');
   fullArtToggle.type = 'checkbox';
   fullArtToggle.checked = !!state.fullArtCardDisplay;
@@ -164,14 +171,51 @@ function showSettingsModal() {
   fullArtToggle.addEventListener('change', (e) => {
     state.fullArtCardDisplay = fullArtToggle.checked;
     if (window.etune?.updateConfig) window.etune.updateConfig({ fullArtCardDisplay: state.fullArtCardDisplay });
-    // Optionally trigger a grid re-render if needed
     if (typeof window.renderGrid === 'function') window.renderGrid(document.getElementById('music-list'));
   });
+  const fullArtLabel = document.createElement('label');
+  fullArtLabel.textContent = 'Full Art Display Card';
+  fullArtLabel.style.fontWeight = '600';
+  fullArtLabel.style.color = '#fff';
+  fullArtLabel.style.cursor = 'pointer';
+  fullArtLabel.addEventListener('click', () => fullArtToggle.click());
   fullArtSection.appendChild(fullArtToggle);
   fullArtSection.appendChild(fullArtLabel);
   body.appendChild(fullArtSection);
-  body.appendChild(themeSection);
+
+  // --- VIEW OPTIONS SECTION ---
+  body.appendChild(createSectionDivider('View Options'));
+
+  const { element: headersSection, teardown: headersTeardown } = createHeadersSection(state);
+  headersSection.style.marginTop = '0';
+  body.appendChild(headersSection);
+
+  // --- FILTERING & BEHAVIOR SECTION ---
+  body.appendChild(createSectionDivider('Filtering & Behavior'));
+
+  const { element: filterSection, teardown: filterTeardown } = createFilterSection(state);
+  filterSection.style.marginTop = '0';
+  body.appendChild(filterSection);
+
+  const { element: artistSection, teardown: artistTeardown } = createArtistSection(state);
+  artistSection.style.marginTop = '12px';
+  body.appendChild(artistSection);
+
+  // --- UPDATES SECTION ---
+  body.appendChild(createSectionDivider('Updates'));
+  
+  const { element: updatesSection, teardown: updatesTeardown } = createUpdaterSection();
+  updatesSection.style.marginTop = '0';
   body.appendChild(updatesSection);
+
+  // Aggregate teardown handlers
+  if (typeof libTeardown === 'function') teardownHandlers.push(libTeardown);
+  if (typeof headersTeardown === 'function') teardownHandlers.push(headersTeardown);
+  if (typeof updatesTeardown === 'function') teardownHandlers.push(updatesTeardown);
+  if (typeof filterTeardown === 'function') teardownHandlers.push(filterTeardown);
+  if (typeof artistTeardown === 'function') teardownHandlers.push(artistTeardown);
+  if (typeof themeTeardown === 'function') teardownHandlers.push(themeTeardown);
+  if (typeof dataBackupTeardown === 'function') teardownHandlers.push(dataBackupTeardown);
 
   dialog.appendChild(header);
   dialog.appendChild(body);

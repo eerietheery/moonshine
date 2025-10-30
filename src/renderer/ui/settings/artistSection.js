@@ -1,6 +1,5 @@
 function createArtistSection(state) {
   const artistSection = document.createElement('div');
-  artistSection.style.marginTop = '18px';
   artistSection.style.display = 'flex';
   artistSection.style.alignItems = 'center';
 

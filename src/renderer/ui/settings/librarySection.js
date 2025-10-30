@@ -3,11 +3,6 @@ import { renderList } from '../../components/shared/view.js';
 
 function createLibrarySection(state) {
   const libSection = document.createElement('div');
-  const libTitle = document.createElement('div');
-  libTitle.textContent = 'Library';
-  libTitle.style.fontWeight = '600';
-  libTitle.style.marginBottom = '8px';
-  libTitle.style.color = '#fff';
 
   const addFolder = document.createElement('button');
   addFolder.textContent = 'Add Music Folder…';
@@ -107,7 +102,6 @@ function createLibrarySection(state) {
     document.removeEventListener('library-dirs-updated', onDirs);
   };
 
-  libSection.appendChild(libTitle);
   libSection.appendChild(addFolder);
   libSection.appendChild(dirList);
 
