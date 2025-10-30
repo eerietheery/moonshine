@@ -16,7 +16,6 @@ Built with Electron and Node.js.
 ![Alt text](https://github.com/eerietheery/moonshine/blob/main/assets/images/sample1.png)
 
 ## 📋 Data Preservation
-Moonshine protects your personal data with multiple backup options:
 - **Automatic Backup** - Seamlessly saves to Documents folder
 - **Manual Export/Import** - Full control over your data
 - **Uninstaller Protection** - Offers to preserve data when removing the app
