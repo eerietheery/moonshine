@@ -112,7 +112,11 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
         // Artist counting + representative track
         if (matchesActiveArtist) {
             artistCounts.set(artistKey, (artistCounts.get(artistKey) || 0) + 1);
+<<<<<<< HEAD
             if (showArtistArt && !repTrackForArtistKey.has(artistKey)) {
+=======
+            if (showArtistArt && !repTrackForArtistKey.has(artistKey) && getAlbumArtUrl(t) !== 'assets/images/default-art.png') {
+>>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
                 repTrackForArtistKey.set(artistKey, t);
             }
         }
@@ -120,7 +124,11 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
         // Album counting + representative track (respect active artist filter)
         if (!activeArtist || (state.explicitArtistNames ? rawArtist === activeArtist : (normalizedCache.get(rawArtist) === activeArtist || rawArtist === activeArtist))) {
             albumCounts.set(album, (albumCounts.get(album) || 0) + 1);
+<<<<<<< HEAD
             if (showAlbumArt && !repTrackForAlbum.has(album)) {
+=======
+            if (showAlbumArt && !repTrackForAlbum.has(album) && getAlbumArtUrl(t) !== 'assets/images/default-art.png') {
+>>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
                 repTrackForAlbum.set(album, t);
             }
         }
@@ -138,6 +146,7 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
             const active = state.activeArtist === display || state.activeArtist === key;
             const rep = repTrackForArtistKey.get(key);
             const albumArt = showArtistArt && rep ? getAlbumArtUrl(rep) : null;
+<<<<<<< HEAD
             const item = createFilterItem(display, cnt, active, albumArt);
             aFrag.appendChild(item);
             if (showArtistArt && rep) {
@@ -149,6 +158,9 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
                     }
                 }).catch(() => {});
             }
+=======
+            aFrag.appendChild(createFilterItem(display, cnt, active, albumArt));
+>>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
         }
     }
     artistList.appendChild(aFrag);
@@ -163,6 +175,7 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
         if (cnt > 0) {
             const rep = repTrackForAlbum.get(album);
             const albumArt = showAlbumArt && rep ? getAlbumArtUrl(rep) : null;
+<<<<<<< HEAD
             const item = createFilterItem(album, cnt, state.activeAlbum === album, albumArt);
             alFrag.appendChild(item);
             if (showAlbumArt && rep) {
@@ -174,6 +187,9 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
                     }
                 }).catch(() => {});
             }
+=======
+            alFrag.appendChild(createFilterItem(album, cnt, state.activeAlbum === album, albumArt));
+>>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
         }
     }
     albumList.appendChild(alFrag);

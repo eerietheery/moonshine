@@ -90,17 +90,53 @@ async function mapWithConcurrency(items, limit, mapper) {
 
 async function scanMusic(dirPath) {
   try {
+<<<<<<< HEAD
+=======
+    // Clear the album art cache for new scan
+    albumArtScanCache.clear();
+    const albumArtEmitted = new Set();
+    
+>>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
     const files = walkDir(dirPath);
     console.log(`🎵 Scanning ${files.length} music files...`);
     
     const metas = await mapWithConcurrency(files, CONCURRENCY, readMeta);
 
+<<<<<<< HEAD
+=======
+    // Reduce payload size: only include album art data on the first track encountered
+    // for a given album key. Renderer will dedupe and reuse it for all tracks.
+    for (const m of metas) {
+      const key = m && (m._albumKey || (m.tags ? generateAlbumKey(m.tags) : null));
+      if (!key) continue;
+      if (m.albumArtDataUrl) {
+        if (albumArtEmitted.has(key)) {
+          m.albumArtDataUrl = null;
+        } else {
+          albumArtEmitted.add(key);
+        }
+      }
+    }
+    
+    // Log deduplication stats
+    const uniqueAlbums = albumArtScanCache.size;
+    const tracksWithArt = metas.filter(m => m.albumArtDataUrl).length;
+    const totalTracks = metas.length;
+    
+    console.log(`🎨 Album art scan complete: ${uniqueAlbums} unique albums, ${tracksWithArt}/${totalTracks} tracks with art`);
+    if (uniqueAlbums > 0 && tracksWithArt > uniqueAlbums) {
+      const savedSpace = ((tracksWithArt - uniqueAlbums) / tracksWithArt * 100).toFixed(1);
+      console.log(`💾 Estimated space saved through deduplication: ${savedSpace}%`);
+    }
+    
+>>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
     return metas;
   } catch (e) {
     return [{ file: '', filePath: dirPath, tags: {}, albumArtDataUrl: null, error: e.message }];
   }
 }
 
+<<<<<<< HEAD
 // Scan metadata for a specific set of file paths (for incremental updates)
 async function scanFiles(filePaths) {
   try {
@@ -112,6 +148,8 @@ async function scanFiles(filePaths) {
   }
 }
 
+=======
+>>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
 // Return album art data URL for a single file (on-demand)
 async function getAlbumArtForFile(filePath) {
   try {
@@ -128,4 +166,8 @@ async function getAlbumArtForFile(filePath) {
   }
 }
 
+<<<<<<< HEAD
 module.exports = { scanMusic, scanFiles, getAlbumArtForFile };
+=======
+module.exports = { scanMusic, getAlbumArtForFile };
+>>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
