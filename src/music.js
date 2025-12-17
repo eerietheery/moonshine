@@ -112,11 +112,26 @@ async function scanMusic(dirPath) {
   try {
     // Clear the album art cache for new scan
     albumArtScanCache.clear();
+    const albumArtEmitted = new Set();
     
     const files = walkDir(dirPath);
     console.log(`🎵 Scanning ${files.length} music files...`);
     
     const metas = await mapWithConcurrency(files, CONCURRENCY, readMeta);
+
+    // Reduce payload size: only include album art data on the first track encountered
+    // for a given album key. Renderer will dedupe and reuse it for all tracks.
+    for (const m of metas) {
+      const key = m && (m._albumKey || (m.tags ? generateAlbumKey(m.tags) : null));
+      if (!key) continue;
+      if (m.albumArtDataUrl) {
+        if (albumArtEmitted.has(key)) {
+          m.albumArtDataUrl = null;
+        } else {
+          albumArtEmitted.add(key);
+        }
+      }
+    }
     
     // Log deduplication stats
     const uniqueAlbums = albumArtScanCache.size;
@@ -135,4 +150,20 @@ async function scanMusic(dirPath) {
   }
 }
 
-module.exports = { scanMusic };
+// Return album art data URL for a single file (on-demand)
+async function getAlbumArtForFile(filePath) {
+  try {
+    const meta = await mm.parseFile(filePath, { duration: false });
+    const { common } = meta;
+    if (common && common.picture && common.picture.length) {
+      const pic = common.picture[0];
+      const mime = pic.format || 'image/jpeg';
+      return bufferToDataUrl(pic.data, mime);
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+module.exports = { scanMusic, getAlbumArtForFile };

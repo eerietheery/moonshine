@@ -65,6 +65,10 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
     const artistCounts = new Map(); // key -> number
     const albumCounts = new Map(); // album -> number
 
+    // Representative tracks for album art (avoid repeated state.tracks.find(...) calls)
+    const repTrackForArtistKey = new Map();
+    const repTrackForAlbum = new Map();
+
     const activeArtist = state.activeArtist && state.activeArtist !== 'All' ? state.activeArtist : null;
     const activeAlbum = state.activeAlbum && state.activeAlbum !== 'All' ? state.activeAlbum : null;
 
@@ -80,6 +84,9 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
     for (const k of artists) artistCounts.set(k, 0);
     const albumsList = Array.from(new Set(state.tracks.map(t => (t.tags && t.tags.album) || 'Unknown'))).sort();
     for (const a of albumsList) albumCounts.set(a, 0);
+
+    const showArtistArt = state.sidebarMode !== 'album';
+    const showAlbumArt = state.sidebarMode === 'album';
 
     // Single pass over baseTracks to populate counts (respecting active filters)
     for (const t of baseTracks) {
@@ -100,16 +107,22 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
             artistKey = norm;
         }
 
-        // If activeArtist is set and doesn't match, still allow album count if album is in scope
-        if (!artistMatchesActive(rawArtist)) {
-            // only count albums (already checked activeAlbum), skip artist increment
-        } else {
+        const matchesActiveArtist = artistMatchesActive(rawArtist);
+
+        // Artist counting + representative track
+        if (matchesActiveArtist) {
             artistCounts.set(artistKey, (artistCounts.get(artistKey) || 0) + 1);
+            if (showArtistArt && !repTrackForArtistKey.has(artistKey) && getAlbumArtUrl(t) !== 'assets/images/default-art.png') {
+                repTrackForArtistKey.set(artistKey, t);
+            }
         }
 
-        // Album counting: consider activeArtist filter
+        // Album counting + representative track (respect active artist filter)
         if (!activeArtist || (state.explicitArtistNames ? rawArtist === activeArtist : (normalizedCache.get(rawArtist) === activeArtist || rawArtist === activeArtist))) {
             albumCounts.set(album, (albumCounts.get(album) || 0) + 1);
+            if (showAlbumArt && !repTrackForAlbum.has(album) && getAlbumArtUrl(t) !== 'assets/images/default-art.png') {
+                repTrackForAlbum.set(album, t);
+            }
         }
     }
 
@@ -123,7 +136,8 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
         if (cnt > 0) {
             const display = artistDisplay.get(key) || key;
             const active = state.activeArtist === display || state.activeArtist === key;
-            const albumArt = getArtistAlbumArt(key);
+            const rep = repTrackForArtistKey.get(key);
+            const albumArt = showArtistArt && rep ? getAlbumArtUrl(rep) : null;
             aFrag.appendChild(createFilterItem(display, cnt, active, albumArt));
         }
     }
@@ -137,7 +151,8 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
     for (const album of albumsList) {
         const cnt = albumCounts.get(album) || 0;
         if (cnt > 0) {
-            const albumArt = getAlbumArt(album);
+            const rep = repTrackForAlbum.get(album);
+            const albumArt = showAlbumArt && rep ? getAlbumArtUrl(rep) : null;
             alFrag.appendChild(createFilterItem(album, cnt, state.activeAlbum === album, albumArt));
         }
     }

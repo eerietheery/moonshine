@@ -12,6 +12,9 @@ class AlbumArtCache {
   constructor() {
     // Map of album keys to blob URLs
     this.artBlobCache = new Map();
+
+    // Map of album keys to base64 data URLs (kept only until first use)
+    this.artDataUrlCache = new Map();
     
     // Map of album keys to reference counts (for cleanup)
     this.referenceCount = new Map();
@@ -82,7 +85,7 @@ class AlbumArtCache {
     console.log(`🎨 Processing ${tracks.length} tracks for album art optimization...`);
     
     let cacheHits = 0;
-    let processed = 0;
+    let storedDataUrls = 0;
     
     for (const track of tracks) {
       const albumKey = this.generateAlbumKey(track);
@@ -92,24 +95,23 @@ class AlbumArtCache {
       const currentCount = this.referenceCount.get(albumKey) || 0;
       this.referenceCount.set(albumKey, currentCount + 1);
       
-      // Only process album art if we haven't cached this album yet
-      if (!this.artBlobCache.has(albumKey) && track.albumArtDataUrl) {
-        const blobUrl = this.base64ToBlob(track.albumArtDataUrl);
-        if (blobUrl) {
-          this.artBlobCache.set(albumKey, blobUrl);
-          this.createdBlobs.add(blobUrl);
-          processed++;
-        }
-      } else if (this.artBlobCache.has(albumKey)) {
+      // Track whether we've already seen an image for this album.
+      // Store a single base64 data URL per album key (lazy conversion later).
+      const alreadyHave = this.artBlobCache.has(albumKey) || this.artDataUrlCache.has(albumKey);
+      if (alreadyHave) {
         cacheHits++;
+      } else if (track.albumArtDataUrl) {
+        this.artDataUrlCache.set(albumKey, track.albumArtDataUrl);
+        storedDataUrls++;
       }
-      
-      // Clear the base64 data from the track to save memory
-      delete track.albumArtDataUrl;
+
+      // Clear the base64 data from the track to save memory; we keep at most one
+      // representative base64 per album key in artDataUrlCache.
+      if (track.albumArtDataUrl) delete track.albumArtDataUrl;
     }
-    
-    console.log(`🎨 Album art cache built: ${this.artBlobCache.size} unique albums, ${cacheHits} cache hits, ${processed} processed`);
-    console.log(`💾 Memory saved: ~${(cacheHits * 50)}KB (estimated)`);
+
+    const uniqueAlbums = this.artBlobCache.size + this.artDataUrlCache.size;
+    console.log(`🎨 Album art cache primed: ${uniqueAlbums} unique albums, ${cacheHits} cache hits, ${storedDataUrls} queued`);
   }
   
   /**
@@ -117,24 +119,39 @@ class AlbumArtCache {
    */
   getAlbumArt(track) {
     if (!track) return this.defaultArt;
-    
-    // If track still has base64 data, convert it on the fly
+
+    const albumKey = this.trackToAlbumKey.get(track.filePath) || this.generateAlbumKey(track);
+
+    // Fast path
+    const cached = this.artBlobCache.get(albumKey);
+    if (cached) return cached;
+
+    // Legacy path: track still carries base64 (e.g., if processTracks wasn't called)
     if (track.albumArtDataUrl) {
-      const albumKey = this.generateAlbumKey(track);
-      
-      if (!this.artBlobCache.has(albumKey)) {
-        const blobUrl = this.base64ToBlob(track.albumArtDataUrl);
-        if (blobUrl) {
-          this.artBlobCache.set(albumKey, blobUrl);
-          this.createdBlobs.add(blobUrl);
-        }
-        // Clear base64 to save memory
+      const blobUrl = this.base64ToBlob(track.albumArtDataUrl);
+      if (blobUrl) {
+        this.artBlobCache.set(albumKey, blobUrl);
+        this.createdBlobs.add(blobUrl);
         delete track.albumArtDataUrl;
+        return blobUrl;
+      }
+      delete track.albumArtDataUrl;
+      return this.defaultArt;
+    }
+
+    // Lazy conversion path: convert representative data URL for this album key on first request
+    const dataUrl = this.artDataUrlCache.get(albumKey);
+    if (dataUrl) {
+      const blobUrl = this.base64ToBlob(dataUrl);
+      this.artDataUrlCache.delete(albumKey);
+      if (blobUrl) {
+        this.artBlobCache.set(albumKey, blobUrl);
+        this.createdBlobs.add(blobUrl);
+        return blobUrl;
       }
     }
-    
-    const albumKey = this.trackToAlbumKey.get(track.filePath) || this.generateAlbumKey(track);
-    return this.artBlobCache.get(albumKey) || this.defaultArt;
+
+    return this.defaultArt;
   }
   
   /**
@@ -142,17 +159,20 @@ class AlbumArtCache {
    */
   preloadAlbumArt(tracks, maxConcurrent = 3) {
     const toLoad = tracks
-      .filter(track => track.albumArtDataUrl && !this.artBlobCache.has(this.generateAlbumKey(track)))
+      .map(track => ({ track, albumKey: this.trackToAlbumKey.get(track.filePath) || this.generateAlbumKey(track) }))
+      .filter(({ track, albumKey }) => !this.artBlobCache.has(albumKey) && (this.artDataUrlCache.has(albumKey) || track.albumArtDataUrl))
       .slice(0, maxConcurrent);
-    
-    toLoad.forEach(track => {
-      const albumKey = this.generateAlbumKey(track);
-      const blobUrl = this.base64ToBlob(track.albumArtDataUrl);
+
+    toLoad.forEach(({ track, albumKey }) => {
+      const dataUrl = track.albumArtDataUrl || this.artDataUrlCache.get(albumKey);
+      if (!dataUrl) return;
+      const blobUrl = this.base64ToBlob(dataUrl);
       if (blobUrl) {
         this.artBlobCache.set(albumKey, blobUrl);
         this.createdBlobs.add(blobUrl);
-        delete track.albumArtDataUrl;
       }
+      if (track.albumArtDataUrl) delete track.albumArtDataUrl;
+      this.artDataUrlCache.delete(albumKey);
     });
   }
   
@@ -162,6 +182,7 @@ class AlbumArtCache {
   getStats() {
     return {
       uniqueAlbums: this.artBlobCache.size,
+      pendingDataUrls: this.artDataUrlCache.size,
       totalReferences: Array.from(this.referenceCount.values()).reduce((a, b) => a + b, 0),
       memoryEstimate: `~${this.artBlobCache.size * 50}KB`,
       blobsCreated: this.createdBlobs.size
@@ -183,6 +204,7 @@ class AlbumArtCache {
     });
     
     this.artBlobCache.clear();
+    this.artDataUrlCache.clear();
     this.referenceCount.clear();
     this.trackToAlbumKey.clear();
     this.createdBlobs.clear();
