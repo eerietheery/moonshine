@@ -1,5 +1,5 @@
 // List view rendering logic
-import { state, updateFilters } from '../shared/state.js';
+import { state, rebuildFilteredIndex, rebuildSortedIndex } from '../shared/state.js';
 import { getGridTemplate } from '../shared/layout.js';
 import { createTrackElement } from '../ui/ui.js';
 import { VirtualList } from '../ui/virtualList.js';
@@ -73,11 +73,18 @@ export function renderList(list) {
   } else {
     filtered = [...state.filteredTracks];
   }
+
+  // Keep lookup maps in sync even if other modules replaced arrays directly.
+  rebuildFilteredIndex();
+
   // Use sortTracks from listSort.js
   const sorted = sortTracks(filtered, state.sortBy, state.sortOrder, state.activeAlbum);
   
   // Store the sorted tracks in state so playback can use the correct order
   state.sortedTracks = sorted;
+  rebuildSortedIndex();
+
+  const filteredIndexByPath = state.filteredIndexByPath || new Map();
   
   list.style.display = '';
   list.style.gridTemplateColumns = '';
@@ -147,12 +154,12 @@ export function renderList(list) {
         total: sorted.length,
         renderRow: (i) => {
           const track = sorted[i];
-          const filteredIndex = state.filteredTracks.findIndex(t => t.filePath === track.filePath);
+          const filteredIndex = filteredIndexByPath.get(track.filePath);
           const el = createTrackElement(
             track,
             () => playTrack(
               track,
-              filteredIndex,
+              typeof filteredIndex === 'number' ? filteredIndex : i,
               document.getElementById('audio'),
               document.getElementById('play-btn'),
               document.getElementById('current-art'),
@@ -179,12 +186,12 @@ export function renderList(list) {
       const fragment = document.createDocumentFragment();
 
       sorted.forEach((track, i) => {
-        const filteredIndex = state.filteredTracks.findIndex(t => t.filePath === track.filePath);
+        const filteredIndex = filteredIndexByPath.get(track.filePath);
         const el = createTrackElement(
           track,
           () => playTrack(
             track,
-            filteredIndex,
+            typeof filteredIndex === 'number' ? filteredIndex : i,
             document.getElementById('audio'),
             document.getElementById('play-btn'),
             document.getElementById('current-art'),
@@ -214,12 +221,12 @@ export function renderList(list) {
       total: sorted.length,
       renderRow: (i) => {
         const track = sorted[i];
-        const filteredIndex = state.filteredTracks.findIndex(t => t.filePath === track.filePath);
+        const filteredIndex = filteredIndexByPath.get(track.filePath);
         const el = createTrackElement(
           track,
           () => playTrack(
             track,
-            filteredIndex,
+            typeof filteredIndex === 'number' ? filteredIndex : i,
             document.getElementById('audio'),
             document.getElementById('play-btn'),
             document.getElementById('current-art'),

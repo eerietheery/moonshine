@@ -34,9 +34,6 @@ function bufferToDataUrl(buf, mime = 'image/jpeg') {
   }
 }
 
-// Cache for album art deduplication during scanning
-const albumArtScanCache = new Map();
-
 // Generate album key for deduplication
 function generateAlbumKey(tags) {
   const album = (tags.album || 'Unknown').toLowerCase().trim();
@@ -46,7 +43,9 @@ function generateAlbumKey(tags) {
 
 async function readMeta(filePath) {
   try {
-    const meta = await mm.parseFile(filePath, { duration: false });
+    // Avoid reading embedded cover art during the main scan to keep memory/IPC small.
+    // Cover art is fetched on-demand via getAlbumArtForFile().
+    const meta = await mm.parseFile(filePath, { duration: false, skipCovers: true });
     const { common, format } = meta;
     
     const tags = {
@@ -57,33 +56,14 @@ async function readMeta(filePath) {
       year: common.year || null,
       genre: (common.genre && common.genre[0]) || null,
     };
-    
-    let albumArtDataUrl = null;
-    
-    // Check if we've already processed album art for this album
+
     const albumKey = generateAlbumKey(tags);
-    
-    if (albumArtScanCache.has(albumKey)) {
-      // Reuse existing album art
-      albumArtDataUrl = albumArtScanCache.get(albumKey);
-    } else if (common.picture && common.picture.length) {
-      // Process new album art
-      const pic = common.picture[0];
-      const mime = pic.format || 'image/jpeg';
-      albumArtDataUrl = bufferToDataUrl(pic.data, mime);
-      
-      // Cache it for other tracks from the same album
-      albumArtScanCache.set(albumKey, albumArtDataUrl);
-    } else {
-      // No album art, cache null to avoid reprocessing
-      albumArtScanCache.set(albumKey, null);
-    }
     
     return {
       file: path.basename(filePath),
       filePath,
       tags,
-      albumArtDataUrl,
+      albumArtDataUrl: null,
       bitrate: format && format.bitrate ? format.bitrate : null,
       error: null,
       // Add album key for later optimization
@@ -110,43 +90,25 @@ async function mapWithConcurrency(items, limit, mapper) {
 
 async function scanMusic(dirPath) {
   try {
-    // Clear the album art cache for new scan
-    albumArtScanCache.clear();
-    const albumArtEmitted = new Set();
-    
     const files = walkDir(dirPath);
     console.log(`🎵 Scanning ${files.length} music files...`);
     
     const metas = await mapWithConcurrency(files, CONCURRENCY, readMeta);
 
-    // Reduce payload size: only include album art data on the first track encountered
-    // for a given album key. Renderer will dedupe and reuse it for all tracks.
-    for (const m of metas) {
-      const key = m && (m._albumKey || (m.tags ? generateAlbumKey(m.tags) : null));
-      if (!key) continue;
-      if (m.albumArtDataUrl) {
-        if (albumArtEmitted.has(key)) {
-          m.albumArtDataUrl = null;
-        } else {
-          albumArtEmitted.add(key);
-        }
-      }
-    }
-    
-    // Log deduplication stats
-    const uniqueAlbums = albumArtScanCache.size;
-    const tracksWithArt = metas.filter(m => m.albumArtDataUrl).length;
-    const totalTracks = metas.length;
-    
-    console.log(`🎨 Album art scan complete: ${uniqueAlbums} unique albums, ${tracksWithArt}/${totalTracks} tracks with art`);
-    if (uniqueAlbums > 0 && tracksWithArt > uniqueAlbums) {
-      const savedSpace = ((tracksWithArt - uniqueAlbums) / tracksWithArt * 100).toFixed(1);
-      console.log(`💾 Estimated space saved through deduplication: ${savedSpace}%`);
-    }
-    
     return metas;
   } catch (e) {
     return [{ file: '', filePath: dirPath, tags: {}, albumArtDataUrl: null, error: e.message }];
+  }
+}
+
+// Scan metadata for a specific set of file paths (for incremental updates)
+async function scanFiles(filePaths) {
+  try {
+    if (!Array.isArray(filePaths) || filePaths.length === 0) return [];
+    const metas = await mapWithConcurrency(filePaths, CONCURRENCY, readMeta);
+    return metas;
+  } catch (e) {
+    return [];
   }
 }
 
@@ -166,4 +128,4 @@ async function getAlbumArtForFile(filePath) {
   }
 }
 
-module.exports = { scanMusic, getAlbumArtForFile };
+module.exports = { scanMusic, scanFiles, getAlbumArtForFile };

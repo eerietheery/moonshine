@@ -1,8 +1,54 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const { scanMusic, getAlbumArtForFile } = require('../music');
+const { scanMusic, scanFiles, getAlbumArtForFile } = require('../music');
 const { loadConfig, getConfig, updateConfig } = require('./config'); // Corrected path
+
+const AUDIO_EXTS = new Set(['.mp3', '.m4a', '.flac', '.wav', '.ogg', '.aac']);
+
+function listAudioFiles(dirPath) {
+  const results = [];
+  const root = String(dirPath || '');
+  if (!root) return results;
+
+  const walk = (dir) => {
+    let entries;
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        // Skip hidden/system folders
+        if (!entry.name.startsWith('.') && entry.name.toLowerCase() !== 'system volume information') {
+          walk(full);
+        }
+      } else {
+        const ext = path.extname(entry.name).toLowerCase();
+        if (AUDIO_EXTS.has(ext)) results.push(full);
+      }
+    }
+  };
+
+  walk(root);
+  return results;
+}
+
+async function mapWithConcurrency(items, limit, mapper) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  const workers = new Array(Math.min(limit, items.length)).fill(0).map(async () => {
+    while (true) {
+      const i = nextIndex++;
+      if (i >= items.length) break;
+      results[i] = await mapper(items[i], i);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
 
 function ensureDirWritable(dirPath) {
   try {
@@ -197,6 +243,41 @@ ipcMain.handle('scan-music-lite', async (event, dirPath) => {
     const { albumArtDataUrl, ...rest } = t;
     return { ...rest, albumArtDataUrl: null };
   });
+});
+
+// Incremental scan helpers
+ipcMain.handle('list-music-files', async (event, dirPath) => {
+  try {
+    return listAudioFiles(dirPath || DEFAULT_DIR);
+  } catch {
+    return [];
+  }
+});
+
+ipcMain.handle('get-file-stats', async (event, filePaths) => {
+  try {
+    if (!Array.isArray(filePaths) || filePaths.length === 0) return [];
+    const res = await mapWithConcurrency(filePaths, 32, async (fp) => {
+      try {
+        const st = await fs.promises.stat(fp);
+        return { filePath: fp, mtime: st.mtimeMs || 0, size: st.size || 0 };
+      } catch {
+        return { filePath: fp, mtime: 0, size: 0, missing: true };
+      }
+    });
+    return res;
+  } catch {
+    return [];
+  }
+});
+
+ipcMain.handle('scan-files', async (event, filePaths) => {
+  try {
+    if (!Array.isArray(filePaths) || filePaths.length === 0) return [];
+    return await scanFiles(filePaths);
+  } catch {
+    return [];
+  }
 });
 
 // Get album art for a specific file on-demand

@@ -1,9 +1,23 @@
 import { state, rebuildPlayOrder } from '../shared/state.js';
-import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
+import { getAlbumArtUrl, ensureAlbumArtUrl } from '../../utils/albumArtCache.js';
+
+function indexInPlaybackList(playbackList, filePath) {
+  if (!filePath || !Array.isArray(playbackList) || playbackList.length === 0) return -1;
+  if (playbackList === state.sortedTracks && state.sortedIndexByPath) {
+    const idx = state.sortedIndexByPath.get(filePath);
+    if (typeof idx === 'number') return idx;
+  }
+  if (playbackList === state.tracks && state.tracksIndexByPath) {
+    const idx = state.tracksIndexByPath.get(filePath);
+    if (typeof idx === 'number') return idx;
+  }
+  return playbackList.findIndex(t => t.filePath === filePath);
+}
 
 export function playTrack(track, index, audio, playBtn, currentArt, currentTitle, currentArtist, renderList) {
   state.currentTrack = track;
-  const filteredIdx = state.filteredTracks.findIndex(t => t.filePath === track.filePath);
+  let filteredIdx = state.filteredIndexByPath?.get(track.filePath);
+  if (typeof filteredIdx !== 'number') filteredIdx = state.filteredTracks.findIndex(t => t.filePath === track.filePath);
   state.currentTrackIndex = filteredIdx !== -1 ? filteredIdx : index;
   
   // Properly encode file path for URL, handling special characters like #, %, spaces, etc.
@@ -24,6 +38,14 @@ export function playTrack(track, index, audio, playBtn, currentArt, currentTitle
   currentTitle.dataset.album = albumText;
   currentArtist.dataset.artist = artistText;
   currentArt.src = getAlbumArtUrl(track);
+  try {
+    ensureAlbumArtUrl(track).then((url) => {
+      if (!url) return;
+      if (state.currentTrack && state.currentTrack.filePath === track.filePath) {
+        currentArt.src = url;
+      }
+    });
+  } catch (_) {}
   playBtn.innerHTML = '<img src="assets/images/pause.svg" alt="Pause" style="width:18px;height:18px;vertical-align:middle;" />';
   state.isPlaying = true;
   // Update mobile player metadata (if present) via dynamic import to avoid static circular deps
@@ -124,8 +146,8 @@ export function playPrevious(audio, renderList) {
     }
   } else {
     // Sequential mode: use the sorted display order for consistent previous-track behavior
-    const currentIdx = state.currentTrack 
-      ? playbackList.findIndex(t => t.filePath === state.currentTrack.filePath)
+    const currentIdx = state.currentTrack
+      ? indexInPlaybackList(playbackList, state.currentTrack.filePath)
       : -1;
     
     if (currentIdx > 0) {
@@ -226,8 +248,8 @@ export function playNext(audio, renderList) {
     }
   } else {
     // Sequential mode: use the sorted display order for consistent next-track behavior
-    const currentIdx = state.currentTrack 
-      ? playbackList.findIndex(t => t.filePath === state.currentTrack.filePath)
+    const currentIdx = state.currentTrack
+      ? indexInPlaybackList(playbackList, state.currentTrack.filePath)
       : -1;
     
     if (currentIdx !== -1 && currentIdx < playbackList.length - 1) {

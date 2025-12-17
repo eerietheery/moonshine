@@ -1,4 +1,4 @@
-import { state, updateFilters, resetSidebarFilters } from './components/shared/state.js';
+import { state, updateFilters, resetSidebarFilters, rebuildTrackIndex } from './components/shared/state.js';
 import { updateSidebarFilters } from './components/sidebar/sidebar.js';
 import { renderList, renderGrid } from './components/shared/view.js';
 import * as dom from './dom.js';
@@ -84,6 +84,7 @@ async function addMusic(userPath) {
     }
     
     state.tracks = state.tracks.concat(newTracks);
+    rebuildTrackIndex();
     // Track the folder added
     if (userPath && !state.libraryDirs.includes(userPath)) {
       state.libraryDirs.push(userPath);
@@ -120,6 +121,7 @@ async function loadMusic(dirPath) {
       const isUnknown = [tags.artist, tags.album, tags.title].every(v => v === 'Unknown');
       return !isUnknown;
     });
+    rebuildTrackIndex();
     
     // Initialize album art cache
     if (state.tracks.length > 0) {
@@ -167,6 +169,7 @@ async function initialScan() {
         const isUnknown = [tags.artist, tags.album, tags.title].every(v => v === 'Unknown');
         return !isUnknown;
       });
+      rebuildTrackIndex();
       
       // Initialize album art cache
       if (state.tracks.length > 0) {

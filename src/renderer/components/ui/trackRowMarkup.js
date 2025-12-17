@@ -1,6 +1,6 @@
 import { formatBitrate } from './formatters.js';
 import { showToast } from './toast.js';
-import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
+import { getAlbumArtUrl, ensureAlbumArtUrl } from '../../utils/albumArtCache.js';
 
 export function createTrackElement(track, onClick, headers = ['title','artist','album','year','genre','bitrate']) {
   const div = document.createElement('div');
@@ -78,6 +78,21 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
       </button>
       </div>`;
   div.innerHTML = rowHtml;
+
+  // Lazy-load album art on-demand (keeps scan payload tiny).
+  try {
+    const img = div.querySelector('img.album-art');
+    if (img && track && track.filePath) {
+      ensureAlbumArtUrl(track).then((url) => {
+        if (!div.isConnected) return;
+        if (div.dataset.filePath !== track.filePath) return;
+        if (url && img.src !== url) img.src = url;
+        try {
+          if (div.__track) div.__track.albumArt = url;
+        } catch (_) {}
+      });
+    }
+  } catch (_) {}
 
   const favBtn = div.querySelector('.favorite-btn');
   const favImg = favBtn?.querySelector('img');

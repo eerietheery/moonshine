@@ -25,6 +25,7 @@ export async function testIndexedDBCache() {
     
     // Test 3: Set and Get
     console.log('Test 3: Basic CRUD Operations');
+    const lib = '/test';
     const testTrack = {
       filePath: '/test/song.mp3',
       mtime: Date.now(),
@@ -41,7 +42,7 @@ export async function testIndexedDBCache() {
       bitrate: 320000
     };
     
-    await cache.set(testTrack.filePath, testTrack);
+    await cache.set(testTrack.filePath, testTrack, lib);
     console.log('  Set track:', testTrack.tags.title);
     
     const retrieved = await cache.get(testTrack.filePath);
@@ -71,11 +72,11 @@ export async function testIndexedDBCache() {
       });
     }
     
-    const result = await cache.setMany(batchTracks);
+    const result = await cache.setMany(batchTracks, lib);
     console.log('  Batch set:', result.success, 'tracks');
     console.assert(result.success === 10, 'Should cache 10 tracks');
     
-    const count = await cache.count();
+    const count = await cache.count(lib);
     console.log('  Total cached:', count);
     console.assert(count >= 11, 'Should have at least 11 tracks');
     console.log('  ✅ Pass\n');

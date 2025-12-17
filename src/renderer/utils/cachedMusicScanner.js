@@ -38,10 +38,28 @@ export async function scanMusicCached(dirPath, options = {}) {
     }
     
     await cache.open();
+
+    const libraryKey = cache.getLibraryKey(dirPath);
     
     // Check if we have cached data for this directory
-    const cachedCount = await cache.count();
-    console.log(`📦 Cache check: Found ${cachedCount} cached tracks`);
+    let cachedCount = await cache.count(libraryKey);
+    console.log(`📦 Cache check: Found ${cachedCount} cached tracks for this library`);
+
+    // Legacy support: pre-v2 entries had no libraryKey. Tag entries that match this dir.
+    if (cachedCount === 0 && !forceFull) {
+      const totalAny = await cache.count();
+      if (totalAny > 0) {
+        try {
+          const res = await cache.tagLibraryByDirPrefix(dirPath);
+          if (res?.updated) {
+            cachedCount = await cache.count(libraryKey);
+            console.log(`📦 Tagged ${res.updated} legacy cached tracks for this library`);
+          }
+        } catch (e) {
+          // Ignore migration errors; we'll fall back to a full scan.
+        }
+      }
+    }
     
     if (cachedCount > 0 && !forceFull) {
       console.log('✅ Cache hit! Loading tracks from IndexedDB...');
@@ -49,7 +67,7 @@ export async function scanMusicCached(dirPath, options = {}) {
       onProgress(0, 100, 'Loading from cache...');
       
       // Load cached tracks
-      const cachedTracks = await cache.getAllTracks();
+      const cachedTracks = await cache.getAllTracks(libraryKey);
       onProgress(50, 100, `Loaded ${cachedTracks.length} cached tracks`);
       
       // Start incremental scan in background
@@ -77,9 +95,11 @@ export async function scanMusicCached(dirPath, options = {}) {
  */
 async function fullScanAndCache(dirPath, onProgress) {
   onProgress(0, 100, 'Scanning library...');
+
+  const libraryKey = cache.getLibraryKey(dirPath);
   
   // Request full scan from main process
-  const tracks = await window.etune.scanMusic(dirPath);
+  const tracks = await (window.etune.scanMusicLite ? window.etune.scanMusicLite(dirPath) : window.etune.scanMusic(dirPath));
   
   if (!tracks || tracks.length === 0) {
     onProgress(100, 100, 'No tracks found');
@@ -93,7 +113,7 @@ async function fullScanAndCache(dirPath, onProgress) {
   
   // Cache all tracks
   try {
-    await cache.setMany(tracksWithStats);
+    await cache.setMany(tracksWithStats, libraryKey);
     console.log(`✅ Cached ${tracksWithStats.length} tracks`);
   } catch (err) {
     console.warn('Failed to cache tracks:', err);
@@ -133,17 +153,20 @@ async function incrementalScan(dirPath, cachedTracks, onProgress) {
     const deletedPaths = [];
     
     // Check each filesystem file
+    const candidatesForStat = [];
     for (const filePath of fileSystemPaths) {
       const cached = cachedMap.get(filePath);
-      
-      if (!cached) {
-        newFiles.push(filePath);
-      } else {
-        // Check if file was modified
-        const stats = await getFileStats(filePath);
-        if (stats && stats.mtime > (cached.mtime || 0)) {
-          modifiedFiles.push(filePath);
-        }
+      if (!cached) newFiles.push(filePath);
+      else candidatesForStat.push(filePath);
+    }
+
+    // Batch stat only the files that exist in cache (fast and avoids thousands of IPC roundtrips)
+    const statMap = await getFileStatsMap(candidatesForStat);
+    for (const filePath of candidatesForStat) {
+      const cached = cachedMap.get(filePath);
+      const stats = statMap.get(filePath);
+      if (stats && stats.mtime > (cached.mtime || 0)) {
+        modifiedFiles.push(filePath);
       }
     }
     
@@ -203,15 +226,17 @@ async function incrementalScan(dirPath, cachedTracks, onProgress) {
  * @private
  */
 async function scanSpecificFiles(filePaths) {
-  // For now, scan entire directory and filter
-  // TODO: Add IPC method to scan specific files
   if (!filePaths || filePaths.length === 0) return [];
-  
-  // Get directory from first file path
-  const dirPath = filePaths[0].split(path.sep).slice(0, -1).join(path.sep);
-  const allTracks = await window.etune.scanMusic(dirPath);
-  
-  // Filter to only requested files
+
+  // Preferred: ask main to scan exactly these files
+  if (window.etune && typeof window.etune.scanFiles === 'function') {
+    const tracks = await window.etune.scanFiles(filePaths);
+    return Array.isArray(tracks) ? tracks : [];
+  }
+
+  // Fallback: scan entire directory and filter
+  const dirPath = String(filePaths[0]).replace(/[\\/][^\\/]*$/, '');
+  const allTracks = await (window.etune.scanMusicLite ? window.etune.scanMusicLite(dirPath) : window.etune.scanMusic(dirPath));
   const fileSet = new Set(filePaths);
   return allTracks.filter(t => fileSet.has(t.filePath));
 }
@@ -222,7 +247,7 @@ async function scanSpecificFiles(filePaths) {
  */
 async function scanMusicDirect(dirPath, onProgress) {
   onProgress(0, 100, 'Scanning library (no cache)...');
-  const tracks = await window.etune.scanMusic(dirPath);
+  const tracks = await (window.etune.scanMusicLite ? window.etune.scanMusicLite(dirPath) : window.etune.scanMusic(dirPath));
   onProgress(100, 100, 'Scan complete');
   return tracks;
 }
@@ -232,9 +257,15 @@ async function scanMusicDirect(dirPath, onProgress) {
  * @private
  */
 async function getFileSystemPaths(dirPath) {
-  // This would need to be implemented with IPC or filesystem API
-  // For now, return empty array (incremental scan will fall back to full scan)
-  console.warn('getFileSystemPaths not implemented, incremental scan limited');
+  try {
+    if (window.etune && typeof window.etune.listMusicFiles === 'function') {
+      const paths = await window.etune.listMusicFiles(dirPath);
+      return Array.isArray(paths) ? paths : [];
+    }
+  } catch (e) {
+    // ignore
+  }
+  console.warn('listMusicFiles IPC not available, incremental scan limited');
   return [];
 }
 
@@ -244,12 +275,30 @@ async function getFileSystemPaths(dirPath) {
  */
 async function getFileStats(filePath) {
   try {
-    // In Electron renderer, we'd need to use IPC to get file stats from main process
-    // For now, return null (will always consider file as unchanged)
-    return null;
+    const res = await getFileStatsMap([filePath]);
+    return res.get(filePath) || null;
   } catch (err) {
     return null;
   }
+}
+
+async function getFileStatsMap(filePaths) {
+  try {
+    if (!Array.isArray(filePaths) || filePaths.length === 0) return new Map();
+    if (window.etune && typeof window.etune.getFileStats === 'function') {
+      const stats = await window.etune.getFileStats(filePaths);
+      const map = new Map();
+      if (Array.isArray(stats)) {
+        for (const s of stats) {
+          if (s && s.filePath) map.set(s.filePath, { mtime: s.mtime || 0, size: s.size || 0 });
+        }
+      }
+      return map;
+    }
+  } catch (_) {
+    // ignore
+  }
+  return new Map();
 }
 
 /**
@@ -257,11 +306,24 @@ async function getFileStats(filePath) {
  * @private
  */
 async function addFileStats(tracks) {
-  return tracks.map(track => ({
-    ...track,
-    mtime: Date.now(), // TODO: Get real mtime from main process
-    size: 0 // TODO: Get real size from main process
-  }));
+  try {
+    const paths = tracks.map(t => t && t.filePath).filter(Boolean);
+    const statMap = await getFileStatsMap(paths);
+    return tracks.map(track => {
+      const st = statMap.get(track.filePath);
+      return {
+        ...track,
+        mtime: st ? st.mtime : (track.mtime || 0),
+        size: st ? st.size : (track.size || 0)
+      };
+    });
+  } catch (e) {
+    return tracks.map(track => ({
+      ...track,
+      mtime: track.mtime || 0,
+      size: track.size || 0
+    }));
+  }
 }
 
 /**

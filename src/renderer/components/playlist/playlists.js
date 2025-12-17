@@ -1,7 +1,7 @@
 // Playlist system: user playlists and smart (genre) playlists
 import { state } from '../shared/state.js';
 import { createFilterItem } from '../ui/ui.js';
-import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
+import { getAlbumArtUrl, ensureAlbumArtUrl } from '../../utils/albumArtCache.js';
 
 /**
  * Get representative album art for a playlist (from its first track)
@@ -238,8 +238,19 @@ export function renderPlaylistsSidebar(sectionUser, sectionSmart, onSelect) {
   playlists.user.forEach(pl => {
     const count = Array.isArray(pl.trackPaths) ? pl.trackPaths.length : 0;
     const isActive = state.activePlaylist && state.activePlaylist.type === 'user' && state.activePlaylist.id === pl.id;
-    const albumArt = getPlaylistAlbumArt(pl);
+    const firstTrackPath = Array.isArray(pl.trackPaths) && pl.trackPaths.length ? pl.trackPaths[0] : null;
+    const rep = firstTrackPath ? state.tracks.find(t => t.filePath === firstTrackPath) : null;
+    const albumArt = rep ? getAlbumArtUrl(rep) : null;
     const item = createFilterItem(pl.name, count, !!isActive, albumArt);
+    if (rep) {
+      ensureAlbumArtUrl(rep).then((url) => {
+        if (!item.isConnected) return;
+        if (url && url !== 'assets/images/default-art.png') {
+          item.style.setProperty('--filter-album-art', `url('${url}')`);
+          item.classList.add('has-album-art');
+        }
+      }).catch(() => {});
+    }
     // attach handlers similar to other filter-items
     item.onclick = (e) => { e.stopPropagation(); onSelect({ type: 'user', id: pl.id }); };
     item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); } };
@@ -254,8 +265,18 @@ export function renderPlaylistsSidebar(sectionUser, sectionSmart, onSelect) {
   Object.keys(playlists.smart).sort((a,b) => a.localeCompare(b)).forEach(genre => {
     const cnt = Array.isArray(playlists.smart[genre]) ? playlists.smart[genre].length : 0;
     const isActive = state.activePlaylist && state.activePlaylist.type === 'smart' && state.activePlaylist.genre === genre;
-    const albumArt = getGenreAlbumArt(genre);
+    const rep = state.tracks.find(t => (t.tags && t.tags.genre || 'Unknown') === genre) || null;
+    const albumArt = rep ? getAlbumArtUrl(rep) : null;
     const item = createFilterItem(genre, cnt, !!isActive, albumArt);
+    if (rep) {
+      ensureAlbumArtUrl(rep).then((url) => {
+        if (!item.isConnected) return;
+        if (url && url !== 'assets/images/default-art.png') {
+          item.style.setProperty('--filter-album-art', `url('${url}')`);
+          item.classList.add('has-album-art');
+        }
+      }).catch(() => {});
+    }
     item.onclick = (e) => { e.stopPropagation(); onSelect({ type: 'smart', genre }); };
     item.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); } };
     item.oncontextmenu = (e) => { e.preventDefault(); e.stopPropagation(); showPlaylistContextMenu(e, item, { type: 'smart', genre }, genre); };

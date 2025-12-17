@@ -5,7 +5,7 @@ import { showToast } from '../ui/ui.js';
 import * as dom from '../../dom.js';
 import { playTrack } from '../player/playerCore.js';
 import { getGridTemplate } from '../shared/layout.js';
-import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
+import { getAlbumArtUrl, ensureAlbumArtUrl } from '../../utils/albumArtCache.js';
 
 export function renderPlaylistHeader(container, source, renderListCallback) {
   const tracks = getPlaylistTracks(source);
@@ -32,6 +32,16 @@ export function renderPlaylistHeader(container, source, renderListCallback) {
   img.src = artUrl;
   img.alt = 'Playlist cover';
   thumbnailContainer.appendChild(img);
+
+  try {
+    const rep = tracks && tracks[0];
+    if (rep) {
+      ensureAlbumArtUrl(rep).then((url) => {
+        if (!img.isConnected) return;
+        if (url && img.src !== url) img.src = url;
+      }).catch(() => {});
+    }
+  } catch (_) {}
 
   // Right side - text content
   const textContent = document.createElement('div');

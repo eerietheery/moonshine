@@ -2,7 +2,7 @@
  * Mobile Albums View - Rounded square album grid with filtering
  */
 
-import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
+import { getAlbumArtUrl, ensureAlbumArtUrl } from '../../utils/albumArtCache.js';
 
 /**
  * Create and show album grid with rounded square thumbnails
@@ -51,14 +51,13 @@ function getAlbumsData(tracks) {
     const albumName = (track.tags?.album) || 'Unknown Album';
     const artist = (track.tags?.artist) || 'Unknown Artist';
     const year = track.tags?.year || '';
-    const albumArt = getAlbumArtUrl(track);
     
     if (!albumMap.has(albumName)) {
       albumMap.set(albumName, {
         name: albumName,
         artist: artist,
         year: year,
-        albumArt: albumArt,
+        repTrack: track,
         trackCount: 1,
         tracks: [track]
       });
@@ -66,12 +65,6 @@ function getAlbumsData(tracks) {
       const album = albumMap.get(albumName);
       album.trackCount++;
       album.tracks.push(track);
-      // Use the first non-default album art we find
-      if (!album.albumArt || album.albumArt.includes('default-art.png')) {
-        if (albumArt && !albumArt.includes('default-art.png')) {
-          album.albumArt = albumArt;
-        }
-      }
       // Keep the first artist unless we find a different one (for Various Artists albums)
       if (artist !== album.artist && album.artist !== 'Various Artists') {
         album.artist = 'Various Artists';
@@ -100,16 +93,30 @@ function createAlbumCard(album) {
   // Rounded square thumbnail
   const thumbnail = document.createElement('div');
   thumbnail.className = 'album-thumbnail';
+  const initialArt = album.repTrack ? getAlbumArtUrl(album.repTrack) : (album.albumArt || 'assets/images/default-art.png');
   thumbnail.style.cssText = `
     width: 100%;
     aspect-ratio: 1;
     border-radius: 12px;
-    background-image: url('${album.albumArt || 'assets/images/default-art.png'}');
+    background-image: url('${initialArt || 'assets/images/default-art.png'}');
     background-size: cover;
     background-position: center;
     margin-bottom: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   `;
+
+  // Lazy-load art on-demand
+  try {
+    const rep = album.repTrack;
+    if (rep) {
+      ensureAlbumArtUrl(rep).then((url) => {
+        if (!thumbnail.isConnected) return;
+        if (url && url !== 'assets/images/default-art.png') {
+          thumbnail.style.backgroundImage = `url('${url}')`;
+        }
+      }).catch(() => {});
+    }
+  } catch (_) {}
   
   // Album info container
   const info = document.createElement('div');

@@ -24,12 +24,19 @@ class AlbumArtCache {
     
     // Set of blob URLs we've created (for cleanup)
     this.createdBlobs = new Set();
+
+    // Map of album keys to in-flight IPC fetch promises
+    this.inFlightFetches = new Map();
+
+    // Track-level negative cache to avoid re-fetching files that have no embedded art
+    this.missingArtFiles = new Set();
     
     // Default placeholder
     this.defaultArt = 'assets/images/default-art.png';
     
     // Bind methods
     this.getAlbumArt = this.getAlbumArt.bind(this);
+    this.ensureAlbumArt = this.ensureAlbumArt.bind(this);
     this.cleanup = this.cleanup.bind(this);
     
     // Listen for beforeunload to cleanup blob URLs
@@ -153,6 +160,57 @@ class AlbumArtCache {
 
     return this.defaultArt;
   }
+
+  /**
+   * Ensure album art is loaded for a track.
+   * Returns a blob URL (or default placeholder if unavailable).
+   */
+  async ensureAlbumArt(track) {
+    if (!track || !track.filePath) return this.defaultArt;
+
+    const albumKey = this.trackToAlbumKey.get(track.filePath) || this.generateAlbumKey(track);
+
+    const cached = this.artBlobCache.get(albumKey);
+    if (cached) return cached;
+
+    if (this.missingArtFiles.has(track.filePath)) return this.defaultArt;
+
+    // Deduplicate concurrent requests per album key.
+    const existing = this.inFlightFetches.get(albumKey);
+    if (existing) return existing;
+
+    const fetchPromise = (async () => {
+      try {
+        const api = window.etune;
+        const getAlbumArt = api && typeof api.getAlbumArt === 'function' ? api.getAlbumArt : null;
+        if (!getAlbumArt) return this.defaultArt;
+
+        const dataUrl = await getAlbumArt(track.filePath);
+        if (!dataUrl) {
+          this.missingArtFiles.add(track.filePath);
+          return this.defaultArt;
+        }
+
+        const blobUrl = this.base64ToBlob(dataUrl);
+        if (!blobUrl) {
+          this.missingArtFiles.add(track.filePath);
+          return this.defaultArt;
+        }
+
+        this.artBlobCache.set(albumKey, blobUrl);
+        this.createdBlobs.add(blobUrl);
+        return blobUrl;
+      } catch (error) {
+        return this.defaultArt;
+      } finally {
+        // Always clear; a later call may try a different filePath for same album.
+        this.inFlightFetches.delete(albumKey);
+      }
+    })();
+
+    this.inFlightFetches.set(albumKey, fetchPromise);
+    return fetchPromise;
+  }
   
   /**
    * Preload album art for a set of tracks (for smooth scrolling)
@@ -208,6 +266,8 @@ class AlbumArtCache {
     this.referenceCount.clear();
     this.trackToAlbumKey.clear();
     this.createdBlobs.clear();
+    this.inFlightFetches.clear();
+    this.missingArtFiles.clear();
   }
   
   /**
@@ -242,6 +302,10 @@ export const albumArtCache = new AlbumArtCache();
 // Export helper function for easy use
 export function getAlbumArtUrl(track) {
   return albumArtCache.getAlbumArt(track);
+}
+
+export async function ensureAlbumArtUrl(track) {
+  return albumArtCache.ensureAlbumArt(track);
 }
 
 export function initializeAlbumArtCache(tracks) {

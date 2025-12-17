@@ -3,7 +3,7 @@ import { state } from '../shared/state.js';
 import * as dom from '../../dom.js';
 import { renderList } from '../shared/view.js';
 import { showToast } from '../ui/ui.js';
-import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
+import { getAlbumArtUrl, ensureAlbumArtUrl } from '../../utils/albumArtCache.js';
 
 // Public API: render playlist browse using current toolbar mode (list/grid)
 export function renderPlaylistBrowse(container) {
@@ -124,6 +124,18 @@ export function renderPlaylistBrowseGrid(container) {
     });
     card.querySelector('.pl-action.play').onclick = (e) => { e.stopPropagation(); playNow(it); };
     card.querySelector('.pl-action.queue').onclick = (e) => { e.stopPropagation(); queueAll(it); };
+
+    try {
+      const img = card.querySelector('img.album-art');
+      const rep = tracks && tracks[0];
+      if (img && rep) {
+        ensureAlbumArtUrl(rep).then((url) => {
+          if (!card.isConnected) return;
+          if (url && img.src !== url) img.src = url;
+        }).catch(() => {});
+      }
+    } catch (_) {}
+
     container.appendChild(card);
   }
 }
@@ -176,6 +188,18 @@ export function renderPlaylistBrowseList(container) {
     });
     row.querySelector('.queue-add-btn').onclick = (e) => { e.stopPropagation(); queueAll(it); };
     row.querySelector('.playlist-add-btn').onclick = (e) => { e.stopPropagation(); playNow(it); };
+
+    try {
+      const img = row.querySelector('img.album-art');
+      const rep = tracks && tracks[0];
+      if (img && rep) {
+        ensureAlbumArtUrl(rep).then((url) => {
+          if (!row.isConnected) return;
+          if (url && img.src !== url) img.src = url;
+        }).catch(() => {});
+      }
+    } catch (_) {}
+
     container.appendChild(row);
   }
 }

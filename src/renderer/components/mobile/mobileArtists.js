@@ -2,7 +2,7 @@
  * Mobile Artists View - Circular artist grid with filtering
  */
 
-import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
+import { getAlbumArtUrl, ensureAlbumArtUrl } from '../../utils/albumArtCache.js';
 
 /**
  * Create and show artist grid with circular thumbnails
@@ -51,12 +51,11 @@ function getArtistsData(tracks, normalizeArtist) {
   
   for (const track of tracks) {
     const artistName = (track.tags?.artist) || 'Unknown Artist';
-    const albumArt = getAlbumArtUrl(track);
     
     if (!artistMap.has(artistName)) {
       artistMap.set(artistName, {
         name: artistName,
-        albumArt: albumArt,
+        repTrack: track,
         trackCount: 1,
         tracks: [track]
       });
@@ -64,12 +63,6 @@ function getArtistsData(tracks, normalizeArtist) {
       const artist = artistMap.get(artistName);
       artist.trackCount++;
       artist.tracks.push(track);
-      // Use the first non-default album art we find
-      if (!artist.albumArt || artist.albumArt.includes('default-art.png')) {
-        if (albumArt && !albumArt.includes('default-art.png')) {
-          artist.albumArt = albumArt;
-        }
-      }
     }
   }
   
@@ -94,16 +87,30 @@ function createArtistCard(artist) {
   // Circular thumbnail
   const thumbnail = document.createElement('div');
   thumbnail.className = 'artist-thumbnail';
+  const initialArt = artist.repTrack ? getAlbumArtUrl(artist.repTrack) : (artist.albumArt || 'assets/images/default-art.png');
   thumbnail.style.cssText = `
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background-image: url('${artist.albumArt || 'assets/images/default-art.png'}');
+    background-image: url('${initialArt || 'assets/images/default-art.png'}');
     background-size: cover;
     background-position: center;
     margin-bottom: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   `;
+
+  // Lazy-load art on-demand
+  try {
+    const rep = artist.repTrack;
+    if (rep) {
+      ensureAlbumArtUrl(rep).then((url) => {
+        if (!thumbnail.isConnected) return;
+        if (url && url !== 'assets/images/default-art.png') {
+          thumbnail.style.backgroundImage = `url('${url}')`;
+        }
+      }).catch(() => {});
+    }
+  } catch (_) {}
   
   // Artist name
   const name = document.createElement('div');

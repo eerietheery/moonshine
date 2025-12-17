@@ -1,5 +1,6 @@
 import { updateSidebarFilters } from '../../components/sidebar/sidebar.js';
 import { renderList } from '../../components/shared/view.js';
+import { rebuildTrackIndex } from '../../components/shared/state.js';
 
 function createLibrarySection(state) {
   const libSection = document.createElement('div');
@@ -70,11 +71,13 @@ function createLibrarySection(state) {
           document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
           window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
           state.tracks = state.tracks.filter(t => !t.filePath.startsWith(p));
+          rebuildTrackIndex();
           if (state.libraryDirs.length === 0) {
             const def = await window.etune.getDefaultMusicPath();
             document.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Reloading default library...', type: 'info' } }));
-            window.etune.scanMusic(def).then(tracks => {
+            (window.etune.scanMusicLite ? window.etune.scanMusicLite(def) : window.etune.scanMusic(def)).then(tracks => {
               state.tracks = tracks.filter(t => t && t.filePath);
+              rebuildTrackIndex();
               state.libraryDirs = [def];
               document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
               window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });

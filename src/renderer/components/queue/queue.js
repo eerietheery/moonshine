@@ -60,7 +60,11 @@ export function renderQueuePanel() {
     if (!state.queue.length || upcoming.length < 5) {
       const needed = 5 - upcoming.length;
       const lib = state.tracks; // always show from full library
-      const currentIdx = state.currentTrack ? lib.findIndex(t => t.filePath === state.currentTrack.filePath) : -1;
+      let currentIdx = -1;
+      if (state.currentTrack) {
+        const idx = state.tracksIndexByPath?.get(state.currentTrack.filePath);
+        currentIdx = (typeof idx === 'number') ? idx : lib.findIndex(t => t.filePath === state.currentTrack.filePath);
+      }
       if (currentIdx !== -1) {
         const after = lib.slice(currentIdx + 1, currentIdx + 1 + needed);
         upcoming = upcoming.concat(after);

@@ -13,7 +13,8 @@
  */
 
 const DB_NAME = 'moonshine-cache';
-const DB_VERSION = 1;
+// v2 adds per-library scoping via `libraryKey`.
+const DB_VERSION = 2;
 
 const STORES = {
   TRACKS: 'tracks',      // Main cache: track metadata
@@ -21,11 +22,24 @@ const STORES = {
 };
 
 const INDEXES = {
+  LIBRARY: 'libraryKey',
   ALBUM: 'album',
   ARTIST: 'artist',
   MTIME: 'mtime',
   CACHED_AT: 'cachedAt'
 };
+
+function normalizeLibraryKey(dirPath) {
+  return String(dirPath || '')
+    .trim()
+    .replace(/\\/g, '/')
+    .replace(/\/+$/g, '')
+    .toLowerCase();
+}
+
+function normalizePathForCompare(filePath) {
+  return String(filePath || '').replace(/\\/g, '/').toLowerCase();
+}
 
 /**
  * IndexedDB Cache Manager Class
@@ -112,12 +126,20 @@ class IndexedDBCache {
           });
           
           // Create indexes for fast lookups
+          trackStore.createIndex(INDEXES.LIBRARY, 'libraryKey', { unique: false });
           trackStore.createIndex(INDEXES.ALBUM, 'tags.album', { unique: false });
           trackStore.createIndex(INDEXES.ARTIST, 'tags.artist', { unique: false });
           trackStore.createIndex(INDEXES.MTIME, 'mtime', { unique: false });
           trackStore.createIndex(INDEXES.CACHED_AT, 'cachedAt', { unique: false });
           
           console.log('✅ Created tracks object store with indexes');
+        } else {
+          // Existing DB: ensure new indexes exist.
+          const trackStore = event.target.transaction.objectStore(STORES.TRACKS);
+          if (!trackStore.indexNames.contains(INDEXES.LIBRARY)) {
+            trackStore.createIndex(INDEXES.LIBRARY, 'libraryKey', { unique: false });
+            console.log('✅ Added libraryKey index');
+          }
         }
         
         // Create metadata store
@@ -131,6 +153,13 @@ class IndexedDBCache {
         console.warn('⚠️ IndexedDB upgrade blocked by another tab');
       };
     });
+  }
+
+  /**
+   * Convert a directory path into a stable, case-insensitive library key.
+   */
+  getLibraryKey(dirPath) {
+    return normalizeLibraryKey(dirPath);
   }
 
   /**
@@ -166,12 +195,13 @@ class IndexedDBCache {
    * @param {string} filePath - Absolute path to music file
    * @param {Object} trackData - Track metadata to cache
    */
-  async set(filePath, trackData) {
+  async set(filePath, trackData, libraryKey = null) {
     if (!this.db) await this.open();
 
     const cacheEntry = {
       ...trackData,
       filePath,
+      libraryKey: trackData?.libraryKey || (libraryKey ? normalizeLibraryKey(libraryKey) : undefined),
       cachedAt: Date.now()
     };
 
@@ -189,7 +219,7 @@ class IndexedDBCache {
    * Store multiple tracks in a single transaction (batch operation)
    * @param {Array<Object>} tracks - Array of track objects to cache
    */
-  async setMany(tracks) {
+  async setMany(tracks, libraryKey = null) {
     if (!this.db) await this.open();
     if (!tracks || tracks.length === 0) return;
 
@@ -199,6 +229,7 @@ class IndexedDBCache {
       const transaction = this.db.transaction([STORES.TRACKS], 'readwrite');
       const store = transaction.objectStore(STORES.TRACKS);
       const cachedAt = Date.now();
+      const libKey = libraryKey ? normalizeLibraryKey(libraryKey) : null;
 
       let successCount = 0;
       let errorCount = 0;
@@ -206,6 +237,7 @@ class IndexedDBCache {
       for (const track of tracks) {
         const cacheEntry = {
           ...track,
+          libraryKey: track?.libraryKey || libKey || undefined,
           cachedAt
         };
 
@@ -275,15 +307,31 @@ class IndexedDBCache {
    * Get all cached track file paths
    * @returns {Promise<Array<string>>} Array of file paths
    */
-  async getAllKeys() {
+  async getAllKeys(libraryKey = null) {
     if (!this.db) await this.open();
 
     return new Promise((resolve, reject) => {
       const transaction = this.db.transaction([STORES.TRACKS], 'readonly');
       const store = transaction.objectStore(STORES.TRACKS);
-      const request = store.getAllKeys();
 
-      request.onsuccess = () => resolve(request.result || []);
+      const libKey = libraryKey ? normalizeLibraryKey(libraryKey) : null;
+      if (!libKey) {
+        const request = store.getAllKeys();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+        return;
+      }
+
+      // IndexedDB doesn't provide getAllKeys on an index in older engines; use cursor.
+      const keys = [];
+      const idx = store.index(INDEXES.LIBRARY);
+      const request = idx.openCursor(IDBKeyRange.only(libKey));
+      request.onsuccess = () => {
+        const cursor = request.result;
+        if (!cursor) return resolve(keys);
+        keys.push(cursor.primaryKey);
+        cursor.continue();
+      };
       request.onerror = () => reject(request.error);
     });
   }
@@ -292,18 +340,33 @@ class IndexedDBCache {
    * Get all cached tracks
    * @returns {Promise<Array<Object>>} Array of track objects
    */
-  async getAllTracks() {
+  async getAllTracks(libraryKey = null) {
     if (!this.db) await this.open();
 
     return new Promise((resolve, reject) => {
       try {
         const transaction = this.db.transaction([STORES.TRACKS], 'readonly');
         const store = transaction.objectStore(STORES.TRACKS);
-        const request = store.getAll();
+        const libKey = libraryKey ? normalizeLibraryKey(libraryKey) : null;
+        if (!libKey) {
+          const request = store.getAll();
+          request.onsuccess = () => {
+            const tracks = request.result || [];
+            console.log(`📦 Retrieved ${tracks.length} tracks from cache`);
+            resolve(tracks);
+          };
+          request.onerror = () => {
+            console.error('❌ Failed to retrieve tracks:', request.error);
+            reject(request.error);
+          };
+          return;
+        }
 
+        const idx = store.index(INDEXES.LIBRARY);
+        const request = idx.getAll(IDBKeyRange.only(libKey));
         request.onsuccess = () => {
           const tracks = request.result || [];
-          console.log(`📦 Retrieved ${tracks.length} tracks from cache`);
+          console.log(`📦 Retrieved ${tracks.length} tracks from cache for library ${libKey}`);
           resolve(tracks);
         };
 
@@ -327,14 +390,21 @@ class IndexedDBCache {
    * Check if cache has any data
    * @returns {Promise<boolean>}
    */
-  async hasData() {
+  async hasData(libraryKey = null) {
     if (!this.db) await this.open();
 
     return new Promise((resolve, reject) => {
       const transaction = this.db.transaction([STORES.TRACKS], 'readonly');
       const store = transaction.objectStore(STORES.TRACKS);
-      const request = store.count();
-
+      const libKey = libraryKey ? normalizeLibraryKey(libraryKey) : null;
+      if (!libKey) {
+        const request = store.count();
+        request.onsuccess = () => resolve(request.result > 0);
+        request.onerror = () => reject(request.error);
+        return;
+      }
+      const idx = store.index(INDEXES.LIBRARY);
+      const request = idx.count(IDBKeyRange.only(libKey));
       request.onsuccess = () => resolve(request.result > 0);
       request.onerror = () => reject(request.error);
     });
@@ -344,14 +414,17 @@ class IndexedDBCache {
    * Get count of cached tracks
    * @returns {Promise<number>}
    */
-  async count() {
+  async count(libraryKey = null) {
     if (!this.db) await this.open();
 
     return new Promise((resolve, reject) => {
       try {
         const transaction = this.db.transaction([STORES.TRACKS], 'readonly');
         const store = transaction.objectStore(STORES.TRACKS);
-        const request = store.count();
+        const libKey = libraryKey ? normalizeLibraryKey(libraryKey) : null;
+        const request = libKey
+          ? store.index(INDEXES.LIBRARY).count(IDBKeyRange.only(libKey))
+          : store.count();
 
         request.onsuccess = () => {
           console.log(`📦 Cache count result: ${request.result}`);
@@ -369,6 +442,44 @@ class IndexedDBCache {
         console.error('❌ Cache count exception:', err);
         resolve(0); // Return 0 on error instead of rejecting
       }
+    });
+  }
+
+  /**
+   * One-time helper to tag legacy cache entries (no libraryKey) that belong
+   * to a given directory, based on filePath prefix.
+   */
+  async tagLibraryByDirPrefix(dirPath) {
+    if (!this.db) await this.open();
+
+    const libKey = normalizeLibraryKey(dirPath);
+    const prefix = normalizePathForCompare(dirPath);
+    if (!libKey || !prefix) return { updated: 0 };
+
+    return new Promise((resolve, reject) => {
+      let updated = 0;
+      const transaction = this.db.transaction([STORES.TRACKS], 'readwrite');
+      const store = transaction.objectStore(STORES.TRACKS);
+      const request = store.openCursor();
+
+      request.onsuccess = () => {
+        const cursor = request.result;
+        if (!cursor) return;
+        const value = cursor.value;
+        if (value && !value.libraryKey) {
+          const fp = normalizePathForCompare(value.filePath);
+          if (fp.startsWith(prefix)) {
+            value.libraryKey = libKey;
+            cursor.update(value);
+            updated++;
+          }
+        }
+        cursor.continue();
+      };
+
+      transaction.oncomplete = () => resolve({ updated });
+      transaction.onerror = () => reject(transaction.error);
+      request.onerror = () => reject(request.error);
     });
   }
 

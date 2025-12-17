@@ -2,7 +2,7 @@ import { state, updateFilters } from '../shared/state.js';
 import { createFilterItem } from '../ui/ui.js';
 // Import from shared location after reorganization
 import { normalizeArtist } from '../shared/filter.js';
-import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
+import { getAlbumArtUrl, ensureAlbumArtUrl } from '../../utils/albumArtCache.js';
 
 /**
  * Get representative album art for an artist (from their first track)
@@ -112,7 +112,7 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
         // Artist counting + representative track
         if (matchesActiveArtist) {
             artistCounts.set(artistKey, (artistCounts.get(artistKey) || 0) + 1);
-            if (showArtistArt && !repTrackForArtistKey.has(artistKey) && getAlbumArtUrl(t) !== 'assets/images/default-art.png') {
+            if (showArtistArt && !repTrackForArtistKey.has(artistKey)) {
                 repTrackForArtistKey.set(artistKey, t);
             }
         }
@@ -120,7 +120,7 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
         // Album counting + representative track (respect active artist filter)
         if (!activeArtist || (state.explicitArtistNames ? rawArtist === activeArtist : (normalizedCache.get(rawArtist) === activeArtist || rawArtist === activeArtist))) {
             albumCounts.set(album, (albumCounts.get(album) || 0) + 1);
-            if (showAlbumArt && !repTrackForAlbum.has(album) && getAlbumArtUrl(t) !== 'assets/images/default-art.png') {
+            if (showAlbumArt && !repTrackForAlbum.has(album)) {
                 repTrackForAlbum.set(album, t);
             }
         }
@@ -138,7 +138,17 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
             const active = state.activeArtist === display || state.activeArtist === key;
             const rep = repTrackForArtistKey.get(key);
             const albumArt = showArtistArt && rep ? getAlbumArtUrl(rep) : null;
-            aFrag.appendChild(createFilterItem(display, cnt, active, albumArt));
+            const item = createFilterItem(display, cnt, active, albumArt);
+            aFrag.appendChild(item);
+            if (showArtistArt && rep) {
+                ensureAlbumArtUrl(rep).then((url) => {
+                    if (!item.isConnected) return;
+                    if (url && url !== 'assets/images/default-art.png') {
+                        item.style.setProperty('--filter-album-art', `url('${url}')`);
+                        item.classList.add('has-album-art');
+                    }
+                }).catch(() => {});
+            }
         }
     }
     artistList.appendChild(aFrag);
@@ -153,7 +163,17 @@ export function updateSidebarFilters(filterInput, artistList, albumList, renderL
         if (cnt > 0) {
             const rep = repTrackForAlbum.get(album);
             const albumArt = showAlbumArt && rep ? getAlbumArtUrl(rep) : null;
-            alFrag.appendChild(createFilterItem(album, cnt, state.activeAlbum === album, albumArt));
+            const item = createFilterItem(album, cnt, state.activeAlbum === album, albumArt);
+            alFrag.appendChild(item);
+            if (showAlbumArt && rep) {
+                ensureAlbumArtUrl(rep).then((url) => {
+                    if (!item.isConnected) return;
+                    if (url && url !== 'assets/images/default-art.png') {
+                        item.style.setProperty('--filter-album-art', `url('${url}')`);
+                        item.classList.add('has-album-art');
+                    }
+                }).catch(() => {});
+            }
         }
     }
     albumList.appendChild(alFrag);

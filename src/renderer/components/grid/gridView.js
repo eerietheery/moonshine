@@ -7,7 +7,7 @@ import * as dom from '../../dom.js';
 import { showToast } from '../ui/ui.js';
 import { getPlaylistTracks } from '../playlist/playlists.js';
 import { getGridTemplate, setMusicGridTemplate } from '../shared/layout.js';
-import { getAlbumArtUrl } from '../../utils/albumArtCache.js';
+import { getAlbumArtUrl, ensureAlbumArtUrl } from '../../utils/albumArtCache.js';
 
 export function renderGrid(list) {
   try { document.body.classList.toggle('playlists-active', state.viewMode === 'playlist' && !state.activePlaylist); } catch(e) {}
@@ -252,6 +252,18 @@ export function renderGrid(list) {
       ${sourceTitle ? `<div class="grid-source" title="${sourceTitle}">${sourceTitle}</div>` : ''}
       <div class="track-year ${yearText ? 'linkish' : ''}" ${yearText ? 'data-year tabindex="0"' : ''} title="${yearText}">${a.year ? a.year + ' • ' : ''}${a.tracks.length} track${a.tracks.length !== 1 ? 's' : ''}</div>
     `;
+
+    // Lazy-load album art on-demand for the card.
+    try {
+      const rep = (a.tracks || []).find(t => t && t.filePath) || null;
+      const img = card.querySelector('img.album-art');
+      if (rep && img) {
+        ensureAlbumArtUrl(rep).then((url) => {
+          if (!card.isConnected) return;
+          if (url && img.src !== url) img.src = url;
+        });
+      }
+    } catch (_) {}
     // Add to queue button for album (adds all tracks in album)
     card.querySelector('.queue-add-btn').onclick = (e) => {
       e.stopPropagation();
