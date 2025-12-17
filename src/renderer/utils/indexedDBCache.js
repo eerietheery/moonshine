@@ -81,6 +81,7 @@ class IndexedDBCache {
         this.db = request.result;
         this.isInitialized = true;
         console.log('✅ IndexedDB opened successfully');
+        console.log(`📦 Storage location: ${window.location.origin} (partition: persist:moonshine)`);
         
         // Add error handler for database
         this.db.onerror = (event) => {

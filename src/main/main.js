@@ -1,41 +1,112 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const { scanMusic } = require('../music');
+const { scanMusic, getAlbumArtForFile } = require('../music');
 const { loadConfig, getConfig, updateConfig } = require('./config'); // Corrected path
 
+function ensureDirWritable(dirPath) {
+  try {
+    fs.mkdirSync(dirPath, { recursive: true });
+    const probeFile = path.join(dirPath, `.write-probe-${process.pid}-${Date.now()}`);
+    fs.writeFileSync(probeFile, 'ok', 'utf8');
+    fs.unlinkSync(probeFile);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function pickWritableStorageDir() {
+  const candidates = [];
+
+  try {
+    // Electron default per-user profile directory (usually writable).
+    candidates.push(app.getPath('userData'));
+  } catch {
+    // ignore
+  }
+
+  try {
+    candidates.push(path.join(app.getPath('temp'), 'Moonshine'));
+  } catch {
+    // ignore
+  }
+
+  // Documents can be blocked by Windows Defender Controlled Folder Access for Chromium subprocesses.
+  // Keep it as a last resort rather than the default.
+  try {
+    candidates.push(path.join(app.getPath('documents'), 'Moonshine'));
+  } catch {
+    // ignore
+  }
+
+  for (const candidate of candidates) {
+    if (candidate && ensureDirWritable(candidate)) return candidate;
+  }
+
+  return null;
+}
+
+// Configure persistent storage paths as early as possible.
+// On Windows, if the chosen directory is not writable (e.g., Documents permissions/OneDrive policies),
+// Chromium can fail to create disk cache and quota DB (0x5 access denied).
+const storageDir = pickWritableStorageDir();
+if (storageDir) {
+  const cacheDir = path.join(storageDir, 'Cache');
+  ensureDirWritable(cacheDir);
+
+  try {
+    app.setPath('userData', storageDir);
+    app.setPath('sessionData', storageDir);
+    app.setPath('cache', cacheDir);
+  } catch {
+    // ignore; we'll still try Chromium switches below
+  }
+
+  // Keep Chromium cache/quota storage inside the same writable directory.
+  // Must be set before the app is ready.
+  try {
+    app.commandLine.appendSwitch('disk-cache-dir', cacheDir);
+  } catch {
+    // ignore
+  }
+
+  console.log('[Main] Storage dir:', storageDir);
+  console.log('[Main] Cache dir:', cacheDir);
+} else {
+  console.warn('[Main] Failed to find a writable storage directory; using Electron defaults.');
+}
+
 let initialScanCache = null;
+let initialScanPromise = null;
 let mainWindow = null;
-const DEFAULT_DIR = app.getPath('music');
+let DEFAULT_DIR = null; // Will be set after app is ready
 
 function createWindow() {
   const cfg = getConfig();
   
-  // Use persistent storage in Documents/Moonshine folder for IndexedDB
-  const userDataPath = path.join(app.getPath('documents'), 'Moonshine');
-  
-  // Ensure the directory exists
-  if (!fs.existsSync(userDataPath)) {
-    fs.mkdirSync(userDataPath, { recursive: true });
-  }
-  
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
-    icon: path.join(__dirname, '../../assets/images/etico.png'), // Corrected path
+    icon: path.join(__dirname, '../../assets/images/etico.png'),
     backgroundColor: '#121212',
     autoHideMenuBar: true,
+    show: false, // Don't show until content is rendered
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'), // This path is correct
+      preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       // Use persistent partition to store IndexedDB in Documents/Moonshine
       partition: `persist:moonshine`,
+      additionalArguments: [
+        `--user-config=${JSON.stringify(cfg)}` // Pass config to renderer
+      ]
     },
   });
   
-  // Set the session storage path to Documents/Moonshine
-  const session = win.webContents.session;
-  app.setPath('sessionData', userDataPath);
+  // Show window only after DOM content is fully loaded
+  win.webContents.once('did-finish-load', () => {
+    win.show();
+  });
   
   // Corrected path for index.html
   win.loadFile(path.join(__dirname, '../../index.html'));
@@ -43,6 +114,9 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  DEFAULT_DIR = app.getPath('music');
+  console.log('[Main] Default music dir:', DEFAULT_DIR);
+  
   // Load config
   let cfg = loadConfig();
 
@@ -66,10 +140,21 @@ app.whenReady().then(async () => {
   // Kick off an initial scan in background using either the user-selected dir or defaults
   try {
     const dirs = (cfg.libraryDirs && cfg.libraryDirs.length) ? cfg.libraryDirs : [DEFAULT_DIR];
-    // Scan first dir for initial list
-    initialScanCache = await scanMusic(dirs[0]);
+    // Important: do not block window creation on this scan.
+    // The renderer can request initialScanCache via IPC while the scan runs.
+    initialScanCache = null;
+    initialScanPromise = scanMusic(dirs[0])
+      .then((res) => {
+        initialScanCache = res;
+        return res;
+      })
+      .catch(() => {
+        initialScanCache = null;
+        return null;
+      });
   } catch {
     initialScanCache = null;
+    initialScanPromise = null;
   }
 
   createWindow();
@@ -90,8 +175,39 @@ ipcMain.handle('select-folder', async () => {
 });
 
 ipcMain.handle('scan-music', async (event, dirPath) => {
-  if (!dirPath && initialScanCache) return initialScanCache;
+  // If renderer requests the initial scan, prefer cached results.
+  if (!dirPath) {
+    if (initialScanCache) return initialScanCache;
+    if (initialScanPromise) {
+      const res = await initialScanPromise;
+      if (res) initialScanCache = res;
+      return res;
+    }
+  }
   return scanMusic(dirPath || DEFAULT_DIR);
+});
+
+// Lightweight scan: omit embedded album art to reduce IPC payload
+ipcMain.handle('scan-music-lite', async (event, dirPath) => {
+  // Reuse same scan but strip albumArtDataUrl for most tracks
+  const tracks = await (dirPath ? scanMusic(dirPath) : (initialScanCache || (initialScanPromise ? await initialScanPromise : await scanMusic(DEFAULT_DIR))));
+  if (!tracks || !Array.isArray(tracks)) return tracks;
+  return tracks.map(t => {
+    // keep metadata and album key, but remove bulky data URL
+    const { albumArtDataUrl, ...rest } = t;
+    return { ...rest, albumArtDataUrl: null };
+  });
+});
+
+// Get album art for a specific file on-demand
+ipcMain.handle('get-album-art', async (event, filePath) => {
+  if (!filePath) return null;
+  try {
+    const art = await getAlbumArtForFile(filePath);
+    return art || null;
+  } catch (e) {
+    return null;
+  }
 });
 
 // Reveal file in OS file manager

@@ -44,7 +44,8 @@ export async function scanMusicCached(dirPath, options = {}) {
     console.log(`📦 Cache check: Found ${cachedCount} cached tracks`);
     
     if (cachedCount > 0 && !forceFull) {
-      console.log('📦 Cache hit! Loading tracks from IndexedDB...');
+      console.log('✅ Cache hit! Loading tracks from IndexedDB...');
+      console.log('📦 Skipping filesystem scan - using cached data');
       onProgress(0, 100, 'Loading from cache...');
       
       // Load cached tracks
@@ -57,9 +58,11 @@ export async function scanMusicCached(dirPath, options = {}) {
       }, 100);
       
       onProgress(100, 100, 'Cache loaded');
+      console.log(`✅ Returned ${cachedTracks.length} tracks from cache in <100ms`);
       return cachedTracks;
     } else {
       console.log('📦 No cache or force full scan, scanning library...');
+      console.log(`📦 Reason: ${cachedCount === 0 ? 'Empty cache' : 'Forced full scan'}`);
       return await fullScanAndCache(dirPath, onProgress);
     }
   } catch (error) {
@@ -111,6 +114,14 @@ async function incrementalScan(dirPath, cachedTracks, onProgress) {
   try {
     // Get all file paths from filesystem
     const fileSystemPaths = await getFileSystemPaths(dirPath);
+
+    // If filesystem enumeration is not available, we cannot safely detect deletions.
+    // Avoid wiping the cache on startup.
+    if (!Array.isArray(fileSystemPaths) || fileSystemPaths.length === 0) {
+      console.warn('📦 Incremental scan skipped: filesystem paths unavailable');
+      onProgress(100, 100, 'Incremental scan skipped');
+      return;
+    }
     
     // Build lookup maps
     const cachedMap = new Map(cachedTracks.map(t => [t.filePath, t]));

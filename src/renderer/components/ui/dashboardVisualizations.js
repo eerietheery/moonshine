@@ -33,6 +33,8 @@ export class DashboardVisualizations {
     // Legacy spectrogram data for fallback
     this.spectrogramData = [];
     this.maxSpectrogramFrames = 200;
+
+    this._boundResizeHandler = this.handleResize.bind(this);
     
     this.initializeAudioData();
     this.initializeAllVisualizers();
@@ -156,7 +158,7 @@ export class DashboardVisualizations {
     this.resizeAllCanvases();
     
     // Listen for window resize
-    window.addEventListener('resize', this.handleResize.bind(this));
+    window.addEventListener('resize', this._boundResizeHandler);
     
     // Start all active visualizers simultaneously
     this.activeVisualizers.forEach(vizType => {
@@ -171,6 +173,10 @@ export class DashboardVisualizations {
         console.log(`Started ${vizType} visualizer`);
       }
     });
+
+    // Force a first resize notification so renderers created while hidden
+    // (canvas 0x0 at construction time) can update their internal buffers/viewports.
+    this.handleResize();
 
     // If no advanced visualizers are available, start legacy
     if (this.activeVisualizers.length === 0) {
@@ -196,7 +202,7 @@ export class DashboardVisualizations {
     this.animationFrames = {};
     
     // Remove resize listener
-    window.removeEventListener('resize', this.handleResize.bind(this));
+    window.removeEventListener('resize', this._boundResizeHandler);
   }
 
   handleResize() {

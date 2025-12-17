@@ -49,12 +49,16 @@ class SecretDashboard {
     this.container.style.transform = 'scale(0.9)';
     this.container.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
     
+    // Wait for layout to complete before sizing canvases and starting visualizations
     requestAnimationFrame(() => {
-      this.container.style.opacity = '1';
-      this.container.style.transform = 'scale(1)';
+      requestAnimationFrame(() => {
+        this.container.style.opacity = '1';
+        this.container.style.transform = 'scale(1)';
+        
+        // Start visualizations after layout is complete
+        this.visualizations.start();
+      });
     });
-
-    this.visualizations.start();
   }
 
   hide() {
