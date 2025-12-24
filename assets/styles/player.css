@@ -23,6 +23,20 @@
   pointer-events: auto;
 }
 
+/* Slim scan progress indicator at top of player bar */
+.scan-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0%;
+  background: var(--accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 40%, transparent);
+  transition: width 0.08s linear, opacity 0.2s ease;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
 /* Guarantee all inner controls accept pointer events */
 #player-bar * { pointer-events: auto; }
 

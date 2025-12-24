@@ -7,7 +7,8 @@ import { preloadGridView } from './components/grid/gridEvents.js';
 import * as dom from './dom.js';
 import { renderList } from './components/shared/view.js';
 import { setupQueuePanel } from './components/queue/queue.js';
-import { state } from './components/shared/state.js';
+import { getStats } from './utils/indexedDBCache.js';
+import { setUseHighPerformanceIngestor, state } from './components/shared/state.js';
 import { loadPlaylists, buildSmartPlaylists, renderPlaylistsSidebar, createPlaylist, getPlaylistTracks } from './components/playlist/playlists.js';
 import { playlists } from './components/playlist/playlists.js';
 import { initMobile } from './components/mobile/mobileUI.js';
@@ -100,6 +101,8 @@ export function initializeApp() {
       if (typeof cfg.favoriteViewEnabled === 'boolean') state.favoriteViewEnabled = cfg.favoriteViewEnabled;
       // Restore list view headers from config
       if (Array.isArray(cfg.listHeaders) && cfg.listHeaders.length) state.listHeaders = cfg.listHeaders.slice();
+        // Detector flag from persisted config (may be toggled later by cache counts)
+        if (typeof cfg.useHighPerformanceIngestor === 'boolean') state.useHighPerformanceIngestor = cfg.useHighPerformanceIngestor;
   // Load playlists
   await loadPlaylists();
       // Load all remembered library directories
@@ -180,6 +183,58 @@ export function initializeApp() {
     import('./ui/settings/dataBackupSection.js').then(module => {
       window.importUserDataFromBackup = module.importUserDataFromBackup;
     });
+
+    // Scan progress bar wiring
+    try {
+      const bar = document.getElementById('scan-progress');
+      const setProgress = (percent, message) => {
+        if (!bar) return;
+        const p = Math.max(0, Math.min(100, percent || 0));
+        bar.style.display = p > 0 && p < 100 ? '' : 'none';
+        bar.style.width = `${p}%`;
+        const sr = bar.querySelector('.sr-only');
+        if (sr) sr.textContent = message ? `${message} ${p}%` : `${p}%`;
+        if (p >= 100) {
+          setTimeout(() => { bar.style.display = 'none'; bar.style.width = '0%'; }, 300);
+        }
+      };
+      // Expose globally for library scan callbacks
+      window.__setScanProgress = setProgress;
+      // Listen to native scan progress events
+      if (window.etune && typeof window.etune.on === 'function') {
+        window.etune.on('scan-progress', (payload) => {
+          try {
+            const completed = payload?.completed || 0;
+            const total = payload?.total || 0;
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+            setProgress(percent, 'Scanning library');
+            if (payload?.error) {
+              import('./components/ui/ui.js').then(({ showToast }) => {
+                showToast('High-performance scan failed — using legacy scanner');
+              }).catch(() => {});
+            }
+          } catch (_) {}
+        });
+      }
+    } catch (_) {}
   });
 }
+
+async function bootstrapHPDetector() {
+  try {
+    const stats = await getStats();
+    const hp = (stats?.totalTracks || 0) >= 10000;
+    setUseHighPerformanceIngestor(hp);
+    // Mirror to main process so it can choose the correct path
+    if (window.etune?.updateConfig) {
+      await window.etune.updateConfig({ useHighPerformanceIngestor: hp });
+    }
+  } catch (err) {
+    console.warn('HP detector failed, defaulting to legacy scanner:', err);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  bootstrapHPDetector();
+});
 

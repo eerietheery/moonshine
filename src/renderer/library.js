@@ -57,7 +57,7 @@ async function addMusic(userPath) {
       forceFull: false,
       onProgress: (current, total, message) => {
         console.log(`📦 Scan progress: ${message} (${current}/${total})`);
-        // TODO: Show progress in UI
+        try { window.__setScanProgress(Math.round((current/total)*100), message); } catch (_) {}
       }
     });
     
@@ -111,6 +111,7 @@ async function loadMusic(dirPath) {
       forceFull: false,
       onProgress: (current, total, message) => {
         console.log(`📦 Load progress: ${message} (${current}/${total})`);
+        try { window.__setScanProgress(Math.round((current/total)*100), message); } catch (_) {}
       }
     });
     

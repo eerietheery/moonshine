@@ -1,14 +1,13 @@
 node_modules/
 dist/
 docs/
+build/
 bfg.jar/
 docs/old/
 package.json
 package.json/
 encyclopedia.md
-build/
 scripts/
-
 # Security - Certificate files
 *.pfx
 *.p12

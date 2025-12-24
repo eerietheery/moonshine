@@ -38,6 +38,8 @@ export const state = {
   fullArtCardDisplay: false,
   // Whether sidebar artist/album/year filters should be applied
   sidebarFilteringEnabled: false,
+  // Detector flag: enable native/high-performance ingestor for very large libraries
+  useHighPerformanceIngestor: false,
 };
 
 // Expose to window for legacy modules that expect window.state immediately
@@ -127,4 +129,9 @@ export function rebuildPlayOrder(startAtCurrent=true){
     if (idx!==-1){ const pos = order.indexOf(idx); if (pos>0){ state.playOrder = order.slice(pos).concat(order.slice(0,pos)); return state.playOrder; } }
   }
   state.playOrder = order; return order;
+}
+
+export function setUseHighPerformanceIngestor(flag) {
+  state.useHighPerformanceIngestor = !!flag;
+  document.dispatchEvent(new CustomEvent('state:hpIngestorChanged', { detail: { flag: state.useHighPerformanceIngestor } }));
 }

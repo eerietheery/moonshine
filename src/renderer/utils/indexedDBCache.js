@@ -630,6 +630,38 @@ class IndexedDBCache {
   }
 }
 
+// Basic metadata store for scanner stats (library-wide)
+export async function getStats() {
+  const db = await openDB();
+  const tx = db.transaction('meta', 'readonly');
+  const store = tx.objectStore('meta');
+  const stats = await store.get('stats');
+  await tx.done?.();
+  return stats || { totalTracks: 0, lastScanAt: 0 };
+}
+
+export async function setStats(next) {
+  const db = await openDB();
+  const tx = db.transaction('meta', 'readwrite');
+  const store = tx.objectStore('meta');
+  const prev = (await store.get('stats')) || {};
+  const merged = { ...prev, ...next };
+  await store.put(merged, 'stats');
+  await tx.done?.();
+  return merged;
+}
+
+// Bulk write convenience used by HP path
+export async function setMany(tracks) {
+  const db = await openDB();
+  const tx = db.transaction('tracks', 'readwrite');
+  const store = tx.objectStore('tracks');
+  for (const t of tracks) {
+    await store.put(t, t.filePath);
+  }
+  await tx.done?.();
+}
+
 // Singleton instance
 export const cache = new IndexedDBCache();
 

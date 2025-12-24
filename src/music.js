@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const mm = require('music-metadata');
 
-// Note: IndexedDB cache is handled in renderer process, not main process
-// This file runs in Node.js (main process), so caching is deferred to renderer
+// Note: IndexedDB caching is handled in the renderer process.
+// This module only performs filesystem + metadata work in Node.
 
 const AUDIO_EXTS = new Set(['.mp3', '.m4a', '.flac', '.wav', '.ogg', '.aac']);
 const CONCURRENCY = 8;
@@ -13,7 +13,7 @@ function walkDir(dir, results = []) {
   for (const entry of entries) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      // Skip hidden/system folders
+      // Skip hidden/system folders and known problematic system dirs
       if (!entry.name.startsWith('.') && entry.name.toLowerCase() !== 'system volume information') {
         walkDir(full, results);
       }
@@ -43,11 +43,10 @@ function generateAlbumKey(tags) {
 
 async function readMeta(filePath) {
   try {
-    // Avoid reading embedded cover art during the main scan to keep memory/IPC small.
-    // Cover art is fetched on-demand via getAlbumArtForFile().
+    // Avoid reading embedded cover art during main scan to keep memory/IPC small.
     const meta = await mm.parseFile(filePath, { duration: false, skipCovers: true });
     const { common, format } = meta;
-    
+
     const tags = {
       artist: common.artist || common.albumartist || 'Unknown',
       album: common.album || 'Unknown',
@@ -58,7 +57,7 @@ async function readMeta(filePath) {
     };
 
     const albumKey = generateAlbumKey(tags);
-    
+
     return {
       file: path.basename(filePath),
       filePath,
@@ -66,11 +65,18 @@ async function readMeta(filePath) {
       albumArtDataUrl: null,
       bitrate: format && format.bitrate ? format.bitrate : null,
       error: null,
-      // Add album key for later optimization
+      // Add album key for downstream optimizations in renderer
       _albumKey: albumKey,
     };
   } catch (e) {
-    return { file: path.basename(filePath), filePath, tags: {}, albumArtDataUrl: null, bitrate: null, error: e.message };
+    return {
+      file: path.basename(filePath),
+      filePath,
+      tags: {},
+      albumArtDataUrl: null,
+      bitrate: null,
+      error: e.message,
+    };
   }
 }
 
@@ -90,53 +96,16 @@ async function mapWithConcurrency(items, limit, mapper) {
 
 async function scanMusic(dirPath) {
   try {
-<<<<<<< HEAD
-=======
-    // Clear the album art cache for new scan
-    albumArtScanCache.clear();
-    const albumArtEmitted = new Set();
-    
->>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
     const files = walkDir(dirPath);
     console.log(`🎵 Scanning ${files.length} music files...`);
-    
-    const metas = await mapWithConcurrency(files, CONCURRENCY, readMeta);
 
-<<<<<<< HEAD
-=======
-    // Reduce payload size: only include album art data on the first track encountered
-    // for a given album key. Renderer will dedupe and reuse it for all tracks.
-    for (const m of metas) {
-      const key = m && (m._albumKey || (m.tags ? generateAlbumKey(m.tags) : null));
-      if (!key) continue;
-      if (m.albumArtDataUrl) {
-        if (albumArtEmitted.has(key)) {
-          m.albumArtDataUrl = null;
-        } else {
-          albumArtEmitted.add(key);
-        }
-      }
-    }
-    
-    // Log deduplication stats
-    const uniqueAlbums = albumArtScanCache.size;
-    const tracksWithArt = metas.filter(m => m.albumArtDataUrl).length;
-    const totalTracks = metas.length;
-    
-    console.log(`🎨 Album art scan complete: ${uniqueAlbums} unique albums, ${tracksWithArt}/${totalTracks} tracks with art`);
-    if (uniqueAlbums > 0 && tracksWithArt > uniqueAlbums) {
-      const savedSpace = ((tracksWithArt - uniqueAlbums) / tracksWithArt * 100).toFixed(1);
-      console.log(`💾 Estimated space saved through deduplication: ${savedSpace}%`);
-    }
-    
->>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
+    const metas = await mapWithConcurrency(files, CONCURRENCY, readMeta);
     return metas;
   } catch (e) {
     return [{ file: '', filePath: dirPath, tags: {}, albumArtDataUrl: null, error: e.message }];
   }
 }
 
-<<<<<<< HEAD
 // Scan metadata for a specific set of file paths (for incremental updates)
 async function scanFiles(filePaths) {
   try {
@@ -148,8 +117,6 @@ async function scanFiles(filePaths) {
   }
 }
 
-=======
->>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
 // Return album art data URL for a single file (on-demand)
 async function getAlbumArtForFile(filePath) {
   try {
@@ -166,8 +133,4 @@ async function getAlbumArtForFile(filePath) {
   }
 }
 
-<<<<<<< HEAD
 module.exports = { scanMusic, scanFiles, getAlbumArtForFile };
-=======
-module.exports = { scanMusic, getAlbumArtForFile };
->>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690

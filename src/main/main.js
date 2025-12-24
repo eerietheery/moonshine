@@ -1,9 +1,13 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
-<<<<<<< HEAD
 const { scanMusic, scanFiles, getAlbumArtForFile } = require('../music');
 const { loadConfig, getConfig, updateConfig } = require('./config'); // Corrected path
+const { startHPScan } = require('./hpScanner');
+
+// High-performance Node-only directory scanner using worker threads
+const { Worker } = require('worker_threads');
+const { startHPScan } = require('./hpScanner');
 
 const AUDIO_EXTS = new Set(['.mp3', '.m4a', '.flac', '.wav', '.ogg', '.aac']);
 
@@ -37,6 +41,33 @@ function listAudioFiles(dirPath) {
   return results;
 }
 
+// Native-accelerated directory walk (Windows) using N-API addon when available
+function listAudioFilesHP(dirPath) {
+  return new Promise((resolve) => {
+    const root = String(dirPath || '');
+    if (!root) return resolve([]);
+    const workerPath = path.join(__dirname, 'dirScannerWorker.js');
+    let total = 0;
+    const files = [];
+    try {
+      const worker = new Worker(workerPath);
+      worker.on('message', (msg) => {
+        if (msg?.type === 'batch' && Array.isArray(msg.files)) {
+          files.push(...msg.files);
+        } else if (msg?.type === 'done') {
+          resolve(files);
+        } else if (msg?.type === 'error') {
+          resolve([]);
+        }
+      });
+      worker.on('error', () => resolve([]));
+      worker.postMessage({ root });
+    } catch (_) {
+      resolve(listAudioFiles(dirPath));
+    }
+  });
+}
+
 async function mapWithConcurrency(items, limit, mapper) {
   const results = new Array(items.length);
   let nextIndex = 0;
@@ -50,12 +81,6 @@ async function mapWithConcurrency(items, limit, mapper) {
   await Promise.all(workers);
   return results;
 }
-
-=======
-const { scanMusic, getAlbumArtForFile } = require('../music');
-const { loadConfig, getConfig, updateConfig } = require('./config'); // Corrected path
-
->>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
 function ensureDirWritable(dirPath) {
   try {
     fs.mkdirSync(dirPath, { recursive: true });
@@ -251,11 +276,19 @@ ipcMain.handle('scan-music-lite', async (event, dirPath) => {
   });
 });
 
-<<<<<<< HEAD
 // Incremental scan helpers
 ipcMain.handle('list-music-files', async (event, dirPath) => {
   try {
     return listAudioFiles(dirPath || DEFAULT_DIR);
+  } catch {
+    return [];
+  }
+});
+
+// Native files listing (uses addon when available, falls back otherwise)
+ipcMain.handle('list-music-files-hp', async (event, dirPath) => {
+  try {
+    return await listAudioFilesHP(dirPath || DEFAULT_DIR);
   } catch {
     return [];
   }
@@ -287,8 +320,36 @@ ipcMain.handle('scan-files', async (event, filePaths) => {
   }
 });
 
-=======
->>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
+// High-performance scanning path: enumerate via native walker and scan metadata in batches
+ipcMain.handle('scan-music-hp', async (event, dirPath) => {
+  const root = dirPath || DEFAULT_DIR;
+  try {
+    const wc = event.sender;
+    const summary = await startHPScan({
+      roots: [root],
+      batchSize: 1000,
+      onProgress: (p) => {
+        try { wc.send('scan-progress', { ...p, total: undefined }); } catch (_) {}
+      },
+      onBatch: async (batch) => {
+        try {
+          // Convert batch file paths to metadata in main and stream to renderer
+          const paths = batch.map(b => b.filePath);
+          const metas = await scanFiles(paths);
+          if (Array.isArray(metas) && metas.length) wc.send('scan-batch', metas);
+        } catch (_) {}
+      }
+    });
+    // Signal completion
+    try { event.sender.send('scan-progress', { phase: 'scanning', completed: summary?.completed || 0, total: summary?.completed || 0 }); } catch (_) {}
+    return true;
+  } catch (e) {
+    // fallback to standard scan
+    try { event.sender.send('scan-progress', { phase: 'scanning', completed: 0, total: 0, error: true, message: 'HP scan failed, falling back' }); } catch (_) {}
+    const res = await scanMusic(root);
+    return res;
+  }
+});
 // Get album art for a specific file on-demand
 ipcMain.handle('get-album-art', async (event, filePath) => {
   if (!filePath) return null;

@@ -45,6 +45,19 @@ export async function scanMusicCached(dirPath, options = {}) {
     let cachedCount = await cache.count(libraryKey);
     console.log(`📦 Cache check: Found ${cachedCount} cached tracks for this library`);
 
+    // Detector: toggle high-performance ingestor when library is very large
+    try {
+      const threshold = 10000;
+      const enableNative = cachedCount >= threshold;
+      // Sync to renderer state and persist in config for main-process awareness
+      if (typeof window.state !== 'undefined') {
+        window.state.useHighPerformanceIngestor = enableNative;
+      }
+      if (window.etune && typeof window.etune.updateConfig === 'function') {
+        window.etune.updateConfig({ useHighPerformanceIngestor: enableNative, lastLibraryCount: cachedCount });
+      }
+    } catch (_) {}
+
     // Legacy support: pre-v2 entries had no libraryKey. Tag entries that match this dir.
     if (cachedCount === 0 && !forceFull) {
       const totalAny = await cache.count();
@@ -99,7 +112,46 @@ async function fullScanAndCache(dirPath, onProgress) {
   const libraryKey = cache.getLibraryKey(dirPath);
   
   // Request full scan from main process
-  const tracks = await (window.etune.scanMusicLite ? window.etune.scanMusicLite(dirPath) : window.etune.scanMusic(dirPath));
+  let tracks;
+  try {
+    const useHP = !!(window.state && window.state.useHighPerformanceIngestor);
+    if (useHP && window.etune && typeof window.etune.scanMusicHP === 'function') {
+      // HP path: stream batches, accumulate locally, then cache
+      const acc = [];
+      const off = [];
+      try {
+        // subscribe to progress
+        const onProg = (payload) => {
+          try {
+            const completed = payload?.completed || 0;
+            const total = payload?.total || 0;
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+            onProgress(percent, 100, 'Scanning (HP)…');
+          } catch (_) {}
+        };
+        window.etune.on && window.etune.on('scan-progress', onProg);
+        off.push(() => window.etune.on('scan-progress', () => {}));
+      } catch (_) {}
+      try {
+        const onBatch = (metas) => {
+          if (Array.isArray(metas) && metas.length) acc.push(...metas);
+        };
+        window.etune.on && window.etune.on('scan-batch', onBatch);
+        off.push(() => window.etune.on('scan-batch', () => {}));
+      } catch (_) {}
+      try {
+        await window.etune.scanMusicHP(dirPath);
+      } finally {
+        // cleanup listeners
+        for (const f of off) { try { f(); } catch (_) {} }
+      }
+      tracks = acc;
+    } else {
+      tracks = await (window.etune.scanMusicLite ? window.etune.scanMusicLite(dirPath) : window.etune.scanMusic(dirPath));
+    }
+  } catch (_) {
+    tracks = await (window.etune.scanMusicLite ? window.etune.scanMusicLite(dirPath) : window.etune.scanMusic(dirPath));
+  }
   
   if (!tracks || tracks.length === 0) {
     onProgress(100, 100, 'No tracks found');
@@ -115,6 +167,21 @@ async function fullScanAndCache(dirPath, onProgress) {
   try {
     await cache.setMany(tracksWithStats, libraryKey);
     console.log(`✅ Cached ${tracksWithStats.length} tracks`);
+    // Update global stats with accurate count for detector
+    try {
+      const total = await cache.count(libraryKey);
+      await cache.updateStats({ totalTracks: total, lastLibraryKey: libraryKey });
+      const threshold = 10000;
+      const enableNative = total >= threshold;
+      if (typeof window.state !== 'undefined') {
+        window.state.useHighPerformanceIngestor = enableNative;
+      }
+      if (window.etune && typeof window.etune.updateConfig === 'function') {
+        window.etune.updateConfig({ useHighPerformanceIngestor: enableNative, lastLibraryCount: total });
+      }
+    } catch (e) {
+      console.warn('Detector stats update failed:', e);
+    }
   } catch (err) {
     console.warn('Failed to cache tracks:', err);
   }
@@ -258,6 +325,11 @@ async function scanMusicDirect(dirPath, onProgress) {
  */
 async function getFileSystemPaths(dirPath) {
   try {
+    const useHP = !!(window.state && window.state.useHighPerformanceIngestor);
+    if (useHP && window.etune && typeof window.etune.listMusicFilesHP === 'function') {
+      const paths = await window.etune.listMusicFilesHP(dirPath);
+      return Array.isArray(paths) ? paths : [];
+    }
     if (window.etune && typeof window.etune.listMusicFiles === 'function') {
       const paths = await window.etune.listMusicFiles(dirPath);
       return Array.isArray(paths) ? paths : [];
