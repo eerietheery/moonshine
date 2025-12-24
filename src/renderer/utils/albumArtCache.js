@@ -159,7 +159,6 @@ class AlbumArtCache {
     }
 
     return this.defaultArt;
-<<<<<<< HEAD
   }
 
   /**
@@ -211,8 +210,6 @@ class AlbumArtCache {
 
     this.inFlightFetches.set(albumKey, fetchPromise);
     return fetchPromise;
-=======
->>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
   }
   
   /**

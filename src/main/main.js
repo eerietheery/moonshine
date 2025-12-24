@@ -1,7 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
-<<<<<<< HEAD
 const { scanMusic, scanFiles, getAlbumArtForFile } = require('../music');
 const { loadConfig, getConfig, updateConfig } = require('./config'); // Corrected path
 
@@ -50,12 +49,6 @@ async function mapWithConcurrency(items, limit, mapper) {
   await Promise.all(workers);
   return results;
 }
-
-=======
-const { scanMusic, getAlbumArtForFile } = require('../music');
-const { loadConfig, getConfig, updateConfig } = require('./config'); // Corrected path
-
->>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
 function ensureDirWritable(dirPath) {
   try {
     fs.mkdirSync(dirPath, { recursive: true });
@@ -251,7 +244,6 @@ ipcMain.handle('scan-music-lite', async (event, dirPath) => {
   });
 });
 
-<<<<<<< HEAD
 // Incremental scan helpers
 ipcMain.handle('list-music-files', async (event, dirPath) => {
   try {
@@ -286,9 +278,6 @@ ipcMain.handle('scan-files', async (event, filePaths) => {
     return [];
   }
 });
-
-=======
->>>>>>> d388fdcbd620d5703d38ac0f2272de8bd4098690
 // Get album art for a specific file on-demand
 ipcMain.handle('get-album-art', async (event, filePath) => {
   if (!filePath) return null;
