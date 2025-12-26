@@ -30,14 +30,14 @@ export const playlists = {
 
 // Load from persisted config
 export async function loadPlaylists() {
-  const cfg = await window.etune.getConfig();
+  const cfg = await window.moonshine.getConfig();
   playlists.user = Array.isArray(cfg?.playlists) ? cfg.playlists : [];
   buildSmartPlaylists();
 }
 
 // Persist to config
 export async function savePlaylists() {
-  await window.etune.updateConfig({ playlists: playlists.user });
+  await window.moonshine.updateConfig({ playlists: playlists.user });
 }
 
 // Smart playlists by genre (derived, not persisted)

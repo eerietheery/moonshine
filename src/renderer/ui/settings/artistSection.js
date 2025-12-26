@@ -10,7 +10,7 @@ function createArtistSection(state) {
   artistToggle.style.marginRight = '10px';
   artistToggle.addEventListener('change', () => {
     state.explicitArtistNames = artistToggle.checked;
-    window.etune.updateConfig({ explicitArtistNames: state.explicitArtistNames });
+    window.moonshine.updateConfig({ explicitArtistNames: state.explicitArtistNames });
     document.dispatchEvent(new CustomEvent('artist-lumping-updated', { detail: state.explicitArtistNames }));
     import('../../components/sidebar/sidebar.js').then(({ updateSidebarFilters }) => {
       import('../../components/shared/view.js').then(({ renderList }) => {

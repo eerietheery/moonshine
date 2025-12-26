@@ -28,8 +28,8 @@ See [Data Preservation Guide](docs/DATA_PRESERVATION.md) for detailed instructio
 [![View on GitHub](https://img.shields.io/badge/GitHub-Release-blue?logo=github)](https://github.com/eerietheery/moonshine/releases/tag/1.1.9)
 
 ### ⬇️ Direct Downloads
-- [💻 Moonshine Portable (Moonshine.1.1.9.exe)](https://github.com/eerietheery/moonshine/releases/download/1.19/Moonshine.1.1.9.exe)  
-- [📦 Moonshine Installer (Moonshine.Setup.1.1.9.exe)](https://github.com/eerietheery/moonshine/releases/download/1.19/Moonshine.Setup.1.1.9.exe)
+- [💻 Moonshine Portable (Moonshine.1.2.exe)](https://github.com/eerietheery/moonshine/releases/download/1.2/Moonshine.1.2.0.exe)  
+- [📦 Moonshine Installer (Moonshine.Setup.1.2.exe)](https://github.com/eerietheery/moonshine/releases/download/1.2/Moonshine.Setup.1.2.0.exe)
 
 ## Building 
 1. Run `npm install` to install dependencies.

@@ -79,7 +79,7 @@ export function initializeApp() {
   document.documentElement.style.setProperty('--complementary-color', getComplementaryColor(getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim()));
 
   // Load persisted config
-  window.etune.getConfig().then(async (cfg) => {
+  window.moonshine.getConfig().then(async (cfg) => {
     if (cfg) {
       // Apply theme (id + accent)
       if (cfg.theme) {
@@ -201,8 +201,8 @@ export function initializeApp() {
       // Expose globally for library scan callbacks
       window.__setScanProgress = setProgress;
       // Listen to native scan progress events
-      if (window.etune && typeof window.etune.on === 'function') {
-        window.etune.on('scan-progress', (payload) => {
+      if (window.moonshine && typeof window.moonshine.on === 'function') {
+        window.moonshine.on('scan-progress', (payload) => {
           try {
             const completed = payload?.completed || 0;
             const total = payload?.total || 0;
@@ -226,8 +226,8 @@ async function bootstrapHPDetector() {
     const hp = (stats?.totalTracks || 0) >= 10000;
     setUseHighPerformanceIngestor(hp);
     // Mirror to main process so it can choose the correct path
-    if (window.etune?.updateConfig) {
-      await window.etune.updateConfig({ useHighPerformanceIngestor: hp });
+    if (window.moonshine?.updateConfig) {
+      await window.moonshine.updateConfig({ useHighPerformanceIngestor: hp });
     }
   } catch (err) {
     console.warn('HP detector failed, defaulting to legacy scanner:', err);

@@ -52,7 +52,7 @@ export function toggleFavorite(track) {
   const idx = state.favorites.indexOf(track.filePath);
   if (idx === -1) { state.favorites.push(track.filePath); track.favorite = true; }
   else { state.favorites.splice(idx, 1); track.favorite = false; }
-  if (window.etune?.updateConfig) window.etune.updateConfig({ favorites: state.favorites.slice() });
+  if (window.moonshine?.updateConfig) window.moonshine.updateConfig({ favorites: state.favorites.slice() });
 }
 
 export function addToQueue(track) {

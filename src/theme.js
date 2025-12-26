@@ -39,13 +39,13 @@ export function initTheme(themeCfg = {}) {
 export function setTheme(id = 'dark') {
 	const root = document.documentElement;
 	if (id && id !== 'dark') root.dataset.theme = id; else delete root.dataset.theme;
-	window.etune?.updateConfig?.({ theme: { id } });
+	window.moonshine?.updateConfig?.({ theme: { id } });
 	document.dispatchEvent(new CustomEvent('theme:changed', { detail: { id } }));
 }
 
 export function setAccent(color) {
 	applyAccent(color);
-	window.etune?.updateConfig?.({ theme: { primaryColor: color } });
+	window.moonshine?.updateConfig?.({ theme: { primaryColor: color } });
 	document.dispatchEvent(new CustomEvent('theme:accent', { detail: { color } }));
 }
 
@@ -73,6 +73,6 @@ export function setRainbowMode(enabled) {
 		const overlay = document.getElementById(OVERLAY_ID);
 		if (overlay) overlay.style.display = 'none';
 	}
-	window.etune?.updateConfig?.({ rainbowMode: enabled });
+	window.moonshine?.updateConfig?.({ rainbowMode: enabled });
 	document.dispatchEvent(new CustomEvent('rainbow:toggle', { detail: { enabled } }));
 }

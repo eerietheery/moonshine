@@ -13,7 +13,7 @@ export function setupUiEventListeners() {
   const applyMode = (mode) => {
     state.sidebarMode = mode;
   // Persist mode
-  window.etune.updateConfig({ sidebarMode: mode });
+  window.moonshine.updateConfig({ sidebarMode: mode });
     if (mode === 'artist') {
       state.viewMode = 'library';
       state.activePlaylist = null;
@@ -95,7 +95,7 @@ export function setupUiEventListeners() {
     // If already in grid view, toggle album-first sorting preference
     if (dom.gridViewBtn.classList.contains('active')) {
       state.gridSortByAlbum = !state.gridSortByAlbum;
-      if (window.etune?.updateConfig) window.etune.updateConfig({ gridSortByAlbum: state.gridSortByAlbum });
+      if (window.moonshine?.updateConfig) window.moonshine.updateConfig({ gridSortByAlbum: state.gridSortByAlbum });
       // Re-render grid to apply new sort preference
       displayGridView();
     } else {
@@ -157,7 +157,7 @@ export function setupUiEventListeners() {
     applyFavState();
     favToggle.addEventListener('click', () => {
       state.favoriteViewEnabled = !state.favoriteViewEnabled;
-      window.etune.updateConfig({ favoriteViewEnabled: state.favoriteViewEnabled });
+      window.moonshine.updateConfig({ favoriteViewEnabled: state.favoriteViewEnabled });
       applyFavState();
       renderList(dom.list);
     });

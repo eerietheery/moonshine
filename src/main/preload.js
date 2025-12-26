@@ -12,32 +12,37 @@ try {
   console.error('[Preload] Failed to parse preloaded config:', err);
 }
 
-contextBridge.exposeInMainWorld('etune', {
-<<<<<<< HEAD
-  getConfig: () => ipcRenderer.invoke('config:get'),
-  updateConfig: (cfg) => ipcRenderer.invoke('config:update', cfg),
-  scanMusicHP: (roots) => ipcRenderer.invoke('scan-music-hp', roots),
-  onScanProgress: (cb) => ipcRenderer.on('scan-progress', (_, payload) => cb(payload)),
-  onScanBatch: (cb) => ipcRenderer.on('scan-batch', (_, batch) => cb(batch)),
-  onScanComplete: (cb) => ipcRenderer.on('scan-complete', (_, summary) => cb(summary)),
-  onScanFallback: (cb) => ipcRenderer.on('scan-fallback', (_, info) => cb(info)),
-=======
+contextBridge.exposeInMainWorld('moonshine', {
+  // Scanning APIs
   scanMusic: (dirPath) => ipcRenderer.invoke('scan-music', dirPath),
   scanMusicLite: (dirPath) => ipcRenderer.invoke('scan-music-lite', dirPath),
+  scanMusicHP: (dirPath) => ipcRenderer.invoke('scan-music-hp', dirPath),
   scanFiles: (filePaths) => ipcRenderer.invoke('scan-files', filePaths),
   initialScan: () => ipcRenderer.invoke('scan-music', null),
+  // Folder selection (Settings: Add Music Folder)
   selectFolder: () => ipcRenderer.invoke('select-folder'),
+
+  // Directory listing / stats
+  listMusicFiles: (dirPath) => ipcRenderer.invoke('list-music-files', dirPath),
+  listMusicFilesHP: (dirPath) => ipcRenderer.invoke('list-music-files-hp', dirPath),
+  getFileStats: (filePaths) => ipcRenderer.invoke('get-file-stats', filePaths),
+
+  // Config
   getConfig: () => preloadedConfig ? Promise.resolve(preloadedConfig) : ipcRenderer.invoke('get-config'),
   updateConfig: (partial) => ipcRenderer.invoke('update-config', partial),
+
+  // Misc
   getDefaultMusicPath: () => ipcRenderer.invoke('get-default-music-path'),
   getAlbumArt: (filePath) => ipcRenderer.invoke('get-album-art', filePath),
-  listMusicFiles: (dirPath) => ipcRenderer.invoke('list-music-files', dirPath),
-  getFileStats: (filePaths) => ipcRenderer.invoke('get-file-stats', filePaths),
   revealFile: (filePath) => ipcRenderer.invoke('reveal-file', filePath),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   saveAutoBackup: (userData) => ipcRenderer.invoke('save-auto-backup', userData),
   checkAutoBackup: () => ipcRenderer.invoke('check-auto-backup'),
   getDocumentsPath: () => ipcRenderer.invoke('get-documents-path'),
->>>>>>> ceb0bad25f4a231a3502711044dfa27ef778c802
+
+  // Simple event subscription helper
+  on: (channel, listener) => {
+    try { ipcRenderer.on(channel, (_, data) => listener(data)); } catch (_) {}
+  }
 });

@@ -57,7 +57,7 @@ function setupColumnResizing(headerEl, headers) {
       document.removeEventListener('touchmove', onMove);
       document.removeEventListener('touchend', onUp);
       dragging = null;
-      try { window.etune?.updateConfig && window.etune.updateConfig({ columnWidths: state.columnWidths }); } catch (_) {}
+      try { window.moonshine?.updateConfig && window.moonshine.updateConfig({ columnWidths: state.columnWidths }); } catch (_) {}
       try {
         // Set a short-lived flag on the header element. Click handlers will check this.
         if (headerEl) {

@@ -170,7 +170,7 @@ function showSettingsModal() {
   fullArtToggle.style.marginRight = '8px';
   fullArtToggle.addEventListener('change', (e) => {
     state.fullArtCardDisplay = fullArtToggle.checked;
-    if (window.etune?.updateConfig) window.etune.updateConfig({ fullArtCardDisplay: state.fullArtCardDisplay });
+    if (window.moonshine?.updateConfig) window.moonshine.updateConfig({ fullArtCardDisplay: state.fullArtCardDisplay });
     if (typeof window.renderGrid === 'function') window.renderGrid(document.getElementById('music-list'));
   });
   const fullArtLabel = document.createElement('label');

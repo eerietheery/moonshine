@@ -23,7 +23,7 @@ function createUpdaterSection() {
 
   let releaseUrl = null;
   updateBtn.addEventListener('click', () => {
-    if (releaseUrl) window.etune.openExternal(releaseUrl);
+    if (releaseUrl) window.moonshine.openExternal(releaseUrl);
   });
 
   updateRow.appendChild(currentSpan);
@@ -33,7 +33,7 @@ function createUpdaterSection() {
   // Kick off version check (best-effort; no hard failure if network blocked)
   (async () => {
     try {
-      const appVerRaw = await window.etune.getAppVersion();
+      const appVerRaw = await window.moonshine.getAppVersion();
       if (appVerRaw) currentSpan.textContent = `Current version: ${appVerRaw}`;
       const owner = 'eerietheery';
       const repo = 'moonshine';

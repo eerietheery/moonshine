@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const { scanMusic, scanFiles, getAlbumArtForFile } = require('../music');
 const { loadConfig, getConfig, updateConfig } = require('./config'); // Corrected path
-const { startHPScan } = require('./hpScanner');
 
 // High-performance Node-only directory scanner using worker threads
 const { Worker } = require('worker_threads');
@@ -319,9 +318,7 @@ ipcMain.handle('scan-files', async (event, filePaths) => {
     return [];
   }
 });
-<<<<<<< HEAD
-
-// High-performance scanning path: enumerate via native walker and scan metadata in batches
+// High-performance scanning path: enumerate via worker and scan metadata in batches
 ipcMain.handle('scan-music-hp', async (event, dirPath) => {
   const root = dirPath || DEFAULT_DIR;
   try {
@@ -351,8 +348,6 @@ ipcMain.handle('scan-music-hp', async (event, dirPath) => {
     return res;
   }
 });
-=======
->>>>>>> ceb0bad25f4a231a3502711044dfa27ef778c802
 // Get album art for a specific file on-demand
 ipcMain.handle('get-album-art', async (event, filePath) => {
   if (!filePath) return null;
