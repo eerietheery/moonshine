@@ -4,7 +4,7 @@ import * as dom from '../dom.js';
 
 export function setupLibraryEventListeners() {
   dom.addFolderBtn?.addEventListener('click', async () => {
-    const userPath = await window.etune.selectFolder();
+    const userPath = await window.moonshine.selectFolder();
     if (userPath) {
       addMusic(userPath);
     }
@@ -13,12 +13,12 @@ export function setupLibraryEventListeners() {
   dom.scanBtn.addEventListener('click', showScanModal);
 
   document.addEventListener('scan-default', async () => {
-    const defaultDir = await window.etune.getDefaultMusicPath();
+    const defaultDir = await window.moonshine.getDefaultMusicPath();
     loadMusic(defaultDir);
   });
 
   document.addEventListener('add-folder', async () => {
-    const userPath = await window.etune.selectFolder();
+    const userPath = await window.moonshine.selectFolder();
     if (userPath) {
       addMusic(userPath);
     }

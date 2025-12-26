@@ -181,7 +181,7 @@ class AlbumArtCache {
 
     const fetchPromise = (async () => {
       try {
-        const api = window.etune;
+        const api = window.moonshine;
         const getAlbumArt = api && typeof api.getAlbumArt === 'function' ? api.getAlbumArt : null;
         if (!getAlbumArt) return this.defaultArt;
 

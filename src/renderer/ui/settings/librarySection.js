@@ -59,7 +59,7 @@ function createLibrarySection(state) {
       remove.style.borderRadius = '4px';
       remove.style.cursor = 'pointer';
       remove.addEventListener('click', async () => {
-        const defaultDir = await window.etune.getDefaultMusicPath();
+        const defaultDir = await window.moonshine.getDefaultMusicPath();
         const isDefault = p === defaultDir;
         if (isDefault && dirs.length === 1) {
           alert('Cannot remove the default library.');
@@ -69,18 +69,18 @@ function createLibrarySection(state) {
         if (idx !== -1) {
           state.libraryDirs.splice(idx, 1);
           document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
-          window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
+          window.moonshine.updateConfig({ libraryDirs: state.libraryDirs.slice() });
           state.tracks = state.tracks.filter(t => !t.filePath.startsWith(p));
           rebuildTrackIndex();
           if (state.libraryDirs.length === 0) {
-            const def = await window.etune.getDefaultMusicPath();
+            const def = await window.moonshine.getDefaultMusicPath();
             document.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Reloading default library...', type: 'info' } }));
-            (window.etune.scanMusicLite ? window.etune.scanMusicLite(def) : window.etune.scanMusic(def)).then(tracks => {
+            (window.moonshine.scanMusicLite ? window.moonshine.scanMusicLite(def) : window.moonshine.scanMusic(def)).then(tracks => {
               state.tracks = tracks.filter(t => t && t.filePath);
               rebuildTrackIndex();
               state.libraryDirs = [def];
               document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
-              window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
+              window.moonshine.updateConfig({ libraryDirs: state.libraryDirs.slice() });
               updateSidebarFilters(window.dom.filterInput, window.dom.artistList, window.dom.albumList, () => renderList(window.dom.list), state.sidebarFilteringEnabled);
               renderList(window.dom.list);
             });

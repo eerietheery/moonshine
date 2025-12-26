@@ -37,8 +37,8 @@ function createHeadersSection(state) {
       } else {
         state.listHeaders = state.listHeaders.filter(k => k !== h.key);
       }
-      if (window.etune && typeof window.etune.updateConfig === 'function') {
-        window.etune.updateConfig({ listHeaders: state.listHeaders });
+      if (window.moonshine && typeof window.moonshine.updateConfig === 'function') {
+        window.moonshine.updateConfig({ listHeaders: state.listHeaders });
       }
       // Re-render list view immediately
       import('../../components/shared/view.js').then(({ renderList }) => {

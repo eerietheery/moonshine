@@ -45,7 +45,7 @@ function createDataBackupSection(state) {
   autoBackupLabel.appendChild(autoBackupDesc);
 
   // Initialize toggle state
-  window.etune.getConfig().then(config => {
+  window.moonshine.getConfig().then(config => {
     autoBackupToggle.checked = config.autoBackupEnabled !== false;
   });
 
@@ -59,7 +59,7 @@ function createDataBackupSection(state) {
         );
       } else {
         // Fallback if service not available
-        await window.etune.updateConfig({ autoBackupEnabled: autoBackupToggle.checked });
+        await window.moonshine.updateConfig({ autoBackupEnabled: autoBackupToggle.checked });
       }
     } catch (error) {
       console.error('Failed to toggle auto backup:', error);
@@ -192,12 +192,12 @@ function createDataBackupSection(state) {
 
 // Export all user data to a structured format
 async function exportUserData() {
-  const config = await window.etune.getConfig();
+  const config = await window.moonshine.getConfig();
   
   const userData = {
     version: '1.0',
     timestamp: new Date().toISOString(),
-    appVersion: await window.etune.getAppVersion() || 'unknown',
+    appVersion: await window.moonshine.getAppVersion() || 'unknown',
     data: {
       // Core settings
       theme: config.theme || { id: 'dark', primaryColor: '#8C40B8' },
@@ -251,7 +251,7 @@ async function importUserData(userData, state) {
   };
   
   // Update the configuration
-  await window.etune.updateConfig(configUpdate);
+  await window.moonshine.updateConfig(configUpdate);
   
   // Update the current state object
   Object.assign(state, {

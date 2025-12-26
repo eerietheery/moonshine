@@ -3,11 +3,13 @@ improve playlists tab so it shows the first four artists/albums in the thumbnail
 
 organize settings
 
-Reduce RAM usage, analyze for performance holes, anything against usual practice.
-
 new sort in the toolbar in the app next to List and Grid we're going to add Browse. 
 Browse will load a grid of random Artists (displayed by circles) and albums (displayed by rounded squares) in scrollable side-scrolling categories, make plan to implement cleanly and with the same moldular style as the rest of the app. 
 
 create documentation for making a skin, see if there are any non-critical changes to make it easier for a user to make a custom skin. 
 
 visualizer windwo requires window to be resized for visualizers to actually be seen 
+
+
+new skin, radically change layout to mimic itunes, 
+

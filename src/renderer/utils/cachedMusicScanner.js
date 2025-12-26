@@ -53,8 +53,8 @@ export async function scanMusicCached(dirPath, options = {}) {
       if (typeof window.state !== 'undefined') {
         window.state.useHighPerformanceIngestor = enableNative;
       }
-      if (window.etune && typeof window.etune.updateConfig === 'function') {
-        window.etune.updateConfig({ useHighPerformanceIngestor: enableNative, lastLibraryCount: cachedCount });
+      if (window.moonshine && typeof window.moonshine.updateConfig === 'function') {
+        window.moonshine.updateConfig({ useHighPerformanceIngestor: enableNative, lastLibraryCount: cachedCount });
       }
     } catch (_) {}
 
@@ -115,7 +115,7 @@ async function fullScanAndCache(dirPath, onProgress) {
   let tracks;
   try {
     const useHP = !!(window.state && window.state.useHighPerformanceIngestor);
-    if (useHP && window.etune && typeof window.etune.scanMusicHP === 'function') {
+    if (useHP && window.moonshine && typeof window.moonshine.scanMusicHP === 'function') {
       // HP path: stream batches, accumulate locally, then cache
       const acc = [];
       const off = [];
@@ -129,28 +129,28 @@ async function fullScanAndCache(dirPath, onProgress) {
             onProgress(percent, 100, 'Scanning (HP)…');
           } catch (_) {}
         };
-        window.etune.on && window.etune.on('scan-progress', onProg);
-        off.push(() => window.etune.on('scan-progress', () => {}));
+        window.moonshine.on && window.moonshine.on('scan-progress', onProg);
+        off.push(() => window.moonshine.on('scan-progress', () => {}));
       } catch (_) {}
       try {
         const onBatch = (metas) => {
           if (Array.isArray(metas) && metas.length) acc.push(...metas);
         };
-        window.etune.on && window.etune.on('scan-batch', onBatch);
-        off.push(() => window.etune.on('scan-batch', () => {}));
+        window.moonshine.on && window.moonshine.on('scan-batch', onBatch);
+        off.push(() => window.moonshine.on('scan-batch', () => {}));
       } catch (_) {}
       try {
-        await window.etune.scanMusicHP(dirPath);
+        await window.moonshine.scanMusicHP(dirPath);
       } finally {
         // cleanup listeners
         for (const f of off) { try { f(); } catch (_) {} }
       }
       tracks = acc;
     } else {
-      tracks = await (window.etune.scanMusicLite ? window.etune.scanMusicLite(dirPath) : window.etune.scanMusic(dirPath));
+      tracks = await (window.moonshine.scanMusicLite ? window.moonshine.scanMusicLite(dirPath) : window.moonshine.scanMusic(dirPath));
     }
   } catch (_) {
-    tracks = await (window.etune.scanMusicLite ? window.etune.scanMusicLite(dirPath) : window.etune.scanMusic(dirPath));
+    tracks = await (window.moonshine.scanMusicLite ? window.moonshine.scanMusicLite(dirPath) : window.moonshine.scanMusic(dirPath));
   }
   
   if (!tracks || tracks.length === 0) {
@@ -176,8 +176,8 @@ async function fullScanAndCache(dirPath, onProgress) {
       if (typeof window.state !== 'undefined') {
         window.state.useHighPerformanceIngestor = enableNative;
       }
-      if (window.etune && typeof window.etune.updateConfig === 'function') {
-        window.etune.updateConfig({ useHighPerformanceIngestor: enableNative, lastLibraryCount: total });
+      if (window.moonshine && typeof window.moonshine.updateConfig === 'function') {
+        window.moonshine.updateConfig({ useHighPerformanceIngestor: enableNative, lastLibraryCount: total });
       }
     } catch (e) {
       console.warn('Detector stats update failed:', e);
@@ -296,14 +296,14 @@ async function scanSpecificFiles(filePaths) {
   if (!filePaths || filePaths.length === 0) return [];
 
   // Preferred: ask main to scan exactly these files
-  if (window.etune && typeof window.etune.scanFiles === 'function') {
-    const tracks = await window.etune.scanFiles(filePaths);
+  if (window.moonshine && typeof window.moonshine.scanFiles === 'function') {
+    const tracks = await window.moonshine.scanFiles(filePaths);
     return Array.isArray(tracks) ? tracks : [];
   }
 
   // Fallback: scan entire directory and filter
   const dirPath = String(filePaths[0]).replace(/[\\/][^\\/]*$/, '');
-  const allTracks = await (window.etune.scanMusicLite ? window.etune.scanMusicLite(dirPath) : window.etune.scanMusic(dirPath));
+  const allTracks = await (window.moonshine.scanMusicLite ? window.moonshine.scanMusicLite(dirPath) : window.moonshine.scanMusic(dirPath));
   const fileSet = new Set(filePaths);
   return allTracks.filter(t => fileSet.has(t.filePath));
 }
@@ -314,7 +314,7 @@ async function scanSpecificFiles(filePaths) {
  */
 async function scanMusicDirect(dirPath, onProgress) {
   onProgress(0, 100, 'Scanning library (no cache)...');
-  const tracks = await (window.etune.scanMusicLite ? window.etune.scanMusicLite(dirPath) : window.etune.scanMusic(dirPath));
+  const tracks = await (window.moonshine.scanMusicLite ? window.moonshine.scanMusicLite(dirPath) : window.moonshine.scanMusic(dirPath));
   onProgress(100, 100, 'Scan complete');
   return tracks;
 }
@@ -326,12 +326,12 @@ async function scanMusicDirect(dirPath, onProgress) {
 async function getFileSystemPaths(dirPath) {
   try {
     const useHP = !!(window.state && window.state.useHighPerformanceIngestor);
-    if (useHP && window.etune && typeof window.etune.listMusicFilesHP === 'function') {
-      const paths = await window.etune.listMusicFilesHP(dirPath);
+    if (useHP && window.moonshine && typeof window.moonshine.listMusicFilesHP === 'function') {
+      const paths = await window.moonshine.listMusicFilesHP(dirPath);
       return Array.isArray(paths) ? paths : [];
     }
-    if (window.etune && typeof window.etune.listMusicFiles === 'function') {
-      const paths = await window.etune.listMusicFiles(dirPath);
+    if (window.moonshine && typeof window.moonshine.listMusicFiles === 'function') {
+      const paths = await window.moonshine.listMusicFiles(dirPath);
       return Array.isArray(paths) ? paths : [];
     }
   } catch (e) {
@@ -357,8 +357,8 @@ async function getFileStats(filePath) {
 async function getFileStatsMap(filePaths) {
   try {
     if (!Array.isArray(filePaths) || filePaths.length === 0) return new Map();
-    if (window.etune && typeof window.etune.getFileStats === 'function') {
-      const stats = await window.etune.getFileStats(filePaths);
+    if (window.moonshine && typeof window.moonshine.getFileStats === 'function') {
+      const stats = await window.moonshine.getFileStats(filePaths);
       const map = new Map();
       if (Array.isArray(stats)) {
         for (const s of stats) {

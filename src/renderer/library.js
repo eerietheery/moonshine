@@ -89,7 +89,7 @@ async function addMusic(userPath) {
     if (userPath && !state.libraryDirs.includes(userPath)) {
       state.libraryDirs.push(userPath);
       document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
-  window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
+  window.moonshine.updateConfig({ libraryDirs: state.libraryDirs.slice() });
     }
   updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
   const renderer = (dom.gridViewBtn && dom.gridViewBtn.classList.contains('active')) ? renderGrid : renderList;
@@ -144,7 +144,7 @@ async function loadMusic(dirPath) {
     if (dirPath && !state.libraryDirs.includes(dirPath)) {
       state.libraryDirs.push(dirPath);
       document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
-  window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
+  window.moonshine.updateConfig({ libraryDirs: state.libraryDirs.slice() });
     }
   updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
   const renderer2 = (dom.gridViewBtn && dom.gridViewBtn.classList.contains('active')) ? renderGrid : renderList;
@@ -161,7 +161,7 @@ async function initialScan() {
   showSpinner(true);
   dom.list.innerHTML = '';
   try {
-    const res = await window.etune.initialScan();
+    const res = await window.moonshine.initialScan();
     if (Array.isArray(res) && res.length) {
       state.tracks = res.filter(t => {
         if (!t || !t.filePath) return false;
@@ -199,7 +199,7 @@ async function initialScan() {
         }
       } catch {}
       document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
-  window.etune.updateConfig({ libraryDirs: state.libraryDirs.slice() });
+  window.moonshine.updateConfig({ libraryDirs: state.libraryDirs.slice() });
   updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
   const renderer3 = (dom.gridViewBtn && dom.gridViewBtn.classList.contains('active')) ? renderGrid : renderList;
   updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer3(dom.list), state.sidebarFilteringEnabled);
@@ -207,7 +207,7 @@ async function initialScan() {
       showSpinner(false);
     } else {
       // If initial scan is empty, load default directory
-  const defaultDir = await window.etune.getDefaultMusicPath();
+  const defaultDir = await window.moonshine.getDefaultMusicPath();
   loadMusic(defaultDir);
       showSpinner(false);
     }

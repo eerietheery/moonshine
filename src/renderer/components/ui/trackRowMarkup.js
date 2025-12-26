@@ -279,8 +279,8 @@ export function createTrackElement(track, onClick, headers = ['title','artist','
     items.push({ label: 'Reveal in Explorer', onClick: () => {
       const path = track.filePath || track.file || null;
       if (!path) { showToast('No file path available'); return; }
-      if (window.etune && typeof window.etune.revealFile === 'function') window.etune.revealFile(path);
-      else if (window.etune && typeof window.etune.revealInFolder === 'function') window.etune.revealInFolder(path);
+      if (window.moonshine && typeof window.moonshine.revealFile === 'function') window.moonshine.revealFile(path);
+      else if (window.moonshine && typeof window.moonshine.revealInFolder === 'function') window.moonshine.revealInFolder(path);
       else if (window.require) { try { const { shell } = window.require('electron'); shell.showItemInFolder(path); } catch (err) { showToast('Reveal not available'); } }
       else showToast('Reveal not supported');
     }});

@@ -15,7 +15,7 @@ class AutoBackupService {
 
   async init() {
     try {
-      const config = await window.etune.getConfig();
+      const config = await window.moonshine.getConfig();
       this.isEnabled = config.autoBackupEnabled !== false; // default to true
       
       if (this.isEnabled) {
@@ -61,7 +61,7 @@ class AutoBackupService {
   async checkForExistingBackup() {
     try {
       // Check both auto backup and uninstaller backup locations
-      const autoBackupResult = await window.etune.checkAutoBackup();
+      const autoBackupResult = await window.moonshine.checkAutoBackup();
       
       if (autoBackupResult.exists && autoBackupResult.data) {
         const backupDate = new Date(autoBackupResult.lastModified);
@@ -74,7 +74,7 @@ class AutoBackupService {
       }
       
       // Check for uninstaller backup in Documents/Moonshine Backup
-      const documentsPath = await window.etune.getDocumentsPath();
+      const documentsPath = await window.moonshine.getDocumentsPath();
       const uninstallerBackupPath = documentsPath + '\\Moonshine Backup\\config.json';
       
       try {
@@ -104,7 +104,7 @@ class AutoBackupService {
 
   async offerBackupRestore(backupData, backupDate, backupType = 'automatic') {
     // Don't offer restore if we already have significant user data
-    const config = await window.etune.getConfig();
+    const config = await window.moonshine.getConfig();
     const hasData = (config.playlists && config.playlists.length > 0) || 
                    (config.favorites && config.favorites.length > 0) ||
                    (config.libraryDirs && config.libraryDirs.length > 0);
@@ -184,7 +184,7 @@ class AutoBackupService {
     restoreBtn.addEventListener('click', async () => {
       notification.remove();
       try {
-        const result = await window.etune.checkAutoBackup();
+        const result = await window.moonshine.checkAutoBackup();
         if (result.exists && result.data) {
           await this.restoreFromAutoBackup(result.data);
         }
@@ -216,7 +216,7 @@ class AutoBackupService {
         await window.importUserDataFromBackup(backupData);
       } else {
         // Fallback to direct config update
-        await window.etune.updateConfig(backupData.data);
+        await window.moonshine.updateConfig(backupData.data);
       }
       
       showToast('Backup restored successfully!', 'success');
@@ -252,7 +252,7 @@ class AutoBackupService {
 
     try {
       const userData = await this.gatherUserData();
-      const result = await window.etune.saveAutoBackup(userData);
+      const result = await window.moonshine.saveAutoBackup(userData);
       
       if (result.success) {
         this.lastBackupTime = now;
@@ -276,12 +276,12 @@ class AutoBackupService {
   }
 
   async gatherUserData() {
-    const config = await window.etune.getConfig();
+    const config = await window.moonshine.getConfig();
     
     return {
       version: '1.0',
       timestamp: new Date().toISOString(),
-      appVersion: await window.etune.getAppVersion() || 'unknown',
+      appVersion: await window.moonshine.getAppVersion() || 'unknown',
       source: 'auto-backup',
       data: {
         theme: config.theme || { id: 'dark', primaryColor: '#8C40B8' },
@@ -333,7 +333,7 @@ class AutoBackupService {
     this.isEnabled = enabled;
     
     // Update config
-    await window.etune.updateConfig({ autoBackupEnabled: enabled });
+    await window.moonshine.updateConfig({ autoBackupEnabled: enabled });
     
     if (enabled) {
       this.startAutoBackup();

@@ -18,7 +18,7 @@ function createFilterSection(state) {
       state.activeArtist = null;
       state.activeAlbum = null;
     }
-    window.etune.updateConfig({ sidebarFilteringEnabled: state.sidebarFilteringEnabled });
+    window.moonshine.updateConfig({ sidebarFilteringEnabled: state.sidebarFilteringEnabled });
     const filterInput = document.getElementById('filter');
     const list = document.getElementById('music-list');
     const artistList = document.getElementById('artist-list');
