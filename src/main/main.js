@@ -319,6 +319,7 @@ ipcMain.handle('scan-files', async (event, filePaths) => {
     return [];
   }
 });
+<<<<<<< HEAD
 
 // High-performance scanning path: enumerate via native walker and scan metadata in batches
 ipcMain.handle('scan-music-hp', async (event, dirPath) => {
@@ -350,6 +351,8 @@ ipcMain.handle('scan-music-hp', async (event, dirPath) => {
     return res;
   }
 });
+=======
+>>>>>>> ceb0bad25f4a231a3502711044dfa27ef778c802
 // Get album art for a specific file on-demand
 ipcMain.handle('get-album-art', async (event, filePath) => {
   if (!filePath) return null;
