@@ -6,7 +6,10 @@
  * 2. Deduplicates album art across tracks from the same album
  * 3. Provides lazy loading capabilities
  * 4. Includes cleanup mechanisms to prevent memory leaks
+ * 5. Supports a low-RAM atlas mode using disk-backed WebP thumbnails
  */
+
+import { getAtlasThumbnail, atlasLRU } from './albumArtAtlas.js';
 
 class AlbumArtCache {
   constructor() {
@@ -31,6 +34,9 @@ class AlbumArtCache {
     // Track-level negative cache to avoid re-fetching files that have no embedded art
     this.missingArtFiles = new Set();
     
+    // Low-RAM atlas mode flag
+    this.lowRamMode = false;
+
     // Default placeholder
     this.defaultArt = 'assets/images/default-art.png';
     
@@ -122,12 +128,19 @@ class AlbumArtCache {
   }
   
   /**
-   * Get album art URL for a track (blob URL or default)
+   * Get album art URL for a track (blob URL or default).
+   * In low-RAM mode, returns cached LRU blob or default (use ensureAlbumArt for async atlas fetch).
    */
   getAlbumArt(track) {
     if (!track) return this.defaultArt;
 
     const albumKey = this.trackToAlbumKey.get(track.filePath) || this.generateAlbumKey(track);
+
+    // Low-RAM: check LRU only (sync), no new blob creation
+    if (this.lowRamMode) {
+      const lruHit = atlasLRU.get(albumKey);
+      return lruHit || this.defaultArt;
+    }
 
     // Fast path
     const cached = this.artBlobCache.get(albumKey);
@@ -164,11 +177,20 @@ class AlbumArtCache {
   /**
    * Ensure album art is loaded for a track.
    * Returns a blob URL (or default placeholder if unavailable).
+   * In low-RAM mode, fetches from the disk-backed atlas via LRU cache.
    */
   async ensureAlbumArt(track) {
     if (!track || !track.filePath) return this.defaultArt;
 
     const albumKey = this.trackToAlbumKey.get(track.filePath) || this.generateAlbumKey(track);
+
+    // Low-RAM atlas path
+    if (this.lowRamMode) {
+      const lruHit = atlasLRU.get(albumKey);
+      if (lruHit) return lruHit;
+      const atlasUrl = await getAtlasThumbnail(albumKey);
+      return atlasUrl || this.defaultArt;
+    }
 
     const cached = this.artBlobCache.get(albumKey);
     if (cached) return cached;
@@ -235,6 +257,28 @@ class AlbumArtCache {
   }
   
   /**
+   * Enable or disable low-RAM atlas mode.
+   * When enabled, frees all in-memory blob caches and delegates to the disk atlas.
+   */
+  setLowRamMode(enabled) {
+    this.lowRamMode = !!enabled;
+    if (this.lowRamMode) {
+      // Free all in-memory blobs — atlas will serve art from disk
+      this.createdBlobs.forEach(blobUrl => {
+        try { URL.revokeObjectURL(blobUrl); } catch { /* ok */ }
+      });
+      this.artBlobCache.clear();
+      this.artDataUrlCache.clear();
+      this.createdBlobs.clear();
+      this.inFlightFetches.clear();
+      console.log('🎨 Low-RAM mode enabled — freed in-memory album art cache');
+    } else {
+      atlasLRU.clear();
+      console.log('🎨 Low-RAM mode disabled — using in-memory cache');
+    }
+  }
+
+  /**
    * Get cache statistics
    */
   getStats() {
@@ -268,6 +312,7 @@ class AlbumArtCache {
     this.createdBlobs.clear();
     this.inFlightFetches.clear();
     this.missingArtFiles.clear();
+    atlasLRU.clear();
   }
   
   /**

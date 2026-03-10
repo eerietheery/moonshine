@@ -9,6 +9,7 @@ import { createFilterSection } from './settings/filterSection.js';
 import { createArtistSection } from './settings/artistSection.js';
 import { createThemeSection } from './settings/themeSection.js';
 import { createDataBackupSection } from './settings/dataBackupSection.js';
+import { createLowRamSection } from './settings/lowRamSection.js';
 
 function showSettingsModal() {
   console.log('[settingsModal] showSettingsModal invoked');
@@ -208,6 +209,13 @@ function showSettingsModal() {
   updatesSection.style.marginTop = '0';
   body.appendChild(updatesSection);
 
+  // --- PERFORMANCE SECTION ---
+  body.appendChild(createSectionDivider('Performance'));
+
+  const { element: lowRamSection, teardown: lowRamTeardown } = createLowRamSection(state);
+  lowRamSection.style.marginTop = '0';
+  body.appendChild(lowRamSection);
+
   // Aggregate teardown handlers
   if (typeof libTeardown === 'function') teardownHandlers.push(libTeardown);
   if (typeof headersTeardown === 'function') teardownHandlers.push(headersTeardown);
@@ -216,6 +224,7 @@ function showSettingsModal() {
   if (typeof artistTeardown === 'function') teardownHandlers.push(artistTeardown);
   if (typeof themeTeardown === 'function') teardownHandlers.push(themeTeardown);
   if (typeof dataBackupTeardown === 'function') teardownHandlers.push(dataBackupTeardown);
+  if (typeof lowRamTeardown === 'function') teardownHandlers.push(lowRamTeardown);
 
   dialog.appendChild(header);
   dialog.appendChild(body);

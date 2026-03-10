@@ -36,6 +36,8 @@ export const state = {
   gridSortByAlbum: false,
   // Global UI: Full Art Display Card toggle
   fullArtCardDisplay: false,
+  // Low-RAM atlas mode: use disk-backed WebP thumbnails instead of in-memory blobs
+  lowRamMode: false,
   // Whether sidebar artist/album/year filters should be applied
   sidebarFilteringEnabled: false,
   // Detector flag: enable native/high-performance ingestor for very large libraries

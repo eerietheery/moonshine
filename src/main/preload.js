@@ -35,6 +35,13 @@ contextBridge.exposeInMainWorld('moonshine', {
   getDefaultMusicPath: () => ipcRenderer.invoke('get-default-music-path'),
   getAlbumArt: (filePath) => ipcRenderer.invoke('get-album-art', filePath),
   revealFile: (filePath) => ipcRenderer.invoke('reveal-file', filePath),
+
+  // Atlas (Low-RAM mode)
+  atlasReadEntry: (albumKey) => ipcRenderer.invoke('atlas-read-entry', albumKey),
+  atlasGetKeys: () => ipcRenderer.invoke('atlas-get-keys'),
+  atlasGetStats: () => ipcRenderer.invoke('atlas-get-stats'),
+  atlasAppendEntry: (albumKey, webpBase64) => ipcRenderer.invoke('atlas-append-entry', { albumKey, webpBase64 }),
+  atlasDelete: () => ipcRenderer.invoke('atlas-delete'),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   saveAutoBackup: (userData) => ipcRenderer.invoke('save-auto-backup', userData),

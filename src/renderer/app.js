@@ -103,6 +103,13 @@ export function initializeApp() {
       if (Array.isArray(cfg.listHeaders) && cfg.listHeaders.length) state.listHeaders = cfg.listHeaders.slice();
         // Detector flag from persisted config (may be toggled later by cache counts)
         if (typeof cfg.useHighPerformanceIngestor === 'boolean') state.useHighPerformanceIngestor = cfg.useHighPerformanceIngestor;
+      // Low-RAM atlas mode
+      if (typeof cfg.lowRamMode === 'boolean') {
+        state.lowRamMode = cfg.lowRamMode;
+        if (cfg.lowRamMode) {
+          import('./utils/albumArtCache.js').then(({ albumArtCache }) => albumArtCache.setLowRamMode(true));
+        }
+      }
   // Load playlists
   await loadPlaylists();
       // Load all remembered library directories

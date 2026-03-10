@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { scanMusic, scanFiles, getAlbumArtForFile } = require('../music');
 const { loadConfig, getConfig, updateConfig } = require('./config'); // Corrected path
+const atlas = require('./albumArtAtlas');
 
 // High-performance Node-only directory scanner using worker threads
 const { Worker } = require('worker_threads');
@@ -357,6 +358,38 @@ ipcMain.handle('get-album-art', async (event, filePath) => {
   } catch (e) {
     return null;
   }
+});
+
+// --- Album Art Atlas (Low-RAM mode) ---
+ipcMain.handle('atlas-read-entry', async (event, albumKey) => {
+  if (!albumKey || typeof albumKey !== 'string') return null;
+  return atlas.readEntry(albumKey);
+});
+
+ipcMain.handle('atlas-get-keys', async () => {
+  return atlas.getAtlasKeys();
+});
+
+ipcMain.handle('atlas-get-stats', async () => {
+  return atlas.getAtlasStats();
+});
+
+ipcMain.handle('atlas-append-entry', async (event, { albumKey, webpBase64 }) => {
+  if (!albumKey || !webpBase64) return false;
+  try {
+    const buf = Buffer.from(webpBase64, 'base64');
+    const index = atlas.loadIndex();
+    atlas.appendEntry(albumKey, buf, index);
+    atlas.saveIndex(index);
+    return true;
+  } catch {
+    return false;
+  }
+});
+
+ipcMain.handle('atlas-delete', async () => {
+  atlas.deleteAtlas();
+  return true;
 });
 
 // Reveal file in OS file manager

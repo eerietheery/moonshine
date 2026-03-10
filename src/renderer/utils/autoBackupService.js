@@ -289,6 +289,7 @@ class AutoBackupService {
         sidebarMode: config.sidebarMode || 'artist',
         explicitArtistNames: config.explicitArtistNames || false,
         fullArtCardDisplay: config.fullArtCardDisplay || false,
+        lowRamMode: config.lowRamMode || false,
         gridSortByAlbum: config.gridSortByAlbum || false,
         favoriteViewEnabled: config.favoriteViewEnabled || false,
         autoBackupEnabled: config.autoBackupEnabled !== false,

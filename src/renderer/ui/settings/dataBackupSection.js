@@ -205,6 +205,7 @@ async function exportUserData() {
       sidebarMode: config.sidebarMode || 'artist',
       explicitArtistNames: config.explicitArtistNames || false,
       fullArtCardDisplay: config.fullArtCardDisplay || false,
+      lowRamMode: config.lowRamMode || false,
       gridSortByAlbum: config.gridSortByAlbum || false,
       favoriteViewEnabled: config.favoriteViewEnabled || false,
       
@@ -240,6 +241,7 @@ async function importUserData(userData, state) {
     sidebarMode: data.sidebarMode,
     explicitArtistNames: data.explicitArtistNames,
     fullArtCardDisplay: data.fullArtCardDisplay,
+    lowRamMode: data.lowRamMode,
     gridSortByAlbum: data.gridSortByAlbum,
     favoriteViewEnabled: data.favoriteViewEnabled,
     playlists: data.playlists,

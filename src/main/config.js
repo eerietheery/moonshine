@@ -27,6 +27,7 @@ function defaultConfig() {
   theme: { id: 'dark', primaryColor: '#8C40B8' },
   playlists: [],
   fullArtCardDisplay: false,
+  lowRamMode: false,
   };
 }
 
