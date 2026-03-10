@@ -44,13 +44,14 @@ export function renderGrid(list) {
   }
 
   // Tear down any list virtualization
-  if (list.vlist) list.vlist.destroy();
+  if (list.vlist) { list.vlist.destroy(); list.vlist = null; }
+  if (list.vgrid) { list.vgrid.destroy(); list.vgrid = null; }
 
-  // Prepare grid container
+  // Prepare grid container — CSS grid handles layout
   list.innerHTML = '';
-  list.style.display = 'grid';
-  list.style.gridTemplateColumns = 'repeat(auto-fit, minmax(160px, 1fr))';
-  list.style.gap = '12px';
+  list.style.display = '';
+  list.style.gridTemplateColumns = '';
+  list.style.gap = '';
   list.classList.add('grid');
 
   // Grouping logic: group by album or artist depending on sidebar selection
@@ -235,10 +236,9 @@ export function renderGrid(list) {
     ? (state.activePlaylist.name || state.activePlaylist.genre || '')
     : '';
 
-  // Render album cards
-  // Only render cards with at least one track
-  for (const a of albums) {
-    if (!a.tracks || !a.tracks.length) continue;
+  // Helper: create a single card DOM element for a given album/artist group
+  const createCardElement = (a) => {
+    if (!a || !a.tracks || !a.tracks.length) return null;
     const card = document.createElement('div');
     card.className = 'track-card album-card';
     const yearText = a.year ? String(a.year) : '';
@@ -264,6 +264,7 @@ export function renderGrid(list) {
         });
       }
     } catch (_) {}
+
     // Add to queue button for album (adds all tracks in album)
     card.querySelector('.queue-add-btn').onclick = (e) => {
       e.stopPropagation();
@@ -272,13 +273,12 @@ export function renderGrid(list) {
         import('../ui/ui.js').then(({ showToast }) => showToast(`Added ${a.tracks.length} track${a.tracks.length!==1?'s':''} from "${a.album}" to queue`));
       });
     };
-    // Card click defaults to album+artist filter and stay in grid view
+    // Card click defaults to album+artist filter and switch to list view
     card.addEventListener('click', (e) => {
-      // If inner element clicked has specific filter, let dedicated handlers run
       if (e.target && (e.target.dataset.album || e.target.dataset.artist || e.target.dataset.year)) return;
       applyGridFilter({ album: a.album, artist: a.artist });
     });
-    // Right-click context menu for album cards (use shared helper)
+    // Right-click context menu
     card.addEventListener('contextmenu', (e) => {
       e.preventDefault(); e.stopPropagation();
       const items = [];
@@ -286,7 +286,6 @@ export function renderGrid(list) {
       items.push({ label: 'Play album', onClick: async () => { if (!a.tracks || !a.tracks.length) return; state.viewMode = 'library'; state.activeAlbum = a.album; state.filteredTracks = a.tracks.slice(); renderList(list); const { playTrack } = await import('../player/playerCore.js'); playTrack(a.tracks[0], 0, document.getElementById('audio'), document.getElementById('play-btn'), document.getElementById('current-art'), document.getElementById('current-title'), document.getElementById('current-artist'), () => renderList(list)); } });
       items.push({ label: 'Queue album', onClick: () => import('../shared/state.js').then(({ addToQueue }) => { a.tracks.forEach(track => addToQueue(track)); import('../ui/ui.js').then(({ showToast }) => showToast(`Added ${a.tracks.length} track${a.tracks.length!==1?'s':''} from "${a.album}" to queue`)); }) });
       items.push({ label: 'Add to playlist…', onClick: () => {
-        // Close any open ephemeral panels first
         document.querySelectorAll('.playlist-popup').forEach(p => p.remove());
         import('../playlist/playlists.js')
           .then(({ playlists }) => {
@@ -297,37 +296,24 @@ export function renderGrid(list) {
             console.error('Failed to open playlist popup for album', err);
             try { const { showToast } = await import('../ui/ui.js'); showToast('Could not open playlist menu'); } catch (_) {}
           });
-      }
-    });
-      items.push({ label: 'Reveal in Explorer', onClick: () => { const path = a.tracks[0]?.filePath || a.tracks[0]?.file || null; if (!path) { import('../ui/ui.js').then(({ showToast }) => showToast('No file path available')); return; } if (window.moonshine && typeof window.moonshine.revealFile === 'function') window.moonshine.revealFile(path); else if (window.moonshine && typeof window.moonshine.revealInFolder === 'function') window.moonshine.revealInFolder(path); else if (window.require) { try { const { shell } = window.require('electron'); shell.showItemInFolder(path); } catch (err) { import('../ui/ui.js').then(({ showToast }) => showToast('Reveal not available')); } } else import('../ui/ui.js').then(({ showToast }) => showToast('Reveal not supported')); } });
+      }});
+      items.push({ label: 'Reveal in Explorer', onClick: () => { const path = a.tracks[0]?.filePath || a.tracks[0]?.file || null; if (!path) { import('../ui/ui.js').then(({ showToast }) => showToast('No file path available')); return; } if (window.moonshine && typeof window.moonshine.revealFile === 'function') window.moonshine.revealFile(path); else if (window.moonshine && typeof window.moonshine.revealInFolder === 'function') window.moonshine.revealInFolder(path); else import('../ui/ui.js').then(({ showToast }) => showToast('Reveal not supported')); } });
       items.push({ label: 'Copy file path', onClick: () => { const path = a.tracks[0]?.filePath || a.tracks[0]?.file || ''; navigator.clipboard?.writeText(path).catch(() => {}); } });
-
       import('../shared/contextMenu.js').then(({ showContextMenu }) => showContextMenu(e, items));
     });
     card.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); applyGridFilter({ album: a.album, artist: a.artist }); }
     });
     card.setAttribute('tabindex', '0');
-    // Click-to-filter within grid, stay in grid
-    const nameEl = () => card.querySelector('[data-album]');
-    const artistEl = () => card.querySelector('[data-artist]');
-    const yearEl = () => card.querySelector('[data-year]');
+    // Sub-element click-to-filter
     card.addEventListener('click', (e) => {
       const t = e.target;
       if (!(t instanceof Element)) return;
-      if (t.hasAttribute('data-album')) {
-        e.stopPropagation();
-        applyGridFilter({ album: a.album });
-      } else if (t.hasAttribute('data-artist')) {
-        e.stopPropagation();
-        applyGridFilter({ artist: a.artist });
-      } else if (t.hasAttribute('data-year')) {
-        e.stopPropagation();
-        applyGridFilter({ year: yearText });
-      }
+      if (t.hasAttribute('data-album'))  { e.stopPropagation(); applyGridFilter({ album: a.album }); }
+      else if (t.hasAttribute('data-artist')) { e.stopPropagation(); applyGridFilter({ artist: a.artist }); }
+      else if (t.hasAttribute('data-year'))   { e.stopPropagation(); applyGridFilter({ year: yearText }); }
     });
-    const focusables = card.querySelectorAll('[data-album],[data-artist],[data-year]');
-    focusables.forEach((el) => {
+    card.querySelectorAll('[data-album],[data-artist],[data-year]').forEach((el) => {
       el.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -337,6 +323,21 @@ export function renderGrid(list) {
         }
       });
     });
-    list.appendChild(card);
+    return card;
+  };
+
+  // Filter out empty groups before building VirtualGrid
+  const visibleAlbums = albums.filter(a => a.tracks && a.tracks.length > 0);
+
+  if (visibleAlbums.length === 0) {
+    list.innerHTML = '<div style="color:#666;padding:20px;text-align:center;grid-column:1/-1;">No albums found</div>';
+    return;
   }
+
+  const fragment = document.createDocumentFragment();
+  for (const a of visibleAlbums) {
+    const card = createCardElement(a);
+    if (card) fragment.appendChild(card);
+  }
+  list.appendChild(fragment);
 }

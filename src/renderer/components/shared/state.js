@@ -98,20 +98,28 @@ export function updateFilters(filterInput, sidebarFilteringEnabled=false) {
   const searchFilter = filterInput?.value || '';
   state.filteredTracks = state.tracks.slice();
   if (searchFilter) state.filteredTracks = filterTracks(state.filteredTracks, searchFilter);
+  // Apply all sidebar filters in a single pass to avoid creating multiple intermediate arrays
   if (sidebarFilteringEnabled) {
-    if (state.activeArtist && state.activeArtist !== 'All') {
-      const target = state.activeArtist;
-      const targetNorm = normalizeArtist(target);
+    const filterArtist = state.activeArtist && state.activeArtist !== 'All' ? state.activeArtist : null;
+    const filterAlbum  = state.activeAlbum  && state.activeAlbum  !== 'All' ? state.activeAlbum  : null;
+    const filterYear   = state.activeYear   && state.activeYear   !== 'All' ? String(state.activeYear) : null;
+    if (filterArtist || filterAlbum || filterYear) {
+      const targetNorm = filterArtist ? normalizeArtist(filterArtist) : null;
       state.filteredTracks = state.filteredTracks.filter(t => {
-        const raw = (t.tags && t.tags.artist) || 'Unknown';
-        // When explicitArtistNames is on, prefer exact raw match; otherwise accept normalized match or exact raw match
-        if (state.explicitArtistNames) return raw === target;
-        const norm = normalizeArtist(raw);
-        return norm === targetNorm || raw === target;
+        const tags = t.tags || {};
+        if (filterArtist) {
+          const raw = tags.artist || 'Unknown';
+          if (state.explicitArtistNames) {
+            if (raw !== filterArtist) return false;
+          } else {
+            if (normalizeArtist(raw) !== targetNorm && raw !== filterArtist) return false;
+          }
+        }
+        if (filterAlbum  && (tags.album  || 'Unknown') !== filterAlbum)          return false;
+        if (filterYear   && String(tags.year  || '')   !== filterYear)            return false;
+        return true;
       });
     }
-    if (state.activeAlbum && state.activeAlbum !== 'All') state.filteredTracks = state.filteredTracks.filter(t => (t.tags.album||'Unknown')===state.activeAlbum);
-    if (state.activeYear && state.activeYear !== 'All') state.filteredTracks = state.filteredTracks.filter(t => String(t.tags.year||'')===String(state.activeYear));
   }
   rebuildFilteredIndex();
   if (state.isShuffle) rebuildPlayOrder(); else state.playOrder = null;

@@ -220,8 +220,12 @@ export function renderList(list) {
       rowHeight: 56,
       total: sorted.length,
       renderRow: (i) => {
-        const track = sorted[i];
-        const filteredIndex = filteredIndexByPath.get(track.filePath);
+        // Read live from state so setTotal() updates don't cause stale-closure OOB
+        const liveSorted = state.sortedTracks || sorted;
+        const track = liveSorted[i];
+        if (!track) return document.createElement('div');
+        const liveIndex = state.filteredIndexByPath || filteredIndexByPath;
+        const filteredIndex = liveIndex.get(track.filePath);
         const el = createTrackElement(
           track,
           () => playTrack(

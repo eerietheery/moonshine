@@ -387,6 +387,55 @@ class IndexedDBCache {
   }
 
   /**
+   * Load tracks in cursor-driven chunks to avoid materialising 100K objects at once.
+   * @param {string|null} libraryKey - Library scope (null = all)
+   * @param {Function} onChunk - Called with each Array<track> chunk as it is ready
+   * @param {number} chunkSize - Tracks per chunk (default 2000)
+   * @returns {Promise<number>} Total tracks yielded
+   */
+  async getChunkedTracks(libraryKey = null, onChunk, chunkSize = 2000) {
+    if (!this.db) await this.open();
+    const libKey = libraryKey ? normalizeLibraryKey(libraryKey) : null;
+
+    return new Promise((resolve, reject) => {
+      try {
+        const transaction = this.db.transaction([STORES.TRACKS], 'readonly');
+        const store = transaction.objectStore(STORES.TRACKS);
+        const source = libKey
+          ? store.index(INDEXES.LIBRARY).openCursor(IDBKeyRange.only(libKey))
+          : store.openCursor();
+
+        let chunk = [];
+        let total = 0;
+
+        source.onsuccess = (event) => {
+          const cursor = event.target.result;
+          if (cursor) {
+            chunk.push(cursor.value);
+            total++;
+            if (chunk.length >= chunkSize) {
+              try { onChunk(chunk); } catch (_) {}
+              chunk = [];
+            }
+            cursor.continue();
+          } else {
+            // flush remaining
+            if (chunk.length > 0) {
+              try { onChunk(chunk); } catch (_) {}
+            }
+            resolve(total);
+          }
+        };
+        source.onerror = () => reject(source.error);
+        transaction.onerror = () => reject(transaction.error);
+      } catch (err) {
+        console.error('❌ getChunkedTracks error:', err);
+        reject(err);
+      }
+    });
+  }
+
+  /**
    * Check if cache has any data
    * @returns {Promise<boolean>}
    */

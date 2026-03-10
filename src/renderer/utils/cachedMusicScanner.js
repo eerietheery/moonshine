@@ -79,22 +79,36 @@ export async function scanMusicCached(dirPath, options = {}) {
       console.log('📦 Skipping filesystem scan - using cached data');
       onProgress(0, 100, 'Loading from cache...');
       
-      // Load cached tracks
-      const cachedTracks = await cache.getAllTracks(libraryKey);
-      onProgress(50, 100, `Loaded ${cachedTracks.length} cached tracks`);
+      // Load cached tracks in chunks to avoid materialising 100K objects at once.
+      // Each chunk is forwarded to an optional onChunk callback for progressive rendering.
+      const { onChunk = null } = options;
+      const allTracks = [];
+      let chunksLoaded = 0;
+      const approxTotal = cachedCount || 100;
+      
+      await cache.getChunkedTracks(libraryKey, (chunk) => {
+        allTracks.push(...chunk);
+        chunksLoaded++;
+        const pct = Math.min(95, Math.round((allTracks.length / approxTotal) * 95));
+        onProgress(pct, 100, `Loaded ${allTracks.length} tracks...`);
+        if (onChunk) {
+          try { onChunk(chunk, allTracks.length); } catch (_) {}
+        }
+      });
+
+      onProgress(100, 100, 'Cache loaded');
       
       // Start incremental scan in background
       setTimeout(async () => {
-        await incrementalScan(dirPath, cachedTracks, onProgress);
+        await incrementalScan(dirPath, allTracks, onProgress);
       }, 100);
       
-      onProgress(100, 100, 'Cache loaded');
-      console.log(`✅ Returned ${cachedTracks.length} tracks from cache in <100ms`);
-      return cachedTracks;
+      console.log(`✅ Returned ${allTracks.length} tracks from cache`);
+      return allTracks;
     } else {
       console.log('📦 No cache or force full scan, scanning library...');
       console.log(`📦 Reason: ${cachedCount === 0 ? 'Empty cache' : 'Forced full scan'}`);
-      return await fullScanAndCache(dirPath, onProgress);
+      return await fullScanAndCache(dirPath, onProgress, options.onChunk || null);
     }
   } catch (error) {
     console.error('❌ Cache error, falling back to direct scan:', error);
@@ -103,10 +117,11 @@ export async function scanMusicCached(dirPath, options = {}) {
 }
 
 /**
+/**
  * Full scan with caching
  * @private
  */
-async function fullScanAndCache(dirPath, onProgress) {
+async function fullScanAndCache(dirPath, onProgress, onChunk = null) {
   onProgress(0, 100, 'Scanning library...');
 
   const libraryKey = cache.getLibraryKey(dirPath);
@@ -116,11 +131,10 @@ async function fullScanAndCache(dirPath, onProgress) {
   try {
     const useHP = !!(window.state && window.state.useHighPerformanceIngestor);
     if (useHP && window.moonshine && typeof window.moonshine.scanMusicHP === 'function') {
-      // HP path: stream batches, accumulate locally, then cache
+      // HP path: stream batches progressively — each batch forwarded to onChunk if provided
       const acc = [];
       const off = [];
       try {
-        // subscribe to progress
         const onProg = (payload) => {
           try {
             const completed = payload?.completed || 0;
@@ -134,7 +148,13 @@ async function fullScanAndCache(dirPath, onProgress) {
       } catch (_) {}
       try {
         const onBatch = (metas) => {
-          if (Array.isArray(metas) && metas.length) acc.push(...metas);
+          if (Array.isArray(metas) && metas.length) {
+            acc.push(...metas);
+            // Forward each batch for live rendering during full scan
+            if (onChunk) {
+              try { onChunk(metas, acc.length); } catch (_) {}
+            }
+          }
         };
         window.moonshine.on && window.moonshine.on('scan-batch', onBatch);
         off.push(() => window.moonshine.on('scan-batch', () => {}));
@@ -142,7 +162,6 @@ async function fullScanAndCache(dirPath, onProgress) {
       try {
         await window.moonshine.scanMusicHP(dirPath);
       } finally {
-        // cleanup listeners
         for (const f of off) { try { f(); } catch (_) {} }
       }
       tracks = acc;

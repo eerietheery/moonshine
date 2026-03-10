@@ -73,6 +73,12 @@ async function addMusic(userPath) {
     const existingPaths = new Set(state.tracks.map(t => t.filePath));
     const newTracks = validTracks.filter(t => !existingPaths.has(t.filePath));
     
+    // Pre-compute search key once at load time so filterTracks() avoids repeated toLowerCase()
+    for (const t of newTracks) {
+      const tags = t.tags || {};
+      t._searchKey = `${tags.title || ''}\x00${tags.artist || ''}\x00${tags.album || ''}\x00${tags.year || ''}`.toLowerCase();
+    }
+
     // Initialize album art cache for new tracks
     if (newTracks.length > 0) {
       console.log(`🎨 Initializing album art cache for ${newTracks.length} new tracks...`);
@@ -105,6 +111,7 @@ async function addMusic(userPath) {
 async function loadMusic(dirPath) {
   showSpinner(true);
   dom.list.innerHTML = '';
+  let preflightRendered = false;
   try {
     // Use cached scanner for faster startup
     const tracks = await scanMusicCached(dirPath, {
@@ -112,6 +119,23 @@ async function loadMusic(dirPath) {
       onProgress: (current, total, message) => {
         console.log(`📦 Load progress: ${message} (${current}/${total})`);
         try { window.__setScanProgress(Math.round((current/total)*100), message); } catch (_) {}
+      },
+      // Progressive: render first chunk immediately so the user sees tracks right away
+      onChunk: (chunk) => {
+        if (preflightRendered) return;
+        preflightRendered = true;
+        const firstBatch = chunk.filter(t => t && t.filePath && !t.error);
+        for (const t of firstBatch) {
+          const tags = t.tags || {};
+          if (!t._searchKey) t._searchKey = `${tags.title || ''}\x00${tags.artist || ''}\x00${tags.album || ''}\x00${tags.year || ''}`.toLowerCase();
+        }
+        state.tracks = firstBatch;
+        rebuildTrackIndex();
+        initializeAlbumArtCache(firstBatch);
+        updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
+        const rnd = (dom.gridViewBtn && dom.gridViewBtn.classList.contains('active')) ? renderGrid : renderList;
+        rnd(dom.list);
+        showSpinner(false);
       }
     });
     
@@ -122,16 +146,20 @@ async function loadMusic(dirPath) {
       const isUnknown = [tags.artist, tags.album, tags.title].every(v => v === 'Unknown');
       return !isUnknown;
     });
+
+    // Pre-compute search key once at load time
+    for (const t of state.tracks) {
+      if (!t._searchKey) {
+        const tags = t.tags || {};
+        t._searchKey = `${tags.title || ''}\x00${tags.artist || ''}\x00${tags.album || ''}\x00${tags.year || ''}`.toLowerCase();
+      }
+    }
+
     rebuildTrackIndex();
     
-    // Initialize album art cache
+    // Initialize album art cache for any tracks not yet processed
     if (state.tracks.length > 0) {
-      console.log(`🎨 Initializing album art cache for ${state.tracks.length} tracks...`);
       initializeAlbumArtCache(state.tracks);
-      
-      // Log cache stats
-      const stats = getAlbumArtStats();
-      console.log(`📊 Album art cache stats:`, stats);
     }
     
     // Set favorite property on loaded tracks
@@ -146,11 +174,22 @@ async function loadMusic(dirPath) {
       document.dispatchEvent(new CustomEvent('library-dirs-updated', { detail: state.libraryDirs.slice() }));
   window.moonshine.updateConfig({ libraryDirs: state.libraryDirs.slice() });
     }
-  updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
-  const renderer2 = (dom.gridViewBtn && dom.gridViewBtn.classList.contains('active')) ? renderGrid : renderList;
-  updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer2(dom.list), state.sidebarFilteringEnabled);
-  renderer2(dom.list);
-  showSpinner(false);
+    updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
+    const renderer2 = (dom.gridViewBtn && dom.gridViewBtn.classList.contains('active')) ? renderGrid : renderList;
+    updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer2(dom.list), state.sidebarFilteringEnabled);
+    // If a VirtualList is already showing a partial preflight render, update its total
+    // instead of destroying and recreating (avoids scroll position reset)
+    if (preflightRendered && dom.list.vlist && !dom.gridViewBtn?.classList.contains('active')) {
+      const { sortTracks } = await import('./components/list/listSort.js');
+      const sorted = sortTracks(state.filteredTracks);
+      state.sortedTracks = sorted;
+      const { rebuildSortedIndex } = await import('./components/shared/state.js');
+      rebuildSortedIndex();
+      dom.list.vlist.setTotal(sorted.length);
+    } else {
+      renderer2(dom.list);
+    }
+    showSpinner(false);
   } catch (err) {
     dom.list.innerHTML = `<div style='color:#e74c3c;padding:16px;'>Error loading music: ${err.message}</div>`;
   showSpinner(false);
@@ -170,6 +209,13 @@ async function initialScan() {
         const isUnknown = [tags.artist, tags.album, tags.title].every(v => v === 'Unknown');
         return !isUnknown;
       });
+      // Pre-compute search key
+      for (const t of state.tracks) {
+        if (!t._searchKey) {
+          const tags = t.tags || {};
+          t._searchKey = `${tags.title || ''}\x00${tags.artist || ''}\x00${tags.album || ''}\x00${tags.year || ''}`.toLowerCase();
+        }
+      }
       rebuildTrackIndex();
       
       // Initialize album art cache

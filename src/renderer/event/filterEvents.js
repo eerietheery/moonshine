@@ -3,15 +3,27 @@ import { updateSidebarFilters } from '../components/sidebar/sidebar.js';
 import { renderList, renderGrid } from '../components/shared/view.js';
 import * as dom from '../dom.js';
 
+function debounce(fn, delay) {
+  let timer = null;
+  return function(...args) {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      timer = null;
+      fn.apply(this, args);
+    }, delay);
+  };
+}
+
 export function setupFilterEventListeners() {
   if (dom.filterInput) {
-    dom.filterInput.addEventListener('input', () => {
-  updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
-  // Choose renderer based on current view toggle
-  const renderer = dom.gridViewBtn && dom.gridViewBtn.classList.contains('active') ? renderGrid : renderList;
-  updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer(dom.list), state.sidebarFilteringEnabled);
-  renderer(dom.list);
-    });
+    const onInput = debounce(() => {
+      updateFilters(dom.filterInput, state.sidebarFilteringEnabled);
+      // Choose renderer based on current view toggle
+      const renderer = dom.gridViewBtn && dom.gridViewBtn.classList.contains('active') ? renderGrid : renderList;
+      updateSidebarFilters(dom.filterInput, dom.artistList, dom.albumList, () => renderer(dom.list), state.sidebarFilteringEnabled);
+      renderer(dom.list);
+    }, 200);
+    dom.filterInput.addEventListener('input', onInput);
   } else {
     console.warn('filterInput not found in DOM');
   }
