@@ -26,14 +26,17 @@ export function lumpArtists(tracks) {
 // Filtering and grouping logic
 export function filterTracks(tracks, filter) {
   const q = (filter || '').toLowerCase();
+  if (!q) return tracks;
   return tracks.filter(track => {
+    // Fast path: use pre-computed search key when available
+    if (track._searchKey) return track._searchKey.includes(q);
+    // Fallback: search individual fields
     const t = track.tags || {};
     return (
-      !q ||
       (t.artist && t.artist.toLowerCase().includes(q)) ||
       (t.album && t.album.toLowerCase().includes(q)) ||
-  (t.title && t.title.toLowerCase().includes(q)) ||
-  (t.year && String(t.year).toLowerCase().includes(q))
+      (t.title && t.title.toLowerCase().includes(q)) ||
+      (t.year && String(t.year).toLowerCase().includes(q))
     );
   });
 }
